@@ -42,7 +42,7 @@ class useMysql:
         return pymysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.passwd, db=self.db,
                                charset=self.charset)
 
-    def tableCotrol(self, sql):
+    def tableControl(self, sql):
         """表控制:创建表和删除表"""
         # 获取数据库连接
         con = self.__getConnect()
