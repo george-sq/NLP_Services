@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
     @File   : 1.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/9/30 10:38
     @Todo   :
                 1、数据预处理
