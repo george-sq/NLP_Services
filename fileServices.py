@@ -23,6 +23,7 @@ class FileServer(object):
             :param fileName: 文件名
             :return:
         """
+        # 校验文件路径
         if not os.path.exists(path):
             os.mkdir(path)
         filePath = path
@@ -33,6 +34,8 @@ class FileServer(object):
                 filePath += "/" + fileName
         else:
             raise FileNotFoundError
+
+        # 读取文件
         try:
             with open(filePath, 'rb') as ldf:
                 return self.pick.load(ldf)
