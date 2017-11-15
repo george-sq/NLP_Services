@@ -452,7 +452,7 @@ def main(inStr):
         strctInfos = doKeyInfosExtraction(txtTool, (tid, content))
         # 文本分类
         cateInfos = doTxtCate(txtTool, (tid, content))
-
+        # 数据处理结果判断
         if strctInfos is not None and cateInfos is not None:
             responseMsg += strctInfos + cateInfos + '\n'
     print(responseMsg)
