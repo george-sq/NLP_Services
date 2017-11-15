@@ -5,7 +5,7 @@
     @Time   : 2017/10/23 16:35
     @Todo   : 
 """
-
+import os
 import time
 import warnings
 
@@ -392,7 +392,7 @@ def modeTest(Corpus):
     lines.append('\n' + '>>>>>>>>>>' * 5)
     lines.append('\nTotal : %s\t\tError : %s\n' % (total, rate))
     lines.append('error_rate : %s \n' % str(float(rate * 100 / float(total))))
-    lines.append('accuracy_rate : %s \n' % str(float(100-(rate * 100 / float(total)))))
+    lines.append('accuracy_rate : %s \n' % str(float(100 - (rate * 100 / float(total)))))
     lines.append('>>>>>>>>>>' * 5 + '\n\n')
     with open(resultFile, 'w', encoding='utf-8') as fw:
         fw.writelines(lines)
@@ -410,7 +410,10 @@ def storeData(Corpus):
     allVecs = vecsTool.buildTrainTfidf(allBow)
 
     # 5、将样本向量空间数据存储到本地磁盘
-    gd.saveVectorSpaces('./Out/Dats/pamo_nlp_DataVectorSpaces.dat', allVecs)
+    path = "./Out/Dats"
+    if not os.path.exists(path):
+        os.mkdir(path)
+    gd.saveVectorSpaces(path + '/pamo_nlp_DataVectorSpaces.dat', allVecs)
 
     # 6、样本数据分析
     classNames = allBow.classNames
@@ -441,7 +444,7 @@ def main():
     pool.join()
     logging.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>子进程任务完成。')
 
-########################################################################################################################
+    ########################################################################################################################
     corpus = list(gTxtCorpus)
     # 模型测试
     modeTest(corpus)
