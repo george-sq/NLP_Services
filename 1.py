@@ -45,7 +45,7 @@ import dataBases as db
 import getData as gd
 
 
-class timeLog(object):
+class TimeLog(object):
     def __init__(self, func):
         self.func = func
 
@@ -123,7 +123,7 @@ def getRawByLabelGenerator(sLabel):
         :return: results --> generator object [rowNum,rows:[(txtid,txtname,txtlabel,txtcontent,txtsegword,inserttime,modtime),]]
     """
     # sql = "SELECT * FROM tb_txtcate WHERE txtLabel='%s' ORDER BY txtId"%sLabel
-    raws = db.useMysql().executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='%s' ORDER BY txtId" % sLabel)
+    raws = db.UseMysql().executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='%s' ORDER BY txtId" % sLabel)
     stopWords = getStopWords()
     # alist = []
     for raw in raws:

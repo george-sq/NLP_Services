@@ -6,6 +6,7 @@
     @Todo   : 
 """
 
+import os
 import time
 from collections import defaultdict
 import warnings
@@ -86,7 +87,7 @@ def getRawByLabelGenerator(sLabel):
         :return: results --> generator object [rowNum,
             rows:[(txtid,txtname,txtlabel,txtcontent,txtsegword,inserttime,modtime),]]
     """
-    raws = db.useMysql().executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='%s' ORDER BY txtId" % sLabel)
+    raws = db.UseMysql().executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='%s' ORDER BY txtId" % sLabel)
     retList = []
     for raw in raws:
         retList.append((raw[2], raw[3]))
@@ -200,8 +201,10 @@ class StatData(object):
                 freq = self.wordFreqs[word]
                 line = 'id:%s\tword:%s\tdfs:%s\twordfreq:%s\n' % (wid, word, dfss, freq)
                 lines.append(line)
-
-            filePath = './Out/StatFiles/statData_' + str(time.time()).split('.')[0] + '.txt'
+            path = "./Out/StatFiles"
+            if not os.path.exists(path):
+                os.mkdir(path)
+            filePath = path + '/statData_' + str(time.time()).split('.')[0] + '.txt'
             with open(filePath, 'w', encoding='utf-8') as fw:
                 fw.writelines(lines)
         else:
@@ -217,7 +220,10 @@ class StatData(object):
             wf = sorted(self.wordFreqs.items(), key=lambda twf: twf[1], reverse=True)
             for w, f in wf:
                 outWordFreq.append(str(w) + '\t' + str(f) + '\n')
-            with open('./Out/StatFiles/wordFrequencys_' + str(time.time()).split('.')[0] + '.txt', 'w',
+            path = "./Out/StatFiles"
+            if not os.path.exists(path):
+                os.mkdir(path)
+            with open(path + '/wordFrequencys_' + str(time.time()).split('.')[0] + '.txt', 'w',
                       encoding='utf-8') as fw:
                 fw.writelines(outWordFreq)
         else:
@@ -255,7 +261,10 @@ def buildWordCloudWithFreq(dicts, imgName):
     # nowTime = time.time()
     nowTime = str(time.time()).split('.')[0]
     # print(nowTime)
-    wordcloud.to_file('./Out/WordCloudImgs/' + imgName + '_' + nowTime + '.png')
+    path = "./Out/WordCloudImgs"
+    if not os.path.exists(path):
+        os.mkdir(path)
+    wordcloud.to_file(path + '/' + imgName + '_' + nowTime + '.png')
     # plt.show()
 
 
@@ -300,7 +309,10 @@ def main():
     buildWordCloudWithFreq(statTool.wordFreqs, 'pamo_wordcloud')
 
     # 4、构建词典
-    statTool.dictionary.save('./Out/Dicts/pamo_dicts.dict')
+    path = "./Out/Dicts"
+    if not os.path.exists(path):
+        os.mkdir(path)
+    statTool.dictionary.save(path + '/pamo_dicts.dict')
 
     # 5、构建词包空间
     corpus = [statTool.dictionary.doc2bow(text) for text in statTool.txts]
@@ -321,7 +333,10 @@ def main():
         print('文档数目与文档类型数目不一致。')
 
     # 6、构建语料库
-    corpora.MmCorpus.serialize('./Out/Corpus/pamo_gaCorpus.mm', corpus=corpus)
+    path = "./Out/Corpus"
+    if not os.path.exists(path):
+        os.mkdir(path)
+    corpora.MmCorpus.serialize(path + '/pamo_gaCorpus.mm', corpus=corpus)
 
 
 if __name__ == '__main__':

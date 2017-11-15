@@ -11,7 +11,6 @@ import random
 import jieba
 from sklearn.datasets.base import Bunch
 import pickle
-from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfVectorizer  # TF-IDF向量生成类
 
 
@@ -61,7 +60,7 @@ def segWord(contents):
 
 def updateSegWd():
     rows = LoadData().getRawCorpus()[1]
-    db = udb.useMysql()
+    db = udb.UseMysql()
     i = 0
     for row in rows:
         content = row[3]
@@ -97,7 +96,7 @@ class LoadData:
             :return: results = [rowNum,rows:[(),]]
             @todo : 从数据库中加载所有原始语料数据
         """
-        db = udb.useMysql()
+        db = udb.UseMysql()
         db.setConnect(host=self.host, port=self.port, user=self.user, passwd=self.passwd, db=self.db,
                       charset=self.charset)
         return db.executeSql("SELECT * FROM tb_txtcate ORDER BY txtId")
@@ -107,7 +106,7 @@ class LoadData:
             :return: results = [wordId:str,stopWord:str]
             @todo : 从数据库中加载停用词表
         """
-        db = udb.useMysql()
+        db = udb.UseMysql()
         db.setConnect(host=self.host, port=self.port, user=self.user, passwd=self.passwd, db=self.db,
                       charset=self.charset)
         result = db.executeSql("SELECT * FROM tb_stopwords ORDER BY wordId")
