@@ -1,7 +1,7 @@
 # coding = utf-8
 """
     @File   : dataBases.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/9/18 15:34
     @Todo   : 
 """
@@ -9,15 +9,15 @@
 import pymysql
 
 
-class useMysql:
+class UseMysql(object):
     """连接Mysql数据库的相关操作"""
 
     def __init__(self):
         """初始化"""
-        self.host = '10.0.0.247'#'192.168.107.131'
+        self.host = '10.0.0.247'
         self.port = 3306
-        self.user = 'pamo'#'mybatis'
-        self.passwd = 'pamo'#'mybatis'
+        self.user = 'pamo'
+        self.passwd = 'pamo'
         self.db = 'textcorpus'
         self.charset = 'utf8mb4'
 
@@ -104,3 +104,4 @@ class useMysql:
             # 关闭数据库连接
             con.close()
         return results
+

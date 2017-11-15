@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
     @File   : gensimTst.py
-    @Author : NLP_QingShen ()
+    @Author : NLP_QiangShen ()
     @Time   : 2017/9/21 14:04
     @Todo   : 
 """

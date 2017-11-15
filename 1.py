@@ -108,7 +108,8 @@ def getStopWords():
 @timeCost
 def getRawGenerator():
     """
-        :return: results --> generator object [rowNum,rows:[(txtid,txtname,txtlabel,txtcontent,txtsegword,inserttime,modtime),]]
+    :return: results --> generator object [rowNum,rows:[(txtid,txtname,txtlabel,txtcontent,txtsegword,inserttime,
+        modtime),]]
     """
     raws = gd.LoadData().getRawCorpus()
     stopWords = getStopWords()

@@ -1,7 +1,7 @@
 # coding = utf-8
 """
     @File   : tst.py
-    @Author : NLP_QingShen
+    @Author : NLP_QiangShen
     @Time   : 2017/9/19 15:48
     @Todo   : 
 """

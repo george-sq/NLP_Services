@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
     @File   : word2vector.py
-    @Author : NLP_QingShen ()
+    @Author : NLP_QiangShen ()
     @Time   : 2017/9/22 8:53
     @Todo   : 
 """

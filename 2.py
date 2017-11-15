@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
     @File   : 2.py.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/10/13 14:07
     @Todo   :
             2、数据分析
@@ -28,6 +28,7 @@ from gensim import corpora
 from gensim import models
 import numpy as np
 from wordcloud import WordCloud
+import  matplotlib as plt
 import multiprocessing
 from multiprocessing import Pool
 import logging

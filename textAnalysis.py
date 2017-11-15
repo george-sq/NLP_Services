@@ -1,7 +1,7 @@
 # coding = utf-8
 """
     @File   : textAnalysis.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/9/18 15:32
     @Todo   : 
 """

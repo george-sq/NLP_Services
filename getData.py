@@ -1,7 +1,7 @@
 # coding = utf-8
 """
     @File   : getData.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/9/19 10:31
     @Todo   :
 """

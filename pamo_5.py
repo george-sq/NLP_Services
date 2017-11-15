@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
     @File   : pamo_5.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/11/6 9:31
     @Todo   : 将tb_tinfo表中未分类的文本进行分类处理，并将结果插入到tb_tcate表中
 """

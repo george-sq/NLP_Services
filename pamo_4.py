@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
     @File   : pamo_4.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/11/2 16:10
     @Todo   : 将tb_tinfo表中未预处理的文本进行分词和关键词处理等预处理，并将预处理结果插入到tb_tstructinfo表中
 """

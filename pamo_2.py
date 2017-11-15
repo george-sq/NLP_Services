@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
     @File   : pamo_2.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/10/23 16:35
     @Todo   : 
 """

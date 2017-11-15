@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
     @File   : word2vectorTst.py
-    @Author : NLP_QingShen (275171387@qq.com)
+    @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/9/22 8:56
     @Todo   : 
 """
