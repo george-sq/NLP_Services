@@ -126,9 +126,6 @@ class FileServer(object):
         else:
             return None
 
-
-            ########################################################################################################################
-
     def saveText2UTF8(self, path, fileName, **kwargs):
         """
             :param path: (str)文件所在的目录路径
