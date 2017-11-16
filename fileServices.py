@@ -20,7 +20,7 @@ class FileServer(object):
 
     @staticmethod
     def __checkPathArgType(path):
-        """ 路径参数类型校验
+        """ 检验路径参数的类型
             :param path: (str)文件目录路径
             :return: boolean
         """
@@ -28,13 +28,13 @@ class FileServer(object):
             if not isinstance(path, str):
                 raise TypeError
         except TypeError:
-            print('TypeError: 错误的文件路径参数类型(%s)！！！' % path)
+            print('TypeError: 文件路径参数的类型错误 (%s) ！！！' % path)
             return False
         else:
             return True
 
     def __checkPath(self, path):
-        """ 校验文件路径有效性
+        """ 校验文件路径参数的有效性
             :param path: (str)文件目录路径
             :return: True or "MK"
         """
@@ -56,7 +56,7 @@ class FileServer(object):
             :param fileName: 文件名
             :return: fileContent or None
         """
-        # 路径参数类型校验
+        # 检验路径参数的类型
         if self.__checkPathArgType(path):
             fullName = os.path.join(path, fileName)
             try:
@@ -64,7 +64,7 @@ class FileServer(object):
                 with open(fullName, 'r', encoding=self.filecode) as txtr:
                     return txtr.read()
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
                 return None
         else:
             return None
@@ -75,7 +75,7 @@ class FileServer(object):
             :param fileName: 文件名
             :return: fileContent or None
         """
-        # 路径参数类型校验
+        # 检验路径参数的类型
         if self.__checkPathArgType(path):
             fullName = os.path.join(path, fileName)
             try:
@@ -83,7 +83,7 @@ class FileServer(object):
                 with open(fullName, 'rb') as ldf:
                     return self.pick.load(ldf)
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
                 return None
         else:
             return None
@@ -94,7 +94,7 @@ class FileServer(object):
             :param fileName: 文件名
             :return: fileContent or None
         """
-        # 路径参数类型校验
+        # 检验路径参数的类型
         if self.__checkPathArgType(path):
             fullName = os.path.join(path, fileName)
             # 文件目录路径校验
@@ -102,7 +102,7 @@ class FileServer(object):
                 # 加载文件
                 return corpora.MmCorpus(fullName)
             else:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
                 return None
         else:
             return None
@@ -113,7 +113,7 @@ class FileServer(object):
             :param fileName: 文件名
             :return: fileContent or None
         """
-        # 路径参数类型校验
+        # 检验路径参数的类型
         if self.__checkPathArgType(path):
             fullName = os.path.join(path, fileName)
             # 文件目录路径校验
@@ -121,7 +121,7 @@ class FileServer(object):
                 # 加载文件
                 return corpora.Dictionary.load(fullName)
             else:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
                 return None
         else:
             return None
@@ -130,11 +130,11 @@ class FileServer(object):
         """
             :param path: (str)文件所在的目录路径
             :param fileName: 文件名
-            :param kwargs: 写入内容
-            :return: boolean --> content or lines
+            :param kwargs: 写入内容 --> content or lines
+            :return: boolean
         """
         retVal = False
-        # 路径参数类型校验
+        # 检验路径参数的类型
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
@@ -155,7 +155,7 @@ class FileServer(object):
                         txtw.writelines(lines)
                         retVal = True
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
         return retVal
 
     def savePickledObjFile(self, path, fileName, writeContentObj=None):
@@ -166,7 +166,7 @@ class FileServer(object):
             :return: boolean
         """
         retVal = False
-        # 路径参数类型校验
+        # 检验路径参数的类型
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
@@ -194,7 +194,7 @@ class FileServer(object):
             :return: boolean
         """
         retVal = False
-        # 路径参数类型校验
+        # 检验路径参数的类型
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
@@ -221,7 +221,7 @@ class FileServer(object):
             :return: boolean
         """
         retVal = False
-        # 路径参数类型校验
+        # 检验路径参数的类型
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
