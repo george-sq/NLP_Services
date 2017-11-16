@@ -130,8 +130,8 @@ class FileServer(object):
         """
             :param path: (str)文件所在的目录路径
             :param fileName: 文件名
-            :param kwargs: 写入内容
-            :return: boolean --> content or lines
+            :param kwargs: 写入内容 --> content or lines
+            :return: boolean
         """
         retVal = False
         # 路径参数类型校验
