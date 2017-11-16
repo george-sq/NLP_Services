@@ -64,7 +64,7 @@ class FileServer(object):
                 with open(fullName, 'r', encoding=self.filecode) as txtr:
                     return txtr.read()
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
                 return None
         else:
             return None
@@ -83,7 +83,7 @@ class FileServer(object):
                 with open(fullName, 'rb') as ldf:
                     return self.pick.load(ldf)
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
                 return None
         else:
             return None
@@ -102,7 +102,7 @@ class FileServer(object):
                 # 加载文件
                 return corpora.MmCorpus(fullName)
             else:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
                 return None
         else:
             return None
@@ -121,7 +121,7 @@ class FileServer(object):
                 # 加载文件
                 return corpora.Dictionary.load(fullName)
             else:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
                 return None
         else:
             return None
@@ -155,7 +155,7 @@ class FileServer(object):
                         txtw.writelines(lines)
                         retVal = True
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
         return retVal
 
     def savePickledObjFile(self, path, fileName, writeContentObj=None):
