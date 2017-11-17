@@ -17,7 +17,6 @@ import jieba
 import jieba.posseg as psg
 from gensim import corpora
 from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 import multiprocessing
 from multiprocessing import Pool
 import logging
