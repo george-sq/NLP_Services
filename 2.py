@@ -18,7 +18,6 @@
                     d、算法性能评估
 """
 
-import os
 import time
 import warnings
 
@@ -26,9 +25,7 @@ warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 
 from gensim import corpora
 from gensim import models
-import numpy as np
 from wordcloud import WordCloud
-import  matplotlib as plt
 import multiprocessing
 from multiprocessing import Pool
 import logging
@@ -70,9 +67,6 @@ def buildWordCloudWithFreq(dicts, imgName):
     wordcloud = WordCloud(max_words=2000, width=1300, height=600, background_color="white",
                           font_path='C:/Windows/Fonts/STSONG.TTF').generate_from_frequencies(
         dicts)
-
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
     wordcloud.to_file('./Out/' + imgName)
 
 
@@ -107,11 +101,10 @@ def main():
     """
         2、数据分析          a、标准化输入输出    b、数据向量化    c、构建任务算法    d、算法性能评估
     """
-    dictionary,corpus = loadData()
+    dictionary, corpus = loadData()
 
     vecs = convertTfidf(dictionary, corpus)
-
-
+    print(len(vecs))
 
 
 if __name__ == '__main__':

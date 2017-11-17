@@ -11,9 +11,7 @@ import warnings
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 
-import datetime
 import time
-import pymysql
 import jieba
 from jieba import posseg as posg
 from gensim import corpora
