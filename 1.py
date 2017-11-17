@@ -120,7 +120,8 @@ def getRawGenerator():
 # @timeCost
 def getRawByLabelGenerator(sLabel):
     """
-        :return: results --> generator object [rowNum,rows:[(txtid,txtname,txtlabel,txtcontent,txtsegword,inserttime,modtime),]]
+        :return: results --> generator object [rowNum,rows:[(txtid,txtname,txtlabel,txtcontent,txtsegword,
+                                                    inserttime,modtime),]]
     """
     # sql = "SELECT * FROM tb_txtcate WHERE txtLabel='%s' ORDER BY txtId"%sLabel
     raws = db.UseMysql().executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='%s' ORDER BY txtId" % sLabel)
