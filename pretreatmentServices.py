@@ -3,7 +3,7 @@
     @File   : pretreatmentServices.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/11/17 9:11
-    @Todo   : 
+    @Todo   : 提供关于文本预处理的服务
 """
 
 import warnings
@@ -144,3 +144,11 @@ class StatisticalData(object):
             print("参数initCorpus 类型错误 (%s)！请输入正确的initCorpus参数。" % initCorpus)
 
         return retVal
+
+
+def main():
+    pass
+
+
+if __name__ == '__main__':
+    main()
