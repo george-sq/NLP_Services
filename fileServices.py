@@ -7,6 +7,10 @@
 """
 
 import os
+import warnings
+
+warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
+
 import pickle
 from gensim import corpora
 
