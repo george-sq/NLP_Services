@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    @File   : dbServices.py
+    @File   : databaseServices.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/11/15 11:17
     @Todo   : 提供关于操作数据库的服务
