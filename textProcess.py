@@ -76,6 +76,7 @@ def main():
         freqFile.append(str(w) + '\t' + str(f) + '\n')
     # 语料库词典
     dicts4corpus = structDataHandler.buildGensimDict(rawCorpus)
+    dicts4stopWords = structDataHandler.buildGensimDict([list(stopWords)])
     # 去停用词
     for i in range(len(rawCorpus)):
         txt = rawCorpus[i]
@@ -89,6 +90,7 @@ def main():
     corpus2MM = structDataHandler.buildGensimCorpus2MM(rawCorpus, dicts4corpus)
     # 本地存储
     fileHandler.saveText2UTF8(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqFile)
+    fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
     fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts4corpus)
     fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus2MM)
     del stopWords
