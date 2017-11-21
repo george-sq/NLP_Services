@@ -63,7 +63,7 @@ def main():
     del mysqls
     del pool
 
-    # 去停用词
+    # 数据标准化
     structDataHandler = pts.BaseStructData()
     fileHandler = fs.FileServer()
     # 原始文本集
@@ -76,6 +76,7 @@ def main():
         freqFile.append(str(w) + '\t' + str(f) + '\n')
     # 语料库词典
     dicts4corpus = structDataHandler.buildGensimDict(rawCorpus)
+    # 去停用词
     for i in range(len(rawCorpus)):
         txt = rawCorpus[i]
         newTxt = []
@@ -85,11 +86,11 @@ def main():
                 newTxt.append(word)
         rawCorpus[i] = newTxt
     # 标准化语料库
-    corpus = structDataHandler.buildGensimCorpus2MM(rawCorpus, dicts4corpus)
+    corpus2MM = structDataHandler.buildGensimCorpus2MM(rawCorpus, dicts4corpus)
     # 本地存储
-    fileHandler.saveText2UTF8(path="", fileName="", lines=freqFile)
+    fileHandler.saveText2UTF8(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqFile)
     fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts4corpus)
-    fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus)
+    fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus2MM)
     del stopWords
 
 
