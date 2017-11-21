@@ -8,14 +8,15 @@
 
 import databaseServices as dbs
 import fileServices as fs
+import pretreatmentServices as pts
 import jieba
 from gensim import corpora
 import multiprocessing
-from multiprocessing import Queue
 from multiprocessing import Pool
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+jieba.setLogLevel(log_level=logging.INFO)
 
 
 def getStopWords():
@@ -28,27 +29,18 @@ def getStopWords():
     return set(stopWords)
 
 
-def doCutWord(qq, record):
+def doCutWord(record):
     """
-        :param record: [txtid,label,content,stopwords]
+        :param record: [txtid,label,content]
         :return:
     """
     retVal = []
-    print("Queue size :", qq.qsize())
-    gd = qq.get()
-    print("Queue size :", qq.qsize())
-    qq.put("doCutWord")
-    print("Queue size :", qq.qsize())
     txtid = record[0]
     label = record[1]
-    wordSeqs = jieba.cut(record[2])
-    g_dicts.add_documents(wordSeqs)
-    content = set([word for word in list(wordSeqs) if word not in record[3]])
-    retVal.extend([txtid, label, list(content)])
+    wordSeqs = jieba.cut(record[2].replace('\r\n', '').replace('\n', '').replace(' ', ''))
+    # content = set([word for word in list(wordSeqs) if word not in record[3]])
+    retVal.extend([txtid, label, list(wordSeqs)])
     return retVal
-
-
-g_dicts = corpora.Dictionary()
 
 
 def main():
@@ -60,25 +52,44 @@ def main():
     qs = mysqls.executeSql("SELECT * FROM tb_txtcate ORDER BY txtId")
     records = [[str(record[0]), record[2], record[3]] for record in qs[1:]]
     stopWords = getStopWords()
-    for line in records:
-        line[2] = line[2].replace('\r\n', '').replace('\n', '').replace(' ', '')
-        line.append(stopWords)
 
     # 分词处理
-    que = Queue()
-    que.put(g_dicts)
-
-    for line in records:
-        p = multiprocessing.Process(target=doCutWord, args=(que, line))
-        p.start()
-        # print(que.get())
-        p.join()
-        # ds = doCutWord(line)
     pool = Pool(multiprocessing.cpu_count())
-    dataSets = pool.imap(doCutWord, records)
+    dataSets = pool.map(doCutWord, records)
     pool.close()
     pool.join()
     del records
+    del qs
+    del mysqls
+    del pool
+
+    # 去停用词
+    structDataHandler = pts.BaseStructData()
+    fileHandler = fs.FileServer()
+    # 原始文本集
+    rawCorpus = [record[2] for record in dataSets]
+    # 频率信息
+    itermFreqs = structDataHandler.buildWordFrequencyDict(rawCorpus)
+    freqFile = []
+    wordFreq = sorted(itermFreqs.items(), key=lambda twf: twf[1], reverse=True)
+    for w, f in wordFreq:
+        freqFile.append(str(w) + '\t' + str(f) + '\n')
+    # 语料库词典
+    dicts4corpus = structDataHandler.buildGensimDict(rawCorpus)
+    for i in range(len(rawCorpus)):
+        txt = rawCorpus[i]
+        newTxt = []
+        for j in range(len(txt)):
+            word = txt[j]
+            if word not in stopWords:
+                newTxt.append(word)
+        rawCorpus[i] = newTxt
+    # 标准化语料库
+    corpus = structDataHandler.buildGensimCorpus2MM(rawCorpus, dicts4corpus)
+    # 本地存储
+    fileHandler.saveText2UTF8(path="", fileName="", lines=freqFile)
+    fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts4corpus)
+    fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus)
     del stopWords
 
 
