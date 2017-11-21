@@ -149,7 +149,7 @@ class FileServer(object):
             fullName = os.path.join(path, fileName)
             try:
                 # 内容写入
-                with open(fullName, "wb", encoding=self.filecode) as txtw:
+                with open(fullName, "w", encoding=self.filecode) as txtw:
                     # 写入内容校验
                     content = kwargs.get("content", None)
                     lines = kwargs.get("lines", [])
@@ -162,7 +162,8 @@ class FileServer(object):
                         raise ValueError
             except FileNotFoundError:
                 print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
-            except ValueError:
+            except ValueError as ver:
+                print(ver)
                 print("**kwargs参数错误, 需要给定参数content 或者 参数lines")
         return retVal
 
