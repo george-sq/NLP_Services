@@ -155,11 +155,15 @@ class FileServer(object):
                     lines = kwargs.get("lines", [])
                     if content is not None:
                         txtw.write(content)
-                    if len(lines) > 0:
+                    elif len(lines) > 0:
                         txtw.writelines(lines)
                         retVal = True
+                    else:
+                        raise ValueError
             except FileNotFoundError:
                 print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
+            except ValueError:
+                print("**kwargs参数错误, 需要给定参数content 或者 参数lines")
         return retVal
 
     def savePickledObjFile(self, path, fileName, writeContentObj=None):
