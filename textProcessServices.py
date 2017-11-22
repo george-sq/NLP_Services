@@ -10,9 +10,10 @@ import databaseServices as dbs
 import fileServices as fs
 import pretreatmentServices as pts
 import jieba
-from gensim import corpora
 import multiprocessing
 from multiprocessing import Pool
+import numpy as np
+from scipy.sparse.csr import csr_matrix
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
@@ -43,7 +44,7 @@ def doCutWord(record):
     return retVal
 
 
-def main():
+def baseProcess():
     # 初始化Mysql数据库连接
     mysqls = dbs.MysqlServer()
     mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
@@ -58,16 +59,13 @@ def main():
     dataSets = pool.map(doCutWord, records)
     pool.close()
     pool.join()
-    del records
-    del qs
-    del mysqls
-    del pool
 
     # 数据标准化
     structDataHandler = pts.BaseStructData()
     fileHandler = fs.FileServer()
     # 原始文本集
     rawCorpus = [record[2] for record in dataSets]
+    labels = [record[1] for record in dataSets]
     # 频率信息
     itermFreqs = structDataHandler.buildWordFrequencyDict(rawCorpus)
     freqFile = []
@@ -93,7 +91,35 @@ def main():
     fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
     fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts4corpus)
     fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus2MM)
-    del stopWords
+
+    # 统计TFIDF数据
+    statDataHandler = pts.StatisticalData()
+    tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus2MM, corpus=corpus2MM)
+    tfidf4corpus = list(tfidf4corpus)
+    return dicts4corpus, labels, tfidf4corpus
+
+
+def vecs2csrm(vecs):
+    indptr = [0]  # 存放的是行偏移量
+    indices = []  # 存放的是data中元素对应的列编号（列编号可重复）
+    data = []  # 存放的是非0数据元素
+
+    for vec in vecs:  # 遍历数据集
+        for colInd, colData in vec:  # 遍历单个数据集
+            indices.append(colInd)
+            data.append(colData)
+        indptr.append(len(indices))
+
+    retCsrm = csr_matrix((data, indices, indptr), dtype=np.double)
+    retCsrm.sort_indices()
+
+    return retCsrm
+
+
+def main():
+    dicts, labels, tfidfVecs = baseProcess()
+    csrm_tfidf = vecs2csrm(tfidfVecs)
+    pass
 
 
 if __name__ == '__main__':
