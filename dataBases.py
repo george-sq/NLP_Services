@@ -104,4 +104,3 @@ class UseMysql(object):
             # 关闭数据库连接
             con.close()
         return results
-
