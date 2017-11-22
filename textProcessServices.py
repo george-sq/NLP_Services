@@ -10,7 +10,6 @@ import databaseServices as dbs
 import fileServices as fs
 import pretreatmentServices as pts
 import jieba
-from gensim import corpora
 import multiprocessing
 from multiprocessing import Pool
 import logging
