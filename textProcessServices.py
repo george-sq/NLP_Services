@@ -100,9 +100,9 @@ def baseProcess():
 
 
 def vecs2csrm(vecs):
-    indptr = [0]  # 存放的是行偏移量
-    indices = []  # 存放的是data中元素对应的列编号（列编号可重复）
     data = []  # 存放的是非0数据元素
+    indices = []  # 存放的是data中元素对应行的列编号（列编号可重复）
+    indptr = [0]  # 存放的是行偏移量
 
     for vec in vecs:  # 遍历数据集
         for colInd, colData in vec:  # 遍历单个数据集
@@ -119,7 +119,6 @@ def vecs2csrm(vecs):
 def main():
     dicts, labels, tfidfVecs = baseProcess()
     csrm_tfidf = vecs2csrm(tfidfVecs)
-    pass
 
 
 if __name__ == '__main__':
