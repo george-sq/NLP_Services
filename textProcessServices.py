@@ -10,6 +10,7 @@ import databaseServices as dbs
 import fileServices as fs
 import pretreatmentServices as pts
 import jieba
+import random
 import multiprocessing
 from multiprocessing import Pool
 import numpy as np
@@ -96,10 +97,16 @@ def baseProcess():
     statDataHandler = pts.StatisticalData()
     tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus2MM, corpus=corpus2MM)
     tfidf4corpus = list(tfidf4corpus)
+
     return dicts4corpus, labels, tfidf4corpus
 
 
-def vecs2csrm(vecs):
+def vecs2csrm(vecs, columns=None):
+    """
+        :param vecs: 需要转换的向量空间[[iterm,],]
+        :param columns: 列的维度
+        :return: csr_matrix
+    """
     data = []  # 存放的是非0数据元素
     indices = []  # 存放的是data中元素对应行的列编号（列编号可重复）
     indptr = [0]  # 存放的是行偏移量
@@ -110,15 +117,67 @@ def vecs2csrm(vecs):
             data.append(colData)
         indptr.append(len(indices))
 
-    retCsrm = csr_matrix((data, indices, indptr), dtype=np.double)
+    if columns is not None:
+        retCsrm = csr_matrix((data, indices, indptr), shape=(len(indptr) - 1, columns), dtype=np.double)
+    else:
+        retCsrm = csr_matrix((data, indices, indptr), dtype=np.double)
+
     retCsrm.sort_indices()
 
     return retCsrm
 
 
+def splitDataSet(labels, vectorSpace):
+    """
+        :param labels:
+        :param vectorSpace:
+        :return:
+    """
+    # 划分训练集和测试集
+    trainSet = []
+    testSet = []
+    labelsA = []  # 非电信诈骗类型的索引集合
+    labelsB = []  # 电信诈骗类型的索引集合
+    for i in range(len(labels)):
+        if "电信诈骗" != labels[i]:
+            labelsA.append(i)
+        else:
+            labelsB.append(i)
+    trainSet.extend(random.sample(labelsA, int(len(labelsA) * 0.9)))
+    trainSet.extend(random.sample(labelsB, int(len(labelsB) * 0.9)))
+    testSet.extend([index for index in labelsA if index not in trainSet])
+    testSet.extend([index for index in labelsB if index not in trainSet])
+
+    trainLabel = [labels[index] for index in trainSet]
+    testLabel = [labels[index] for index in testSet]
+    trainSet = [vectorSpace[index] for index in trainSet]
+    testSet = [vectorSpace[index] for index in testSet]
+
+    return [trainLabel, testLabel], [trainSet, testSet]
+
+
 def main():
+    # 预处理
     dicts, labels, tfidfVecs = baseProcess()
+    cols = len(dicts)
+    # 标准化（数字化）
     csrm_tfidf = vecs2csrm(tfidfVecs)
+    print("labels.len :", len(labels))
+    print("dicts.len :", len(dicts))
+    print("csrm_tfidf.shape :", csrm_tfidf.shape)
+
+    # 数据集划分 trainSet(90%) testSet(10%)
+    subLabels, subDataSets = splitDataSet(labels, tfidfVecs)
+    trainLabels = subLabels[0]
+    testLabels = subLabels[1]
+
+    trainVecs = vecs2csrm(subDataSets[0], cols)
+    print("trainVecs.shape :", trainVecs.shape)
+    testVecs = vecs2csrm(subDataSets[1], cols)
+    print("testVecs.shape :", testVecs.shape)
+
+    # 模型构建
+    pass
 
 
 if __name__ == '__main__':
