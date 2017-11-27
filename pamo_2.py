@@ -27,8 +27,6 @@ import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-import getData as gd
-
 
 def timeCost(func):
     def cost(*args, **kwargs):

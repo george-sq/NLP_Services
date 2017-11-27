@@ -129,7 +129,7 @@ def vecs2csrm(vecs, columns=None):
 
 def splitDataSet(labels, vectorSpace):
     """
-        :param labels:
+        :param labels: [label,]
         :param vectorSpace:
         :return:
     """
@@ -141,15 +141,17 @@ def splitDataSet(labels, vectorSpace):
     for i in range(len(labels)):
         if "电信诈骗" != labels[i]:
             labelsA.append(i)
+            labels[i] = "非电诈相关"
         else:
             labelsB.append(i)
+            labels[i] = "电诈相关"
     trainSet.extend(random.sample(labelsA, int(len(labelsA) * 0.9)))
     trainSet.extend(random.sample(labelsB, int(len(labelsB) * 0.9)))
     testSet.extend([index for index in labelsA if index not in trainSet])
     testSet.extend([index for index in labelsB if index not in trainSet])
 
     trainLabel = [labels[index] for index in trainSet]
-    testLabel = [labels[index] for index in testSet]
+    testLabel = [(index, labels[index]) for index in testSet]
     trainSet = [vectorSpace[index] for index in trainSet]
     testSet = [vectorSpace[index] for index in testSet]
 
@@ -159,22 +161,13 @@ def splitDataSet(labels, vectorSpace):
 def main():
     # 预处理
     dicts, labels, tfidfVecs = baseProcess()
-    cols = len(dicts)
+    # cols = len(dicts)
+
     # 标准化（数字化）
     csrm_tfidf = vecs2csrm(tfidfVecs)
     print("labels.len :", len(labels))
     print("dicts.len :", len(dicts))
     print("csrm_tfidf.shape :", csrm_tfidf.shape)
-
-    # 数据集划分 trainSet(90%) testSet(10%)
-    subLabels, subDataSets = splitDataSet(labels, tfidfVecs)
-    trainLabels = subLabels[0]
-    testLabels = subLabels[1]
-
-    trainVecs = vecs2csrm(subDataSets[0], cols)
-    print("trainVecs.shape :", trainVecs.shape)
-    testVecs = vecs2csrm(subDataSets[1], cols)
-    print("testVecs.shape :", testVecs.shape)
 
     # 模型构建
     pass
