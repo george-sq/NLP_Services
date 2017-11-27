@@ -12,6 +12,21 @@ from multiprocessing import *
 import online_pmnlp
 
 
+def usage():
+    """
+        The output  configuration file contents.
+
+        Usage: xxx.py -c|--content arg0 -s|--stpwd arg1 -m|--model arg2
+
+        Description
+                    -c,--content  Configure Text content information.
+                    -s,--stpwd    Configure StopWords Path information.
+                    -m,--model    Configure NLP_Model Path information.
+        For Example:
+            python xxx.py -c|--content textContent -s|--stpwd stpwd_path -m|--model model_path
+    """
+
+
 # 处理客户端的请求并为其服务
 def dealClient(newSocket, destAddr):
     print('>> %s 服务子进程: 客户端%s服务子进程开启!!!' % (datetime.datetime.now(), str(destAddr)))
