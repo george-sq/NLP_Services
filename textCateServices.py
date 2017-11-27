@@ -37,34 +37,24 @@ def main():
 
     # 模型评估
     cateResult = bayesTool.modelPredict(tdm=testVecs)
-    likelihoods = cateResult[1]
-    results = cateResult[2]
-    # retDatas = dataConvertor(testVecs)
     # 性能计算
-    total = len(results)
+    total = len(cateResult)
     rate = 0
-    # resultFile = './Out/cateResult.txt'
-    lines = ['文本ID\t\t实际类别\t\t预测类别\t\t预处理后的文本内容(文本词序列)\n']
-    errLines = ['文本ID\t\t实际类别\t\t预测类别\t\t预处理后的文本内容(文本词序列)\n']
-    # for label, expct_cate, lls, idAddTxt in zip(testVecs.labels, results, likelihoods, retDatas):
-    for label, expct_cate, lls in zip(testLabels, results, likelihoods):
-        fz = max(lls)
-        fm = lls[0] + lls[1]
-        llss = 1 - (fz / fm)
-        # txtId = idAddTxt[0]
-        # txt = idAddTxt[1]
-        if label != expct_cate:
+    resultFile = './Out/cateResult1.txt'
+    lines = ['文本ID\t\t实际类别\t\t预测类别\n']
+    errLines = ['文本ID\t\t实际类别\t\t预测类别\n']
+    for labelTuple, cateTuple in zip(testLabels, cateResult):
+        txtId = labelTuple[0]
+        label = labelTuple[1]
+        cate = cateTuple[0]
+        llh = cateTuple[1]
+        if label != cate:
             rate += 1
-            # print("文本ID: %s \t\t实际类别: %s --> 错误预测分类:%s \n文本词序列: %s" % (txtId, label, expct_cate, txt))
-            print("实际类别: %s --> 错误预测分类:%s" % (label, expct_cate))
-            # for index, word, freq in txt:
-            # for index, word, freq in txt:
-            #     print('\t\t', index, word, freq)
-            errLine = '%s\t\t%s(%s)\n' % (label, expct_cate, str(round(llss, 3)))
+            print("文本编号: %s 实际类别: %s --> 错误预测分类:%s" % (txtId, label, cate))
+            errLine = '%s\t\t%s\t\t%s(%s)\n' % (txtId, label, cate, str(round(llh, 3)))
             errLines.append(errLine)
         else:
-            # line = '%s\t\t%s\t\t%s(%s)\t\t%s\n' % (txtId, label, expct_cate, str(round(llss, 3)), txt)
-            line = '%s\t\t%s(%s)\n' % (label, expct_cate, str(round(llss, 3)))
+            line = '%s\t\t%s\t\t%s(%s)\n' % (txtId, label, cate, str(round(llh, 3)))
             lines.append(line)
     # 模型精度
     lines.append('\n' + '>>>>>>>>>>' * 5)
@@ -72,10 +62,9 @@ def main():
     lines.append('error_rate : %s \n' % str(float(rate * 100 / float(total))))
     lines.append('accuracy_rate : %s \n' % str(float(100 - (rate * 100 / float(total)))))
     lines.append('>>>>>>>>>>' * 5 + '\n\n')
-    # with open(resultFile, 'w', encoding='utf-8') as fw:
-    #     fw.writelines(lines)
-    #     fw.writelines(errLines)
-    pass
+    with open(resultFile, 'w', encoding='utf-8') as fw:
+        fw.writelines(lines)
+        fw.writelines(errLines)
 
 
 if __name__ == '__main__':

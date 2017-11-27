@@ -151,7 +151,7 @@ def splitDataSet(labels, vectorSpace):
     testSet.extend([index for index in labelsB if index not in trainSet])
 
     trainLabel = [labels[index] for index in trainSet]
-    testLabel = [labels[index] for index in testSet]
+    testLabel = [(index, labels[index]) for index in testSet]
     trainSet = [vectorSpace[index] for index in trainSet]
     testSet = [vectorSpace[index] for index in testSet]
 

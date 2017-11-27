@@ -88,16 +88,17 @@ class MultinomialNB2TextCates(object):
             :param tdm:
             :return: Tuple => (预测类型:str, 预测类型的概率)
         """
-        result = None
+        result = False
         if self.clf is not None:
             if tdm is not None:
                 # return classes_ = ['涉嫌电诈' '非电诈相关'], jll = [M x N], predictLabels = []
                 clas, likelihoods, resLabel = self.clf.predict(tdm)
-                likelihoods = likelihoods[0]
-                fz = max(likelihoods)
-                fm = likelihoods[0] + likelihoods[1]
-                llh = 1 - (fz / fm)
-                result = list(resLabel)[0] + "(" + str(round(llh * 100, 3)) + ")"
+                result = []
+                for llh, label in zip(likelihoods, resLabel):
+                    fz = max(llh)
+                    fm = llh[0] + llh[1]
+                    llh = 1 - (fz / fm)
+                    result.append((label, llh))
             else:
                 print("tdm = None , 参数错误。")
         else:
