@@ -271,6 +271,8 @@ class FileServer(object):
                 print("存在文件路径 (%s)" % path)
             elif "MK" == roc:
                 print("新建文件路径 (%s)" % path)
+            else:
+                pass
             fullName = os.path.join(path, fileName)
             try:
                 # 写入内容参数校验
