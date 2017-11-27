@@ -12,6 +12,7 @@ import warnings
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 
 import pickle
+from wordcloud import WordCloud
 from gensim import corpora
 
 
@@ -248,6 +249,38 @@ class FileServer(object):
                         retVal = True
                     else:
                         raise TypeError
+            except FileNotFoundError:
+                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+            except TypeError:
+                print('TypeError: 错误的字典类型 (%s)！！！' % dicts)
+        return retVal
+
+    def buildWordCloudWithFreq(self, path, fileName, dicts=None):
+        """
+            :param path: (str)文件所在的目录路径
+            :param fileName: 文件名
+            :param dicts: {'word':freq,}
+            :return: boolean
+        """
+        retVal = False
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            # 文件目录路径校验
+            roc = self.__checkPath(path)
+            if roc:
+                print("存在文件路径 (%s)" % path)
+            elif "MK" == roc:
+                print("新建文件路径 (%s)" % path)
+            fullName = os.path.join(path, fileName)
+            try:
+                # 写入内容参数校验
+                if dicts is not None:
+                    # Generate a word cloud image
+                    wordcloud = WordCloud(max_words=2000, width=1300, height=600, background_color="white",
+                                          font_path='C:/Windows/Fonts/STSONG.TTF').generate_from_frequencies(dicts)
+                    wordcloud.to_file(fullName)
+                else:
+                    raise TypeError
             except FileNotFoundError:
                 print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
             except TypeError:
