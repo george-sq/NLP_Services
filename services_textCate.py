@@ -13,7 +13,7 @@ import services_bayes as bayes
 def calcPerformance(testLabels, cateResult):
     total = len(cateResult)
     rate = 0
-    resultFile = './Out/cateResult1.txt'
+    resultFile = './Out/cateResult.txt'
     lines = ['文本ID\t\t实际类别\t\t预测类别\n']
     errLines = ['文本ID\t\t实际类别\t\t预测类别\n']
     for labelTuple, cateTuple in zip(testLabels, cateResult):
@@ -45,17 +45,12 @@ def main():
     dicts, labels, tfidfVecs = tps.baseProcess()
     cols = len(dicts)
 
-    # 标准化（数字化）
-    csrm_tfidf = tps.vecs2csrm(tfidfVecs)
-    print("labels.len :", len(labels))
-    print("dicts.len :", len(dicts))
-    print("csrm_tfidf.shape :", csrm_tfidf.shape)
-
     # 数据集划分 trainSet(90%) testSet(10%)
     subLabels, subDataSets = tps.splitDataSet(labels, tfidfVecs)
     trainLabels = subLabels[0]
     testLabels = subLabels[1]
 
+    # 标准化（数字化）
     trainVecs = tps.vecs2csrm(subDataSets[0], cols)
     testVecs = tps.vecs2csrm(subDataSets[1], cols)
     print("trainVecs.shape :", trainVecs.shape)
