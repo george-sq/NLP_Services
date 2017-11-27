@@ -68,13 +68,14 @@ class MultinomialNB2TextCates(object):
         self.clf = None
 
     # 模型构建
-    def buildModel(self, modelVecs=None):
+    def buildModel(self, labels=None, tdm=None):
         """
-            :param modelVecs: Bunch(txtIds=[], classNames=[], labels=[], tdm=[], vocabulary=[])
+            :param labels: [label,]
+            :param tdm: csr_matrix
             :return:
         """
-        tdm = modelVecs.tdm
-        labels = modelVecs.labels
+        # tdm = modelVecs.tdm
+        # labels = modelVecs.labels
         if tdm is not None and labels is not None:
             self.clf = LocalMultinomialNB(alpha=0.001).fit(tdm, labels)
             return self
@@ -82,18 +83,26 @@ class MultinomialNB2TextCates(object):
             print('样本的向量空间（tdm） 和 样本的类型集合（labels） 不能为None 。')
 
     # 类型预测
-    def modelPredict(self, tdm):
+    def modelPredict(self, tdm=None):
         """
             :param tdm:
             :return: Tuple => (预测类型:str, 预测类型的概率)
         """
-        # return classes_ = ['涉嫌电诈' '非电诈相关'], jll = [M x N], predictLabels = []
-        clas, likelihoods, resLabel = self.clf.predict(tdm)
-        likelihoods = likelihoods[0]
-        fz = max(likelihoods)
-        fm = likelihoods[0] + likelihoods[1]
-        llh = 1 - (fz / fm)
-        return list(resLabel)[0] + "(" + str(round(llh * 100, 3)) + ")"
+        result = None
+        if self.clf is not None:
+            if tdm is not None:
+                # return classes_ = ['涉嫌电诈' '非电诈相关'], jll = [M x N], predictLabels = []
+                clas, likelihoods, resLabel = self.clf.predict(tdm)
+                likelihoods = likelihoods[0]
+                fz = max(likelihoods)
+                fm = likelihoods[0] + likelihoods[1]
+                llh = 1 - (fz / fm)
+                result = list(resLabel)[0] + "(" + str(round(llh * 100, 3)) + ")"
+            else:
+                print("tdm = None , 参数错误。")
+        else:
+            print("Model = None , 请先通过模型训练构建模型")
+        return result
 
 
 def main():
