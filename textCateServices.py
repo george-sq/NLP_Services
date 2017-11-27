@@ -10,34 +10,7 @@ import textProcessServices as tps
 import bayesServices as bayes
 
 
-def main():
-    # 预处理
-    dicts, labels, tfidfVecs = tps.baseProcess()
-    cols = len(dicts)
-
-    # 标准化（数字化）
-    csrm_tfidf = tps.vecs2csrm(tfidfVecs)
-    print("labels.len :", len(labels))
-    print("dicts.len :", len(dicts))
-    print("csrm_tfidf.shape :", csrm_tfidf.shape)
-
-    # 数据集划分 trainSet(90%) testSet(10%)
-    subLabels, subDataSets = tps.splitDataSet(labels, tfidfVecs)
-    trainLabels = subLabels[0]
-    testLabels = subLabels[1]
-
-    trainVecs = tps.vecs2csrm(subDataSets[0], cols)
-    testVecs = tps.vecs2csrm(subDataSets[1], cols)
-    print("trainVecs.shape :", trainVecs.shape)
-    print("testVecs.shape :", testVecs.shape)
-
-    # 模型构建
-    bayesTool = bayes.MultinomialNB2TextCates()
-    bayesTool.buildModel(labels=trainLabels, tdm=trainVecs)
-
-    # 模型评估
-    cateResult = bayesTool.modelPredict(tdm=testVecs)
-    # 性能计算
+def calcPerformance(testLabels, cateResult):
     total = len(cateResult)
     rate = 0
     resultFile = './Out/cateResult1.txt'
@@ -65,6 +38,36 @@ def main():
     with open(resultFile, 'w', encoding='utf-8') as fw:
         fw.writelines(lines)
         fw.writelines(errLines)
+
+
+def main():
+    # 预处理
+    dicts, labels, tfidfVecs = tps.baseProcess()
+    cols = len(dicts)
+
+    # 标准化（数字化）
+    csrm_tfidf = tps.vecs2csrm(tfidfVecs)
+    print("labels.len :", len(labels))
+    print("dicts.len :", len(dicts))
+    print("csrm_tfidf.shape :", csrm_tfidf.shape)
+
+    # 数据集划分 trainSet(90%) testSet(10%)
+    subLabels, subDataSets = tps.splitDataSet(labels, tfidfVecs)
+    trainLabels = subLabels[0]
+    testLabels = subLabels[1]
+
+    trainVecs = tps.vecs2csrm(subDataSets[0], cols)
+    testVecs = tps.vecs2csrm(subDataSets[1], cols)
+    print("trainVecs.shape :", trainVecs.shape)
+    print("testVecs.shape :", testVecs.shape)
+
+    # 模型构建
+    bayesTool = bayes.MultinomialNB2TextCates()
+    bayesTool.buildModel(labels=trainLabels, tdm=trainVecs)
+
+    # 模型评估
+    cateResult = bayesTool.modelPredict(tdm=testVecs)
+    calcPerformance(testLabels, cateResult)  # 性能计算
 
 
 if __name__ == '__main__':
