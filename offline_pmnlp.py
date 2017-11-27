@@ -326,9 +326,9 @@ class TxtInfos(object):
             strKwseqs = '\t'.join(['|'.join(kw) for kw in kwseqs])
             imgPath = self.buildWordCloudWithFreq(dict(kwseqs), str(tid))
 
-            result = self.dbs.executeSql(
-                "INSERT INTO tb_structinfo(pos, kwseqs, tid, imgpath, modtime) VALUES ('%s', '%s', '%s', '%s', '%s')" % (
-                    strWps, strKwseqs, tid, imgPath, datetime.datetime.now()))
+            result = self.dbs.executeSql("INSERT INTO tb_structinfo(pos, kwseqs, tid, imgpath, modtime) "
+                                         "VALUES ('%s', '%s', '%s', '%s', '%s')" %
+                                         (strWps, strKwseqs, tid, imgPath, datetime.datetime.now()))
             if len(result) > 0 and 0 < result[0]:
                 # 更新tb_tinfo表中tid对应记录的status字段为1
                 result = self.dbs.executeSql("UPDATE tb_tinfo SET tstatus=1 WHERE tid=%s" % tid)

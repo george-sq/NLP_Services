@@ -23,7 +23,7 @@ def calcPerformance(testLabels, cateResult):
         llh = cateTuple[1]
         if label != cate:
             rate += 1
-            print("文本编号: %s 实际类别: %s --> 错误预测分类:%s" % (txtId, label, cate))
+            print("文本编号: %s >>> 实际类别: %s >>> 错误预测分类:%s" % (txtId, label, cate))
             errLine = '%s\t\t%s\t\t%s(%s)\n' % (txtId, label, cate, str(round(llh, 3)))
             errLines.append(errLine)
         else:

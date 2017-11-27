@@ -38,10 +38,11 @@ def dealClient(newSocket, destAddr):
             recvContent += recvData.decode("utf-8")
         else:
             print('>> %s 服务子进程: 客户端%s请求数据接收完成，开始数据处理服务......' % (datetime.datetime.now(), str(destAddr)))
-            print('>> %s 服务子进程: 客户端%s请求数据内容:' % (datetime.datetime.now(), str(destAddr)), recvContent)
+            print('>> %s 服务子进程: 客户端%s请求数据内容:\n\t' % (datetime.datetime.now(), str(destAddr)), recvContent)
             responseMsg = ""
             if len(recvContent) > 0:
                 responseMsg = online_pmnlp.main(recvContent)
+            print('>> %s 服务子进程: 服务端响应数据:%s\n\t' % (datetime.datetime.now(), responseMsg))
             newSocket.send(responseMsg.encode("utf-8"))
             print('>> %s 服务子进程: 客户端%s请求数据处理完成!!!' % (datetime.datetime.now(), str(destAddr)))
             break
