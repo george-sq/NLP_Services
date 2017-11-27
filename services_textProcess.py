@@ -161,7 +161,6 @@ def splitDataSet(labels, vectorSpace):
 def main():
     # 预处理
     dicts, labels, tfidfVecs = baseProcess()
-    # cols = len(dicts)
 
     # 标准化（数字化）
     csrm_tfidf = vecs2csrm(tfidfVecs)
