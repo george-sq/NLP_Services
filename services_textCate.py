@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-    @File   : textCateServices.py
+    @File   : services_textCate.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/11/27 9:51
     @Todo   : 
 """
 
-import textProcessServices as tps
-import bayesServices as bayes
+import services_textProcess as tps
+import services_bayes as bayes
 
 
 def calcPerformance(testLabels, cateResult):

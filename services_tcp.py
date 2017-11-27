@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    @File   : tcpServices.py
+    @File   : services_tcp.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/11/8 9:52
     @Todo   : 
@@ -9,7 +9,7 @@
 import datetime
 from socket import *
 from multiprocessing import *
-import onlineServices
+import services_online
 
 
 def usage():
@@ -41,7 +41,7 @@ def dealClient(newSocket, destAddr):
             print('>> %s 服务子进程: 客户端%s请求数据内容:\n\t' % (datetime.datetime.now(), str(destAddr)), recvContent)
             responseMsg = ""
             if len(recvContent) > 0:
-                responseMsg = onlineServices.main(recvContent)
+                responseMsg = services_online.main(recvContent)
             print('>> %s 服务子进程: 服务端响应数据:%s\n\t' % (datetime.datetime.now(), responseMsg))
             newSocket.send(responseMsg.encode("utf-8"))
             print('>> %s 服务子进程: 客户端%s请求数据处理完成!!!' % (datetime.datetime.now(), str(destAddr)))

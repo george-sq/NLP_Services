@@ -6,9 +6,9 @@
     @Todo   : 提供关于文本处理的服务
 """
 
-import databaseServices as dbs
-import fileServices as fs
-import pretreatmentServices as pts
+import services_database as dbs
+import services_fileIO as fs
+import services_pretreatment as pts
 import jieba
 import random
 import multiprocessing
