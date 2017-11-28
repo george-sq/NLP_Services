@@ -196,7 +196,7 @@ class FileServer(object):
                 print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
         return retVal
 
-    def saveGensimCourpus2MM(self, path, fileName, inCorpus=None):
+    def saveGensimCourpus2MM(self, path, fileName, **kwargs):
         """
             :param path: (str)文件所在的目录路径
             :param fileName: 文件名
@@ -215,10 +215,13 @@ class FileServer(object):
             fullName = os.path.join(path, fileName)
             try:
                 # 写入内容参数校验
+                inCorpus = kwargs.get("inCorpus", None)
                 if inCorpus is not None:
                     # 内容写入
                     corpora.MmCorpus.serialize(fullName, corpus=inCorpus)
                     retVal = True
+                else:
+                    print("缺少写入内容, inCorpus = None")
             except FileNotFoundError:
                 print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
         return retVal

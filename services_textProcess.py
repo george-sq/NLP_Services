@@ -63,19 +63,20 @@ def baseProcess():
 
     # 数据标准化
     structDataHandler = pts.BaseStructData()
-    fileHandler = fs.FileServer()
     # 原始文本集
     rawCorpus = [record[2] for record in dataSets]
     labels = [record[1] for record in dataSets]
     # 频率信息
     itermFreqs = structDataHandler.buildWordFrequencyDict(rawCorpus)
-    freqFile = []
+    freqData = []
     wordFreq = sorted(itermFreqs.items(), key=lambda twf: twf[1], reverse=True)
     for w, f in wordFreq:
-        freqFile.append(str(w) + '\t' + str(f) + '\n')
+        freqData.append(str(w) + '\t' + str(f) + '\n')
     # 语料库词典
     dicts4corpus = structDataHandler.buildGensimDict(rawCorpus)
-    dicts4stopWords = structDataHandler.buildGensimDict([list(stopWords)])
+    # fileHandler = fs.FileServer()
+    # dicts4stopWords = structDataHandler.buildGensimDict([list(stopWords)])
+    # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
     # 去停用词
     for i in range(len(rawCorpus)):
         txt = rawCorpus[i]
@@ -87,18 +88,37 @@ def baseProcess():
         rawCorpus[i] = newTxt
     # 标准化语料库
     corpus2MM = structDataHandler.buildGensimCorpus2MM(rawCorpus, dicts4corpus)
-    # 本地存储
-    fileHandler.saveText2UTF8(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqFile)
-    fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
-    fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts4corpus)
-    fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus2MM)
+    # # 本地存储
+    # fileHandler.saveText2UTF8(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqData)
+    # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
+    # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts4corpus)
+    # fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus2MM)
 
     # 统计TFIDF数据
     statDataHandler = pts.StatisticalData()
     tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus2MM, corpus=corpus2MM)
     tfidf4corpus = list(tfidf4corpus)
 
-    return dicts4corpus, labels, tfidf4corpus
+    return labels, corpus2MM, dicts4corpus, tfidf4corpus, freqData
+
+
+def storeData(path, fileName, **kwargs):
+    fileHandler = fs.FileServer()
+    lines = kwargs.get("lines", None)
+    content = kwargs.get("content", None)
+    dicts = kwargs.get("dicts", None)
+    inCorpus = kwargs.get("inCorpus", None)
+    # 本地存储
+    if lines is not None:
+        fileHandler.saveText2UTF8(path=path, fileName=fileName, lines=lines)
+    elif content is not None:
+        fileHandler.saveText2UTF8(path=path, fileName=fileName, content=content)
+    elif dicts is not None:
+        fileHandler.saveGensimDict(path=path, fileName=fileName, dicts=dicts)
+    elif inCorpus is not None:
+        fileHandler.saveGensimCourpus2MM(path=path, fileName=fileName, inCorpus=inCorpus)
+    else:
+        print("缺少本地写入内容。")
 
 
 def vecs2csrm(vecs, columns=None):
@@ -160,7 +180,10 @@ def splitDataSet(labels, vectorSpace):
 
 def main():
     # 预处理
-    dicts, labels, tfidfVecs = baseProcess()
+    labels, corpus, dicts, tfidfVecs, freqFile = baseProcess()
+    storeData(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqFile)
+    storeData(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts)
+    storeData(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus)
 
     # 标准化（数字化）
     csrm_tfidf = vecs2csrm(tfidfVecs)

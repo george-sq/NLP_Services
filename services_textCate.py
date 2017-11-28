@@ -42,8 +42,9 @@ def calcPerformance(testLabels, cateResult):
 
 def main():
     # 预处理
-    dicts, labels, tfidfVecs = tps.baseProcess()
+    labels, corpus, dicts, tfidfVecs, freqFile = tps.baseProcess()
     cols = len(dicts)
+    del freqFile
 
     # 数据集划分 trainSet(90%) testSet(10%)
     subLabels, subDataSets = tps.splitDataSet(labels, tfidfVecs)
