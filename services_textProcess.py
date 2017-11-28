@@ -63,20 +63,24 @@ def baseProcess():
 
     # 数据标准化
     structDataHandler = pts.BaseStructData()
+
     # 原始文本集
     rawCorpus = [record[2] for record in dataSets]
     labels = [record[1] for record in dataSets]
+
     # 频率信息
     itermFreqs = structDataHandler.buildWordFrequencyDict(rawCorpus)
     freqData = []
     wordFreq = sorted(itermFreqs.items(), key=lambda twf: twf[1], reverse=True)
     for w, f in wordFreq:
         freqData.append(str(w) + '\t' + str(f) + '\n')
+
     # 语料库词典
     dicts4corpus = structDataHandler.buildGensimDict(rawCorpus)
     # fileHandler = fs.FileServer()
     # dicts4stopWords = structDataHandler.buildGensimDict([list(stopWords)])
     # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
+
     # 去停用词
     for i in range(len(rawCorpus)):
         txt = rawCorpus[i]
@@ -86,13 +90,9 @@ def baseProcess():
             if word not in stopWords:
                 newTxt.append(word)
         rawCorpus[i] = newTxt
+
     # 标准化语料库
     corpus2MM = structDataHandler.buildGensimCorpus2MM(rawCorpus, dicts4corpus)
-    # # 本地存储
-    # fileHandler.saveText2UTF8(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqData)
-    # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
-    # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts4corpus)
-    # fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus2MM)
 
     # 统计TFIDF数据
     statDataHandler = pts.StatisticalData()
