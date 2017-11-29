@@ -9,8 +9,10 @@
 import services_database as dbs
 import services_fileIO as fs
 import services_pretreatment as pts
+import services_bayes as bayes
 import jieba
 import random
+import pickle
 import multiprocessing
 from multiprocessing import Pool
 import numpy as np
@@ -192,7 +194,15 @@ def main():
     print("csrm_tfidf.shape :", csrm_tfidf.shape)
 
     # 模型构建
-    pass
+    bayesTool = bayes.MultinomialNB2TextCates()
+    bayesTool.dicts = dicts
+    bayesTool.tfidfVecs = tfidfVecs
+    bayesTool.buildModel(labels=labels, tdm=csrm_tfidf)
+    try:
+        with open("./Out/bayesModel.pickle", "wb") as fw:
+            pickle.dump(bayesTool, fw, protocol=-1)
+    except FileNotFoundError as fne:
+        print(fne)
 
 
 if __name__ == '__main__':

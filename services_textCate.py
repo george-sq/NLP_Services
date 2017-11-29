@@ -54,8 +54,10 @@ def main():
     # 标准化（数字化）
     trainVecs = tps.vecs2csrm(subDataSets[0], cols)
     testVecs = tps.vecs2csrm(subDataSets[1], cols)
+    corpusVecs = tps.vecs2csrm(tfidfVecs)
     print("trainVecs.shape :", trainVecs.shape)
     print("testVecs.shape :", testVecs.shape)
+    print("corpusVecs.shape :", corpusVecs.shape)
 
     # 模型构建
     bayesTool = bayes.MultinomialNB2TextCates()
