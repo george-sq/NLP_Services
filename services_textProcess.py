@@ -79,9 +79,9 @@ def baseProcess():
 
     # 语料库词典
     dicts4corpus = structDataHandler.buildGensimDict(rawCorpus)
-    # fileHandler = fs.FileServer()
-    # dicts4stopWords = structDataHandler.buildGensimDict([list(stopWords)])
-    # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
+    fileHandler = fs.FileServer()
+    dicts4stopWords = structDataHandler.buildGensimDict([list(stopWords)])
+    fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
 
     # 去停用词
     for i in range(len(rawCorpus)):
@@ -198,10 +198,15 @@ def main():
     bayesTool = bayes.MultinomialNB2TextCates()
     bayesTool.dicts = dicts
     bayesTool.tfidfModel = tfidfModel
+    for i in range(len(labels)):
+        if "电信诈骗" != labels[i]:
+            labels[i] = "非电诈相关"
+        else:
+            labels[i] = "电诈相关"
     bayesTool.buildModel(labels=labels, tdm=csrm_tfidf)
     try:
         with open("./Out/bayesModel.pickle", "wb") as fw:
-            pickle.dump(bayesTool, fw, protocol=-1)
+            pickle.dump(bayesTool, fw, protocol=4)
     except FileNotFoundError as fne:
         print(fne)
 
