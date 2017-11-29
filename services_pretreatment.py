@@ -126,7 +126,7 @@ class StatisticalData(object):
     def buildGensimTFIDF(self, initCorpus=None, **kwargs):
         """ 生成数据集的TFIDF向量空间
             :param initCorpus: 初始化TFIDF向量工具模型的数据 --> [[doc2bow的处理结果(wordIndex,wordFreq),],]
-            :param kwargs: record or corpus
+            :param kwargs: record --> [] or corpus --> [[],]
             :return:
         """
         retVal = None
