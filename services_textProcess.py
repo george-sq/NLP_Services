@@ -100,8 +100,9 @@ def baseProcess():
     statDataHandler = pts.StatisticalData()
     tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus2MM, corpus=corpus2MM)
     tfidf4corpus = list(tfidf4corpus)
+    tfidfModel = statDataHandler.TFIDF_Vecs
 
-    return labels, corpus2MM, dicts4corpus, tfidf4corpus, freqData
+    return labels, corpus2MM, dicts4corpus, tfidfModel, tfidf4corpus, freqData
 
 
 def storeData(path, fileName, **kwargs):
@@ -182,7 +183,7 @@ def splitDataSet(labels, vectorSpace):
 
 def main():
     # 预处理
-    labels, corpus, dicts, tfidfVecs, freqFile = baseProcess()
+    labels, corpus, dicts, tfidfModel, tfidfVecs, freqFile = baseProcess()
     storeData(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqFile)
     storeData(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts)
     storeData(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus)
@@ -196,7 +197,7 @@ def main():
     # 模型构建
     bayesTool = bayes.MultinomialNB2TextCates()
     bayesTool.dicts = dicts
-    bayesTool.tfidfVecs = tfidfVecs
+    bayesTool.tfidfModel = tfidfModel
     bayesTool.buildModel(labels=labels, tdm=csrm_tfidf)
     try:
         with open("./Out/bayesModel.pickle", "wb") as fw:

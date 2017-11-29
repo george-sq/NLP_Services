@@ -64,10 +64,10 @@ class MultinomialNB2TextCates(object):
             文本类型预测
     """
 
-    def __init__(self, dicts=None, tfidfVecs=None):
+    def __init__(self, dicts=None, tfidfModel=None):
         self.clf = None
         self.dicts = dicts
-        self.tfidfVecs = tfidfVecs
+        self.tfidfModel = tfidfModel
 
     # 模型构建
     def buildModel(self, labels=None, tdm=None):
