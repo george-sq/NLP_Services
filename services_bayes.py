@@ -64,8 +64,10 @@ class MultinomialNB2TextCates(object):
             文本类型预测
     """
 
-    def __init__(self):
+    def __init__(self, dicts=None, tfidfVecs=None):
         self.clf = None
+        self.dicts = dicts
+        self.tfidfVecs = tfidfVecs
 
     # 模型构建
     def buildModel(self, labels=None, tdm=None):
@@ -89,7 +91,7 @@ class MultinomialNB2TextCates(object):
             :return: Tuple => (预测类型:str, 预测类型的概率)
         """
         result = False
-        if self.clf is not None:
+        if isinstance(self.clf, LocalMultinomialNB):
             if tdm is not None:
                 # return classes_ = ['涉嫌电诈' '非电诈相关'], jll = [M x N], predictLabels = []
                 clas, likelihoods, resLabel = self.clf.predict(tdm)
