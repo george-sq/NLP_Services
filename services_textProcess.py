@@ -188,6 +188,7 @@ def main():
     storeData(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqFile)
     storeData(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts)
     storeData(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus)
+    del freqFile
 
     # 标准化（数字化）
     csrm_tfidf = vecs2csrm(tfidfVecs)
