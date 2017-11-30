@@ -9,7 +9,7 @@
 import services_database as dbs
 import services_fileIO as fs
 import services_pretreatment as pts
-import services_bayes as bayes
+import services_bayes2cate as bayes
 import jieba
 import random
 import pickle

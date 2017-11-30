@@ -7,7 +7,7 @@
 """
 
 import services_textProcess as tps
-import services_bayes as bayes
+import services_bayes2cate as bayes
 
 
 def calcPerformance(testLabels, cateResult):
