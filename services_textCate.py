@@ -8,6 +8,7 @@
 
 import services_textProcess as tps
 import services_bayes2cate as bayes
+import pickle
 
 
 def calcPerformance(testLabels, cateResult):
@@ -56,11 +57,23 @@ def main():
     trainVecs = tps.vecs2csrm(subDataSets[0], cols)
     testVecs = tps.vecs2csrm(subDataSets[1], cols)
     corpusVecs = tps.vecs2csrm(tfidfVecs)
-    print("trainVecs.shape :", trainVecs.shape)
-    print("testVecs.shape :", testVecs.shape)
-    print("corpusVecs.shape :", corpusVecs.shape)
 
     # 模型构建
+    # 模型构建
+    bayesTool = bayes.MultinomialNB2TextCates()
+    bayesTool.dicts = dicts
+    bayesTool.tfidfModel = tfidfModel
+    for i in range(len(labels)):
+        if "电信诈骗" != labels[i]:
+            labels[i] = "非电诈相关"
+        else:
+            labels[i] = "电诈相关"
+    bayesTool.buildModel(labels=labels, tdm=corpusVecs)
+    try:
+        with open("./Out/bayesModel.pickle", "wb") as fw:
+            pickle.dump(bayesTool, fw, protocol=4)
+    except FileNotFoundError as fne:
+        print(fne)
     bayesTool = bayes.MultinomialNB2TextCates()
     bayesTool.buildModel(labels=trainLabels, tdm=trainVecs)
 
