@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    @File   : services_bayes.py
+    @File   : services_bayes2cate.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/11/20 14:43
     @Todo   : 提供本地的贝叶斯算法服务
