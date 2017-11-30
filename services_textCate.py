@@ -59,7 +59,6 @@ def main():
     corpusVecs = tps.vecs2csrm(tfidfVecs)
 
     # 模型构建
-    # 模型构建
     bayesTool = bayes.MultinomialNB2TextCates()
     bayesTool.dicts = dicts
     bayesTool.tfidfModel = tfidfModel
@@ -74,6 +73,8 @@ def main():
             pickle.dump(bayesTool, fw, protocol=4)
     except FileNotFoundError as fne:
         print(fne)
+
+    # 模型测试
     bayesTool = bayes.MultinomialNB2TextCates()
     bayesTool.buildModel(labels=trainLabels, tdm=trainVecs)
 
