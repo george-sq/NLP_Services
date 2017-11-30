@@ -13,6 +13,7 @@ import services_bayes as bayes
 import jieba
 import random
 import pickle
+from gensim import corpora
 import multiprocessing
 from multiprocessing import Pool
 import numpy as np
@@ -112,13 +113,13 @@ def storeData(path, fileName, **kwargs):
     dicts = kwargs.get("dicts", None)
     inCorpus = kwargs.get("inCorpus", None)
     # 本地存储
-    if lines is not None:
+    if lines is not None and isinstance(lines, list):
         fileHandler.saveText2UTF8(path=path, fileName=fileName, lines=lines)
-    elif content is not None:
+    elif content is not None and isinstance(content, str):
         fileHandler.saveText2UTF8(path=path, fileName=fileName, content=content)
-    elif dicts is not None:
+    elif dicts is not None and isinstance(dicts, corpora.Dictionary):
         fileHandler.saveGensimDict(path=path, fileName=fileName, dicts=dicts)
-    elif inCorpus is not None:
+    elif inCorpus is not None and isinstance(inCorpus, list):
         fileHandler.saveGensimCourpus2MM(path=path, fileName=fileName, inCorpus=inCorpus)
     else:
         print("缺少本地写入内容。")
