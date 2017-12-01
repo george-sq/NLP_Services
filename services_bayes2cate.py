@@ -21,14 +21,6 @@ class LocalMultinomialNB(MultinomialNB):
     def __init__(self, alpha=1.0, fit_prior=True, class_prior=None):
         super(LocalMultinomialNB, self).__init__(alpha, fit_prior, class_prior)
 
-    def _update_feature_log_prob(self, alpha):
-        """Apply smoothing to raw counts and recompute log probabilities"""
-        smoothed_fc = self.feature_count_ + alpha
-        smoothed_cc = smoothed_fc.sum(axis=1)
-
-        self.feature_log_prob_ = (np.log(smoothed_fc) -
-                                  np.log(smoothed_cc.reshape(-1, 1)))
-
     def _joint_log_likelihood(self, X):
         """Calculate the posterior log probability of the samples X"""
         check_is_fitted(self, "classes_")
@@ -76,8 +68,6 @@ class MultinomialNB2TextCates(object):
             :param tdm: csr_matrix
             :return:
         """
-        # tdm = modelVecs.tdm
-        # labels = modelVecs.labels
         if tdm is not None and labels is not None:
             self.clf = LocalMultinomialNB(alpha=0.001).fit(tdm, labels)
             return self
