@@ -165,10 +165,8 @@ def splitDataSet(labels, vectorSpace):
     for i in range(len(labels)):
         if "电信诈骗" != labels[i]:
             labelsA.append(i)
-            labels[i] = "非电诈相关"
         else:
             labelsB.append(i)
-            labels[i] = "电诈相关"
     trainSet.extend(random.sample(labelsA, int(len(labelsA) * 0.9)))
     trainSet.extend(random.sample(labelsB, int(len(labelsB) * 0.9)))
     testSet.extend([index for index in labelsA if index not in trainSet])

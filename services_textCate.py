@@ -12,6 +12,11 @@ import pickle
 
 
 def calcPerformance(testLabels, cateResult):
+    """
+        :param testLabels: []
+        :param cateResult:
+        :return:
+    """
     total = len(cateResult)
     rate = 0
     resultFile = './Out/cateResult.txt'
@@ -41,46 +46,106 @@ def calcPerformance(testLabels, cateResult):
         fw.writelines(errLines)
 
 
+def buildLocalModel(**kwargs):
+    """ 构建本地数据模型
+        :param kwargs: labels=, vecsSet=, dicts=, tfidfModel=
+        :return:
+    """
+    retVal = False
+    # 参数解析
+    labels = kwargs.get("labels", None)
+    tfidfVecs = kwargs.get("vecsSet", None)
+    dicts = kwargs.get("dicts", None)
+    tfidfModel = kwargs.get("tfidfModel", None)
+    len_labels = len(labels)
+    len_tfidfVecs = len(tfidfVecs)
+
+    # 标准化（数字化）
+    if tfidfVecs is not None and len_labels == len_tfidfVecs:
+        corpusVecs = tps.vecs2csrm(tfidfVecs)
+
+        # 构建本地模型
+        bayesTool = bayes.MultinomialNB2TextCates()
+
+        bayesTool.buildModel(labels=labels, tdm=corpusVecs)
+
+        if dicts is not None and tfidfModel is not None:
+            bayesTool.dicts = dicts
+            bayesTool.tfidfModel = tfidfModel
+            # 本地存储
+            try:
+                with open("./Out/bayesModel.pickle", "wb") as fw:
+                    pickle.dump(bayesTool, fw, protocol=4)
+            except FileNotFoundError as fne:
+                print(fne)
+            retVal = True
+        else:
+            print("ERROR:参数错误 (dicts or tfidfModel) .")
+    else:
+        print("ERROR:参数错误 (tfidfVecs or labels) .")
+
+    return retVal
+
+
+def algorithmTest(labels=None, dataSet=None, cols=0):
+    """ 算法测试
+        :param labels: []
+        :param dataSet: [[],]
+        :param cols: len(dict4corpus)
+        :return:
+    """
+    retVal = False
+    # 数据集划分 trainSet(90%) testSet(10%)
+    if labels is not None and dataSet is not None:
+        subLabels, subDataSets = tps.splitDataSet(labels, dataSet)
+
+        trainLabels = subLabels[0]
+        testLabels = subLabels[1]
+
+        if 0 != cols:
+            trainVecs = tps.vecs2csrm(subDataSets[0], cols)
+            testVecs = tps.vecs2csrm(subDataSets[1], cols)
+            # 模型测试
+            bayesTool = bayes.MultinomialNB2TextCates()
+            bayesTool.buildModel(labels=trainLabels, tdm=trainVecs)
+
+            # 模型评估
+            cateResult = bayesTool.modelPredict(tdm=testVecs)
+            calcPerformance(testLabels, cateResult)  # 性能计算
+            retVal = True
+        else:
+            print("ERROR:参数错误 (cols) .")
+    else:
+        print("ERROR:参数错误 (labels or dataSet) .")
+
+    return retVal
+
+
 def main():
     # 预处理
     labels, corpus, dicts, tfidfModel, tfidfVecs, freqFile = tps.baseProcess()
     cols = len(dicts)
     del freqFile
-    del tfidfModel
-
-    # 数据集划分 trainSet(90%) testSet(10%)
-    subLabels, subDataSets = tps.splitDataSet(labels, tfidfVecs)
-    trainLabels = subLabels[0]
-    testLabels = subLabels[1]
-
-    # 标准化（数字化）
-    trainVecs = tps.vecs2csrm(subDataSets[0], cols)
-    testVecs = tps.vecs2csrm(subDataSets[1], cols)
-    corpusVecs = tps.vecs2csrm(tfidfVecs)
-
-    # 模型构建
-    bayesTool = bayes.MultinomialNB2TextCates()
-    bayesTool.dicts = dicts
-    bayesTool.tfidfModel = tfidfModel
     for i in range(len(labels)):
         if "电信诈骗" != labels[i]:
             labels[i] = "非电诈相关"
         else:
             labels[i] = "电诈相关"
-    bayesTool.buildModel(labels=labels, tdm=corpusVecs)
-    try:
-        with open("./Out/bayesModel.pickle", "wb") as fw:
-            pickle.dump(bayesTool, fw, protocol=4)
-    except FileNotFoundError as fne:
-        print(fne)
 
-    # 模型测试
-    bayesTool = bayes.MultinomialNB2TextCates()
-    bayesTool.buildModel(labels=trainLabels, tdm=trainVecs)
+    # 构建本地模型
+    process_1 = buildLocalModel(labels=labels, dicts=dicts, tfidfModel=tfidfModel, vecsSet=tfidfVecs)
 
-    # 模型评估
-    cateResult = bayesTool.modelPredict(tdm=testVecs)
-    calcPerformance(testLabels, cateResult)  # 性能计算
+    # 算法测试
+    process_2 = algorithmTest(labels=labels, dataSet=tfidfVecs, cols=cols)
+
+    if process_1:
+        print("构建本地模型成功！！！")
+    else:
+        print("构建本地模型失败。。。")
+    if process_2:
+        print("算法测试成功！！！")
+    else:
+        print("算法测试失败。。。")
 
 
 if __name__ == '__main__':
