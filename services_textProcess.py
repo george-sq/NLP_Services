@@ -187,29 +187,6 @@ def main():
     storeData(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts)
     storeData(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus)
     del freqFile
-    print("labels type :", type(labels))
-    print("labels shape :", len(labels))
-    print("tfidfVecs type :", type(tfidfVecs))
-    print("tfidfVecs shape :", len(tfidfVecs))
-
-    # # 标准化（数字化）
-    csrm_tfidf = vecs2csrm(tfidfVecs)
-
-    # 模型构建
-    bayesTool = bayes.MultinomialNB2TextCates()
-    bayesTool.dicts = dicts
-    bayesTool.tfidfModel = tfidfModel
-    for i in range(len(labels)):
-        if "电信诈骗" != labels[i]:
-            labels[i] = "非电诈相关"
-        else:
-            labels[i] = "电诈相关"
-    bayesTool.buildModel(labels=labels, tdm=csrm_tfidf)
-    try:
-        with open("./Out/bayesModel.pickle", "wb") as fw:
-            pickle.dump(bayesTool, fw, protocol=4)
-    except FileNotFoundError as fne:
-        print(fne)
 
 
 if __name__ == '__main__':
