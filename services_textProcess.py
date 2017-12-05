@@ -93,15 +93,15 @@ def baseProcess():
         rawCorpus[i] = newTxt
 
     # 标准化语料库
-    corpus2MM = structDataHandler.buildGensimCorpus2MM(rawCorpus, dicts4corpus)
+    corpus = structDataHandler.buildGensimCorpusByCorporaDicts(rawCorpus, dicts4corpus)
 
     # 统计TFIDF数据
     statDataHandler = pts.StatisticalData()
-    tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus2MM, corpus=corpus2MM)
-    tfidf4corpus = list(tfidf4corpus)
+    tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus, corpus=corpus)
+    # tfidf4corpus = list(tfidf4corpus)
     tfidfModel = statDataHandler.TFIDF_Vecs
 
-    return labels, corpus2MM, dicts4corpus, tfidfModel, tfidf4corpus, freqData
+    return labels, corpus, dicts4corpus, tfidfModel, tfidf4corpus, freqData
 
 
 def storeData(path, fileName, **kwargs):
