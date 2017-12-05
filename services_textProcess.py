@@ -98,7 +98,6 @@ def baseProcess():
     # 统计TFIDF数据
     statDataHandler = pts.StatisticalData()
     tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus, corpus=corpus)
-    # tfidf4corpus = list(tfidf4corpus)
     tfidfModel = statDataHandler.TFIDF_Vecs
 
     return labels, corpus, dicts4corpus, tfidfModel, tfidf4corpus, freqData
