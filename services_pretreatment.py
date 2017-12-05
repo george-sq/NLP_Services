@@ -58,7 +58,7 @@ class BaseStructData(object):
             print("wordSeqs is None！请输入正确的参数 wordSeqs --> [[column,],]")
         return self.bunch4bow
 
-    def buildGensimCorpus2MM(self, dataSets=None, dictObj=None):
+    def buildGensimCorpusByCorporaDicts(self, dataSets=None, dictObj=None):
         """ 生成语料库文件
             :param dataSets: 输入数据集 --> [[column0,column1,],]
             :param dictObj: Gensim字典对象 --> corpora.Dictionary

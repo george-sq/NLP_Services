@@ -124,6 +124,7 @@ def algorithmTest(labels=None, dataSet=None, cols=0):
 def main():
     # 预处理
     labels, corpus, dicts, tfidfModel, tfidfVecs, freqFile = tps.baseProcess()
+    tfidfVecs = list(tfidfVecs)
     cols = len(dicts)
     del freqFile
     for i in range(len(labels)):
