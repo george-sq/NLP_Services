@@ -40,7 +40,6 @@ def doCutWord(record):
     txtid = record[0]
     label = record[1]
     wordSeqs = jieba.cut(record[2].replace('\r\n', '').replace('\n', '').replace(' ', ''))
-    # content = set([word for word in list(wordSeqs) if word not in record[3]])
     retVal.extend([txtid, label, list(wordSeqs)])
     return retVal
 
