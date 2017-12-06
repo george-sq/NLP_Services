@@ -200,7 +200,7 @@ class FileServer(object):
         """
             :param path: (str)文件所在的目录路径
             :param fileName: 文件名
-            :param inCorpus: 写入语料库内容对象 --> [[(,),],]
+            :param kwargs: inCorpus写入语料库内容对象 --> [[(,),],]
             :return: boolean
         """
         retVal = False
