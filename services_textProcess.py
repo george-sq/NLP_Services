@@ -19,6 +19,7 @@ from scipy.sparse.csr import csr_matrix
 import logging
 
 jieba.setLogLevel(log_level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def getStopWords():

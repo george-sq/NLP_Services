@@ -5,7 +5,11 @@
     @Time   : 2017/11/15 11:17
     @Todo   : 提供关于操作数据库的服务
 """
+
+import logging
 import pymysql
+
+logger = logging.getLogger(__name__)
 
 
 class MysqlServer(object):
@@ -65,9 +69,9 @@ class MysqlServer(object):
             con.commit()
         except Exception as e:
             # 输出异常信息
-            print(args[0], "异常信息 : ", e)
-            print(args[0], "异常信息 : ", e)
-            print(args[0], "异常信息 : ", e)
+            logger.error("ERROR(%s):%s" % (e, args[0]))
+            logger.error("ERROR(%s):%s" % (e, args[0]))
+            logger.error("ERROR(%s):%s" % (e, args[0]))
             # 数据库回滚
             con.rollback()
         finally:
