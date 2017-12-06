@@ -283,3 +283,11 @@ class FileServer(object):
             except TypeError:
                 logger.error("TypeError: 错误的字典类型 (dicts = %s)！！！" % dicts)
         return retVal
+
+
+def main():
+    pass
+
+
+if __name__ == '__main__':
+    main()
