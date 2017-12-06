@@ -123,17 +123,19 @@ class StatisticalData(object):
             print("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
         return self.TFIDF_Test_Vecs
 
-    def buildGensimTFIDF(self, initCorpus=None, **kwargs):
+    def buildGensimTFIDF(self, **kwargs):
         """ 生成数据集的TFIDF向量空间
             :param initCorpus: 初始化TFIDF向量工具模型的数据 --> [[doc2bow的处理结果(wordIndex,wordFreq),],]
             :param kwargs: record --> [] or corpus --> [[],]
             :return:
         """
         retVal = None
+        initCorpus = kwargs.get("initCorpus", None)
         record = kwargs.get("record", None)
         corpus = kwargs.get("corpus", None)
         if initCorpus is not None:
             self.TFIDF_Vecs = models.TfidfModel(initCorpus)
+            retVal = self.TFIDF_Vecs
             if isinstance(record, list):
                 retVal = self.TFIDF_Vecs[record]
             elif isinstance(corpus, list):
