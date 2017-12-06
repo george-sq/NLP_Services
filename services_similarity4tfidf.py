@@ -10,7 +10,6 @@ import warnings
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 import logging
-from gensim import models
 from gensim import similarities
 import services_textProcess as tps
 import jieba
