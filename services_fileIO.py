@@ -14,6 +14,9 @@ warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 import pickle
 from wordcloud import WordCloud
 from gensim import corpora
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class FileServer(object):
@@ -33,7 +36,7 @@ class FileServer(object):
             if not isinstance(path, str):
                 raise TypeError
         except TypeError:
-            print('TypeError: 文件路径参数的类型错误 (%s) ！！！' % path)
+            logger.error("TypeError: 文件路径参数的类型错误 (%s) ！！！" % path)
             return False
         else:
             return True
@@ -69,7 +72,7 @@ class FileServer(object):
                 with open(fullName, 'r', encoding=self.filecode) as txtr:
                     return txtr.read()
             except FileNotFoundError:
-                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
                 return None
         else:
             return None
@@ -88,7 +91,7 @@ class FileServer(object):
                 with open(fullName, 'rb') as ldf:
                     return self.pick.load(ldf)
             except FileNotFoundError:
-                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
                 return None
         else:
             return None
@@ -107,7 +110,7 @@ class FileServer(object):
                 # 加载文件
                 return corpora.MmCorpus(fullName)
             else:
-                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
                 return None
         else:
             return None
@@ -126,7 +129,7 @@ class FileServer(object):
                 # 加载文件
                 return corpora.Dictionary.load(fullName)
             else:
-                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
                 return None
         else:
             return None
@@ -143,17 +146,15 @@ class FileServer(object):
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
-            if roc:
-                print("存在文件路径 (%s)" % path)
-            elif "MK" == roc:
-                print("新建文件路径 (%s)" % path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
             fullName = os.path.join(path, fileName)
+            content = kwargs.get("content", None)
+            lines = kwargs.get("lines", [])
             try:
                 # 内容写入
                 with open(fullName, "w", encoding=self.filecode) as txtw:
                     # 写入内容校验
-                    content = kwargs.get("content", None)
-                    lines = kwargs.get("lines", [])
                     if content is not None:
                         txtw.write(content)
                     elif len(lines) > 0:
@@ -162,10 +163,9 @@ class FileServer(object):
                     else:
                         raise ValueError
             except FileNotFoundError:
-                print('FileNotFoundError: 文件目录的路径错误 (%s) ！！！' % path)
-            except ValueError as ver:
-                print(ver)
-                print("**kwargs参数错误, 需要给定参数content 或者 参数lines")
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+            except ValueError:
+                logger.error("**kwargs参数错误(content=%s, lines=%s), 需要给定参数content 或者 参数lines" % (content, lines))
         return retVal
 
     def savePickledObjFile(self, path, fileName, writeContentObj=None):
@@ -180,10 +180,8 @@ class FileServer(object):
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
-            if roc:
-                print("存在文件路径 (%s)" % path)
-            elif "MK" == roc:
-                print("新建文件路径 (%s)" % path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
             fullName = os.path.join(path, fileName)
             try:
                 # 写入内容校验
@@ -193,7 +191,7 @@ class FileServer(object):
                         self.pick.dump(writeContentObj, pobj)
                         retVal = True
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
 
     def saveGensimCourpus2MM(self, path, fileName, **kwargs):
@@ -208,22 +206,22 @@ class FileServer(object):
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
-            if roc:
-                print("存在文件路径 (%s)" % path)
-            elif "MK" == roc:
-                print("新建文件路径 (%s)" % path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
             fullName = os.path.join(path, fileName)
+            inCorpus = kwargs.get("inCorpus", None)
             try:
                 # 写入内容参数校验
-                inCorpus = kwargs.get("inCorpus", None)
                 if inCorpus is not None:
                     # 内容写入
                     corpora.MmCorpus.serialize(fullName, corpus=inCorpus)
                     retVal = True
                 else:
-                    print("缺少写入内容, inCorpus = None")
+                    raise ValueError
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+            except ValueError:
+                logger.error("**kwargs参数错误, 缺少写入内容, inCorpus = %s" % inCorpus)
         return retVal
 
     def saveGensimDict(self, path, fileName, dicts=None):
@@ -238,10 +236,8 @@ class FileServer(object):
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
-            if roc:
-                print("存在文件路径 (%s)" % path)
-            elif "MK" == roc:
-                print("新建文件路径 (%s)" % path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
             fullName = os.path.join(path, fileName)
             try:
                 # 写入内容参数校验
@@ -253,9 +249,9 @@ class FileServer(object):
                     else:
                         raise TypeError
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
             except TypeError:
-                print('TypeError: 错误的字典类型 (%s)！！！' % dicts)
+                logger.error("TypeError: 错误的字典类型 (dicts = %s)！！！" % dicts)
         return retVal
 
     def buildWordCloudWithFreq(self, path, fileName, dicts=None):
@@ -270,12 +266,8 @@ class FileServer(object):
         if self.__checkPathArgType(path):
             # 文件目录路径校验
             roc = self.__checkPath(path)
-            if roc:
-                print("存在文件路径 (%s)" % path)
-            elif "MK" == roc:
-                print("新建文件路径 (%s)" % path)
-            else:
-                pass
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
             fullName = os.path.join(path, fileName)
             try:
                 # 写入内容参数校验
@@ -287,7 +279,7 @@ class FileServer(object):
                 else:
                     raise TypeError
             except FileNotFoundError:
-                print('FileNotFoundError: 错误的文件路径(%s)！！！' % path)
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
             except TypeError:
-                print('TypeError: 错误的字典类型 (%s)！！！' % dicts)
+                logger.error("TypeError: 错误的字典类型 (dicts = %s)！！！" % dicts)
         return retVal
