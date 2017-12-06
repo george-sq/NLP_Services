@@ -21,7 +21,6 @@ jieba.setLogLevel(log_level=logging.INFO)
 def main():
     # 预处理
     labels, corpus, dicts, tfidfModel, tfidfVecs, freqFile = tps.baseProcess()
-    num_features = len(dicts)
 
     # lda相似性
     lda = models.LdaModel(tfidfVecs, id2word=dicts, num_topics=11)
