@@ -73,4 +73,16 @@ def main():
 
 
 if __name__ == '__main__':
+    # 创建一个handler，用于写入日志文件
+    logfile = "./Out/log_similarity4lda.log"
+    fileLogger = logging.FileHandler(filename=logfile, encoding="utf-8")
+    fileLogger.setLevel(logging.NOTSET)
+
+    # 再创建一个handler，用于输出到控制台
+    stdoutLogger = logging.StreamHandler()
+    stdoutLogger.setLevel(logging.INFO)  # 输出到console的log等级的开关
+
+    logging.basicConfig(level=logging.NOTSET,
+                        format="%(asctime)s | %(levelname)s | %(filename)s(line:%(lineno)s) | %(message)s",
+                        datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
     main()

@@ -6,6 +6,7 @@
     @Todo   : 提供关于文本预处理的服务
 """
 
+import logging
 import warnings
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
@@ -14,6 +15,8 @@ from gensim import models
 from sklearn.datasets.base import Bunch
 from sklearn.feature_extraction.text import TfidfVectorizer  # TF-IDF向量生成类
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 
 class BaseStructData(object):

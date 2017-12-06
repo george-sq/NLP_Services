@@ -6,9 +6,12 @@
     @Todo   : 
 """
 
+import logging
 import services_textProcess as tps
 import services_bayes2cate as bayes
 import pickle
+
+logger = logging.getLogger(__name__)
 
 
 def calcPerformance(testLabels, cateResult):
@@ -80,9 +83,13 @@ def buildLocalModel(**kwargs):
                 print(fne)
             retVal = True
         else:
-            print("ERROR:参数错误 (dicts or tfidfModel) .")
+            logger.error("ERROR:参数错误 (dicts=%s or tfidfModel=%s)" % (dicts, tfidfModel))
+            logger.error("ERROR:参数错误 (dicts=%s or tfidfModel=%s)" % (dicts, tfidfModel))
+            logger.error("ERROR:参数错误 (dicts=%s or tfidfModel=%s)" % (dicts, tfidfModel))
     else:
-        print("ERROR:参数错误 (tfidfVecs or labels) .")
+        logger.error("ERROR:参数错误 (tfidfVecs=%s or labels=%s)" % (tfidfVecs, labels))
+        logger.error("ERROR:参数错误 (tfidfVecs=%s or labels=%s)" % (tfidfVecs, labels))
+        logger.error("ERROR:参数错误 (tfidfVecs=%s or labels=%s)" % (tfidfVecs, labels))
 
     return retVal
 
@@ -114,9 +121,13 @@ def algorithmTest(labels=None, dataSet=None, cols=0):
             calcPerformance(testLabels, cateResult)  # 性能计算
             retVal = True
         else:
-            print("ERROR:参数错误 (cols) .")
+            logger.error("ERROR:参数错误 (cols=%s)" % cols)
+            logger.error("ERROR:参数错误 (cols=%s)" % cols)
+            logger.error("ERROR:参数错误 (cols=%s)" % cols)
     else:
-        print("ERROR:参数错误 (labels or dataSet) .")
+        logger.error("ERROR:参数错误 (labels=%s or dataSet=%s)" % (labels, dataSet))
+        logger.error("ERROR:参数错误 (labels=%s or dataSet=%s)" % (labels, dataSet))
+        logger.error("ERROR:参数错误 (labels=%s or dataSet=%s)" % (labels, dataSet))
 
     return retVal
 
