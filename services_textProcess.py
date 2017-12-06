@@ -18,7 +18,6 @@ import numpy as np
 from scipy.sparse.csr import csr_matrix
 import logging
 
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 jieba.setLogLevel(log_level=logging.INFO)
 
 
@@ -187,4 +186,5 @@ def main():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     main()
