@@ -198,6 +198,42 @@ class FileServer(object):
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
 
+    def loadGensimLsiModel(self, path, fileName):
+        retVal = None
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            fullName = os.path.join(path, fileName)
+            # 文件目录路径校验
+            if os.path.exists(path) and os.path.isfile(fullName):
+                # 加载文件
+                retVal = gensim.models.LsiModel.load(fullName)
+                if isinstance(retVal, gensim.models.LsiModel):
+                    logger.debug("Loading Lsi Topics model Success")
+                else:
+                    retVal = None
+                    logger.warning("Loading Similarity Index of Topics model Failed")
+            else:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
+
+    def loadGensimLdaModel(self, path, fileName):
+        retVal = None
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            fullName = os.path.join(path, fileName)
+            # 文件目录路径校验
+            if os.path.exists(path) and os.path.isfile(fullName):
+                # 加载文件
+                retVal = gensim.models.LsiModel.load(fullName)
+                if isinstance(retVal, gensim.models.LdaModel):
+                    logger.debug("Loading Lda Topics model Success")
+                else:
+                    retVal = None
+                    logger.warning("Loading Similarity Index of Topics model Failed")
+            else:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
+
     def saveText2UTF8(self, path, fileName, **kwargs):
         """
             :param path: (str)文件所在的目录路径
@@ -300,7 +336,7 @@ class FileServer(object):
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
 
-    def saveWord2VectorModel(self, path, fileName, model=None):
+    def saveTopicModel(self, path, fileName, tmodel=None):
         retVal = False
         # 检验路径参数的类型
         if self.__checkPathArgType(path):
@@ -311,9 +347,30 @@ class FileServer(object):
             fullName = os.path.join(path, fileName)
             try:
                 # 写入内容校验
-                if isinstance(model, gensim.models.Word2Vec):
+                if isinstance(tmodel, gensim.models.LdaModel) or isinstance(tmodel, gensim.models.LsiModel):
                     # 内容写入
-                    model.save(fullName)
+                    tmodel.save(fullName)
+                    logger.debug("Save Topics model Success(%s)" % tmodel)
+                    retVal = True
+            except FileNotFoundError:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+
+        return retVal
+
+    def saveWord2VectorModel(self, path, fileName, wvmodel=None):
+        retVal = False
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            # 文件目录路径校验
+            roc = self.__checkPath(path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
+            fullName = os.path.join(path, fileName)
+            try:
+                # 写入内容校验
+                if isinstance(wvmodel, gensim.models.Word2Vec):
+                    # 内容写入
+                    wvmodel.save(fullName)
                     logger.debug("Save 本地Word2VectorModel文件成功")
                     retVal = True
             except FileNotFoundError:
