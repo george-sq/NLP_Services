@@ -69,7 +69,7 @@ def main():
 
 if __name__ == '__main__':
     # 创建一个handler，用于写入日志文件
-    logfile = "./Out/log_similarity4lsi.log"
+    logfile = "./Log/log_similarity4lsi.log"
     fileLogger = logging.FileHandler(filename=logfile, encoding="utf-8")
     fileLogger.setLevel(logging.NOTSET)
 
