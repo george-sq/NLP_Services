@@ -24,7 +24,7 @@ def main():
 
     # lda相似性
     lda = models.LdaModel(tfidfVecs, id2word=dicts, num_topics=11)
-    lda.save("./Log/LDA_11Topic.mdl")
+    lda.save("./Logs/LDA_11Topic.mdl")
     indexLda = similarities.MatrixSimilarity(lda[tfidfVecs])
     indexLda.save("./Out/LDA_11Topic.idx")
 
