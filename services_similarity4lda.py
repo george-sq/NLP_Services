@@ -24,9 +24,9 @@ def main():
 
     # lda相似性
     lda = models.LdaModel(tfidfVecs, id2word=dicts, num_topics=11)
-    lda.save("./Logs/LDA_11Topic.mdl")
+    lda.save("./Out/TopicModels/LDA_11Topic.mdl")
     indexLda = similarities.MatrixSimilarity(lda[tfidfVecs])
-    indexLda.save("./Out/LDA_11Topic.idx")
+    indexLda.save("./Out/TopicModels/LDA_11Topic.idx")
 
     queryTxtA = "心理上的，你提到的这个问题，有些老年人这个症状，我们医生看病肯定要听病人的主诉，这是一方面，" \
                 "还要我们自己去检查发现他到底是不是有问题，我们专业叫体征，你看他有没有体征。再一个，" \
@@ -74,7 +74,7 @@ def main():
 
 if __name__ == '__main__':
     # 创建一个handler，用于写入日志文件
-    logfile = "./Out/log_similarity4lda.log"
+    logfile = "./Logs/log_similarity4lda.log"
     fileLogger = logging.FileHandler(filename=logfile, encoding="utf-8")
     fileLogger.setLevel(logging.NOTSET)
 
