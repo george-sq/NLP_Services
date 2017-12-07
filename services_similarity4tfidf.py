@@ -11,7 +11,6 @@ import warnings
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 import logging
 import gensim
-import services_textProcess as tps
 import services_database as dbs
 import services_pretreatment as pts
 import services_fileIO as fs
@@ -43,7 +42,7 @@ def buildWord2Vector(**kwargs):
         logger.info("基于案件记录数据,构建Word2Vector模型")
         model_w2v = gensim.models.Word2Vec(sentences=corpus, min_count=1, hs=1, workers=multiprocessing.cpu_count())
         fs.FileServer().saveWord2VectorModel(path="./Out/Word2Vector/", fileName="word2vector_anjian.w2v",
-                                             model=model_w2v)
+                                             wvmodel=model_w2v)
         logger.info("构建Word2Vector模型完成")
         retVal = model_w2v
     else:
@@ -73,9 +72,6 @@ def doTxtQuantizationByWord2Vector(**kwargs):
     corpus = kwargs.get("dataSet", None)
     if corpus is not None and isinstance(model_w2v, gensim.models.Word2Vec):
         dataSet = [(wordSeqs, model_w2v) for wordSeqs in corpus]
-        # result_convertor = []
-        # for record in dataSet:
-        #     result_convertor.append(convertTxtVectorByWord2Vector(record))
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         result_convertor = pool.map(convertTxtVectorByWord2Vector, dataSet)
         pool.close()
@@ -136,11 +132,16 @@ def main():
     raw, corpus, dicts, tfidfModel = getRawCorpus()
     tfidfVecs = tfidfModel[corpus]
     num_features = len(dicts)
+    fileHandler = fs.FileServer()
+    fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="dict_anjian.dict", dicts=dicts)
+    fileHandler.saveGensimTfidfModel(path="./Out/Models/", fileName="tfidf_anjian.mdl", tfidf=tfidfModel)
+    fileHandler.savePickledObjFile(path="./Out/", fileName="raw_anjian.dat", writeContentObj=raw)
+    fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus_anjian.mm", inCorpus=corpus)
 
     # tfidf相似性
     indexTfidf = gensim.similarities.SparseMatrixSimilarity(tfidfVecs, num_features=num_features)
-    fs.FileServer().saveIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="Index_TFIDF_anjian.idx",
-                                              index=indexTfidf)
+    fileHandler.saveIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="Index_TFIDF_anjian.idx",
+                                          index=indexTfidf)
 
     queryTxt = "事情是这样的，我今天收到一组协查公文，北京东城公安局今年1月在酒店发现一名吸毒过量的女性死者，据现场勘验死者为女性，" \
                "36岁。我问你，为什么在死者的信用卡中有一张是以你的名义办的？"

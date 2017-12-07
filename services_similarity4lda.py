@@ -26,7 +26,7 @@ def main():
     # lda相似性
     fileHandler = fs.FileServer()
     lda = models.LdaModel(tfidfVecs, id2word=dicts, num_topics=11)
-    fileHandler.saveTopicModel(path="./Out/TopicModels/", fileName="LDA_11Topic.mdl", tmodel=lda)
+    fileHandler.saveTopicModel(path="./Out/Models/", fileName="LDA_11Topic.mdl", tmodel=lda)
     indexLda = similarities.MatrixSimilarity(lda[tfidfVecs])
     fileHandler.saveIndex4topicSimilarity(path="./Out/Indexs/", fileName="LDA_11Topic.idx", index=indexLda)
 
