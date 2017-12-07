@@ -26,7 +26,7 @@ def main():
     lda = models.LdaModel(tfidfVecs, id2word=dicts, num_topics=11)
     lda.save("./Out/TopicModels/LDA_11Topic.mdl")
     indexLda = similarities.MatrixSimilarity(lda[tfidfVecs])
-    indexLda.save("./Out/TopicModels/LDA_11Topic.idx")
+    indexLda.save("./Out/IndexOfSimilarity/LDA_11Topic.idx")
 
     queryTxtA = "心理上的，你提到的这个问题，有些老年人这个症状，我们医生看病肯定要听病人的主诉，这是一方面，" \
                 "还要我们自己去检查发现他到底是不是有问题，我们专业叫体征，你看他有没有体征。再一个，" \
