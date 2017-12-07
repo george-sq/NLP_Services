@@ -162,6 +162,42 @@ class FileServer(object):
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
 
+    def loadIndex4tfidfSimilarity(self, path, fileName):
+        retVal = None
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            fullName = os.path.join(path, fileName)
+            # 文件目录路径校验
+            if os.path.exists(path) and os.path.isfile(fullName):
+                # 加载文件
+                retVal = gensim.similarities.SparseMatrixSimilarity.load(fullName)
+                if isinstance(retVal, gensim.similarities.SparseMatrixSimilarity):
+                    logger.debug("Loading Similarity Index of TFIDF Success")
+                else:
+                    retVal = None
+                    logger.warning("Loading Similarity Index of TFIDF Failed")
+            else:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
+
+    def loadIndex4topicSimilarity(self, path, fileName):
+        retVal = None
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            fullName = os.path.join(path, fileName)
+            # 文件目录路径校验
+            if os.path.exists(path) and os.path.isfile(fullName):
+                # 加载文件
+                retVal = gensim.similarities.MatrixSimilarity.load(fullName)
+                if isinstance(retVal, gensim.similarities.MatrixSimilarity):
+                    logger.debug("Loading Similarity Index of Topics model Success")
+                else:
+                    retVal = None
+                    logger.warning("Loading Similarity Index of Topics model Failed")
+            else:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
+
     def saveText2UTF8(self, path, fileName, **kwargs):
         """
             :param path: (str)文件所在的目录路径
@@ -218,8 +254,48 @@ class FileServer(object):
                     # 内容写入
                     with open(fullName, "wb")as pobj:
                         self.pick.dump(writeContentObj, pobj)
-                        logger.debug("Save 本地pickled文件成功")
+                        logger.debug("Save pickled file Success")
                         retVal = True
+            except FileNotFoundError:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
+
+    def saveIndex4tfidfSimilarity(self, path, fileName, index=None):
+        retVal = False
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            # 文件目录路径校验
+            roc = self.__checkPath(path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
+            fullName = os.path.join(path, fileName)
+            try:
+                # 写入内容校验
+                if isinstance(index, gensim.similarities.SparseMatrixSimilarity):
+                    # 内容写入
+                    index.save(fullName)
+                    logger.debug("Save Similarity Index of TFIDF Success")
+                    retVal = True
+            except FileNotFoundError:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
+
+    def saveIndex4topicSimilarity(self, path, fileName, index=None):
+        retVal = False
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            # 文件目录路径校验
+            roc = self.__checkPath(path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
+            fullName = os.path.join(path, fileName)
+            try:
+                # 写入内容校验
+                if isinstance(index, gensim.similarities.MatrixSimilarity):
+                    # 内容写入
+                    index.save(fullName)
+                    logger.debug("Save Similarity Index of Topics model Success")
+                    retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
