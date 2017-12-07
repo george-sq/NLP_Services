@@ -13,6 +13,7 @@ import logging
 from gensim import models
 from gensim import similarities
 import services_textProcess as tps
+import services_fileIO as fs
 import jieba
 
 jieba.setLogLevel(log_level=logging.INFO)
@@ -23,10 +24,11 @@ def main():
     labels, corpus, dicts, tfidfModel, tfidfVecs, freqFile = tps.baseProcess()
 
     # lsi相似性
+    fileHandler = fs.FileServer()
     lsi = models.LsiModel(corpus, id2word=dicts, num_topics=11)
-    lsi.save("./Out/TopicModels/LSI_11Topic.mdl")
+    fileHandler.saveTopicModel(path="./Out/TopicModels/", fileName="LSI_11Topic.mdl", tmodel=lsi)
     indexLsi = similarities.MatrixSimilarity(lsi[corpus])
-    indexLsi.save("./Out/IndexOfSimilarity/LSI_11Topic.idx")
+    fileHandler.saveIndex4topicSimilarity(path="./Out/Indexs/", fileName="LSI_11Topic.idx", index=indexLsi)
 
     queryTxtA = "心理上的，你提到的这个问题，有些老年人这个症状，我们医生看病肯定要听病人的主诉，这是一方面，" \
                 "还要我们自己去检查发现他到底是不是有问题，我们专业叫体征，你看他有没有体征。再一个，" \
