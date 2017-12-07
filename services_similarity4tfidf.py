@@ -12,9 +12,57 @@ warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 import logging
 from gensim import similarities
 import services_textProcess as tps
+import services_database as dbs
+import services_pretreatment as pts
+import multiprocessing
 import jieba
 
 jieba.setLogLevel(log_level=logging.INFO)
+
+
+def doCutWord(record):
+    """
+        :param record: [txtid,label,content]
+        :return:
+    """
+    retVal = []
+    txtid = record[0]
+    wordSeqs = jieba.cut(record[1].replace('\r\n', '').replace('\n', '').replace(' ', ''))
+    retVal.extend([txtid, list(wordSeqs)])
+    return retVal
+
+
+def getRawCorpus():
+    # 初始化Mysql数据库连接
+    mysqls = dbs.MysqlServer()
+    mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
+
+    # 获取原始语料库数据
+    result_query = mysqls.executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='电信诈骗' ORDER BY txtId")
+    records = [[str(record[0]), record[3]] for record in result_query[1:]]
+
+    # 分词处理
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    dataSets = pool.map(doCutWord, records)
+    pool.close()
+    pool.join()
+
+    # 数据标准化
+    structDataHandler = pts.BaseStructData()
+
+    # 原始文本集
+    txtIds = [record[0] for record in dataSets]
+    rawCorpus = [record[1] for record in dataSets]
+
+    dicts4corpus = structDataHandler.buildGensimDict(rawCorpus)
+
+    # 标准化语料库
+    corpus = structDataHandler.buildGensimCorpusByCorporaDicts(rawCorpus, dicts4corpus)
+
+    # 统计TFIDF数据
+    statDataHandler = pts.StatisticalData()
+    tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus)
+    pass
 
 
 def main():
@@ -79,4 +127,5 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.NOTSET,
                         format="%(asctime)s | %(levelname)s | %(filename)s(line:%(lineno)s) | %(message)s",
                         datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
-    main()
+    getRawCorpus()
+    # main()
