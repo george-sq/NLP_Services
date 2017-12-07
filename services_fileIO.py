@@ -104,19 +104,22 @@ class FileServer(object):
             :param fileName: 文件名
             :return: fileContent or None
         """
+        retVal = None
         # 检验路径参数的类型
         if self.__checkPathArgType(path):
             fullName = os.path.join(path, fileName)
             # 文件目录路径校验
             if os.path.exists(path) and os.path.isfile(fullName):
                 # 加载文件
-                logger.debug("Loading 本地MmCorpus文件成功")
-                return gensim.corpora.MmCorpus(fullName)
+                retVal = gensim.corpora.MmCorpus(fullName)
+                if isinstance(retVal, gensim.corpora.MmCorpus):
+                    logger.debug("Loading 本地gensim.corpora.MmCorpus文件成功")
+                else:
+                    retVal = None
+                    logger.warning("Loading 本地gensim.corpora.MmCorpus文件失败")
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
-                return None
-        else:
-            return None
+        return retVal
 
     def loadLocalGensimDict(self, path, fileName):
         """ 加载gensim模块生成的本地字典文件
@@ -124,19 +127,40 @@ class FileServer(object):
             :param fileName: 文件名
             :return: fileContent or None
         """
+        retVal = None
         # 检验路径参数的类型
         if self.__checkPathArgType(path):
             fullName = os.path.join(path, fileName)
             # 文件目录路径校验
             if os.path.exists(path) and os.path.isfile(fullName):
                 # 加载文件
-                logger.debug("Loading 本地Gensim.Dictionary文件成功")
-                return gensim.corpora.Dictionary.load(fullName)
+                retVal = gensim.corpora.Dictionary.load(fullName)
+                if isinstance(retVal, gensim.corpora.Dictionary):
+                    logger.debug("Loading 本地Gensim.Dictionary文件成功")
+                else:
+                    retVal = None
+                    logger.warning("Loading 本地Gensim.Dictionary文件失败")
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
-                return None
-        else:
-            return None
+        return retVal
+
+    def loadWord2VectorModel(self, path, fileName):
+        retVal = None
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            fullName = os.path.join(path, fileName)
+            # 文件目录路径校验
+            if os.path.exists(path) and os.path.isfile(fullName):
+                # 加载文件
+                retVal = gensim.models.Word2Vec.load(fullName)
+                if isinstance(retVal, gensim.models.Word2Vec):
+                    logger.debug("Loading 本地Gensim.Word2VectorModel文件成功")
+                else:
+                    retVal = None
+                    logger.warning("Loading 本地Gensim.Word2VectorModel文件失败")
+            else:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
 
     def saveText2UTF8(self, path, fileName, **kwargs):
         """
