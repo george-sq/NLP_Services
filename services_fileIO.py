@@ -180,6 +180,24 @@ class FileServer(object):
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
 
+    def loadGensimTfidfModel(self, path, fileName):
+        retVal = None
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            fullName = os.path.join(path, fileName)
+            # 文件目录路径校验
+            if os.path.exists(path) and os.path.isfile(fullName):
+                # 加载文件
+                retVal = gensim.models.TfidfModel.load(fullName)
+                if isinstance(retVal, gensim.models.TfidfModel):
+                    logger.debug("Loading TFIDF Model Success")
+                else:
+                    retVal = None
+                    logger.warning("Loading TFIDF Model Failed")
+            else:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
+
     def loadIndex4topicSimilarity(self, path, fileName):
         retVal = None
         # 检验路径参数的类型
@@ -190,10 +208,10 @@ class FileServer(object):
                 # 加载文件
                 retVal = gensim.similarities.MatrixSimilarity.load(fullName)
                 if isinstance(retVal, gensim.similarities.MatrixSimilarity):
-                    logger.debug("Loading Similarity Index of Topics model Success")
+                    logger.debug("Loading Similarity Index of Topics Model Success")
                 else:
                     retVal = None
-                    logger.warning("Loading Similarity Index of Topics model Failed")
+                    logger.warning("Loading Similarity Index of Topics Model Failed")
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
@@ -208,10 +226,10 @@ class FileServer(object):
                 # 加载文件
                 retVal = gensim.models.LsiModel.load(fullName)
                 if isinstance(retVal, gensim.models.LsiModel):
-                    logger.debug("Loading Lsi Topics model Success")
+                    logger.debug("Loading Lsi Topics Model Success")
                 else:
                     retVal = None
-                    logger.warning("Loading Similarity Index of Topics model Failed")
+                    logger.warning("Loading Similarity Index of Topics Model Failed")
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
@@ -226,10 +244,10 @@ class FileServer(object):
                 # 加载文件
                 retVal = gensim.models.LsiModel.load(fullName)
                 if isinstance(retVal, gensim.models.LdaModel):
-                    logger.debug("Loading Lda Topics model Success")
+                    logger.debug("Loading Lda Topics Model Success")
                 else:
                     retVal = None
-                    logger.warning("Loading Similarity Index of Topics model Failed")
+                    logger.warning("Loading Similarity Index of Topics Model Failed")
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
@@ -330,7 +348,7 @@ class FileServer(object):
                 if isinstance(index, gensim.similarities.MatrixSimilarity):
                     # 内容写入
                     index.save(fullName)
-                    logger.debug("Save Similarity Index of Topics model Success")
+                    logger.debug("Save Similarity Index of Topics Model Success")
                     retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -350,7 +368,28 @@ class FileServer(object):
                 if isinstance(tmodel, gensim.models.LdaModel) or isinstance(tmodel, gensim.models.LsiModel):
                     # 内容写入
                     tmodel.save(fullName)
-                    logger.debug("Save Topics model Success(%s)" % tmodel)
+                    logger.debug("Save Topics Model Success(%s)" % tmodel)
+                    retVal = True
+            except FileNotFoundError:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+
+        return retVal
+
+    def saveGensimTfidfModel(self, path, fileName, tfidf=None):
+        retVal = False
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            # 文件目录路径校验
+            roc = self.__checkPath(path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
+            fullName = os.path.join(path, fileName)
+            try:
+                # 写入内容校验
+                if isinstance(tfidf, gensim.models.TfidfModel):
+                    # 内容写入
+                    tfidf.save(fullName)
+                    logger.debug("Save TFIDF Model Success(%s)" % tfidf)
                     retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)

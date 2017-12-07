@@ -26,7 +26,7 @@ def main():
     # lsi相似性
     fileHandler = fs.FileServer()
     lsi = models.LsiModel(corpus, id2word=dicts, num_topics=11)
-    fileHandler.saveTopicModel(path="./Out/TopicModels/", fileName="LSI_11Topic.mdl", tmodel=lsi)
+    fileHandler.saveTopicModel(path="./Out/Models/", fileName="LSI_11Topic.mdl", tmodel=lsi)
     indexLsi = similarities.MatrixSimilarity(lsi[corpus])
     fileHandler.saveIndex4topicSimilarity(path="./Out/Indexs/", fileName="LSI_11Topic.idx", index=indexLsi)
 
