@@ -13,7 +13,7 @@ warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 
 import pickle
 from wordcloud import WordCloud
-from gensim import corpora
+import gensim
 import logging
 
 logger = logging.getLogger(__name__)
@@ -70,6 +70,7 @@ class FileServer(object):
             try:
                 # 加载文件
                 with open(fullName, 'r', encoding=self.filecode) as txtr:
+                    logger.debug("Loading 本地TXT文件(UTF-8)成功")
                     return txtr.read()
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -89,6 +90,7 @@ class FileServer(object):
             try:
                 # 加载文件
                 with open(fullName, 'rb') as ldf:
+                    logger.debug("Loading 本地pickled文件成功")
                     return self.pick.load(ldf)
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -96,7 +98,7 @@ class FileServer(object):
         else:
             return None
 
-    def loadLocalCorpus(self, path, fileName):
+    def loadLocalMmCorpus(self, path, fileName):
         """ 加载gensim   模块生成的本地语料库文件
             :param path: (str)文件所在的目录路径
             :param fileName: 文件名
@@ -108,14 +110,15 @@ class FileServer(object):
             # 文件目录路径校验
             if os.path.exists(path) and os.path.isfile(fullName):
                 # 加载文件
-                return corpora.MmCorpus(fullName)
+                logger.debug("Loading 本地MmCorpus文件成功")
+                return gensim.corpora.MmCorpus(fullName)
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
                 return None
         else:
             return None
 
-    def loadLocalDict(self, path, fileName):
+    def loadLocalGensimDict(self, path, fileName):
         """ 加载gensim模块生成的本地字典文件
             :param path: (str)文件所在的目录路径
             :param fileName: 文件名
@@ -127,7 +130,8 @@ class FileServer(object):
             # 文件目录路径校验
             if os.path.exists(path) and os.path.isfile(fullName):
                 # 加载文件
-                return corpora.Dictionary.load(fullName)
+                logger.debug("Loading 本地Gensim.Dictionary文件成功")
+                return gensim.corpora.Dictionary.load(fullName)
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
                 return None
@@ -159,9 +163,10 @@ class FileServer(object):
                         txtw.write(content)
                     elif len(lines) > 0:
                         txtw.writelines(lines)
-                        retVal = True
                     else:
                         raise ValueError
+                    logger.debug("Save 本地TXT文件(UTF-8)成功")
+                    retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
             except ValueError:
@@ -189,9 +194,31 @@ class FileServer(object):
                     # 内容写入
                     with open(fullName, "wb")as pobj:
                         self.pick.dump(writeContentObj, pobj)
+                        logger.debug("Save 本地pickled文件成功")
                         retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+        return retVal
+
+    def saveWord2VectorModel(self, path, fileName, model=None):
+        retVal = False
+        # 检验路径参数的类型
+        if self.__checkPathArgType(path):
+            # 文件目录路径校验
+            roc = self.__checkPath(path)
+            if "MK" == roc:
+                logger.info("新建文件路径 (%s)" % path)
+            fullName = os.path.join(path, fileName)
+            try:
+                # 写入内容校验
+                if isinstance(model, gensim.models.Word2Vec):
+                    # 内容写入
+                    model.save(fullName)
+                    logger.debug("Save 本地Word2VectorModel文件成功")
+                    retVal = True
+            except FileNotFoundError:
+                logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
+
         return retVal
 
     def saveGensimCourpus2MM(self, path, fileName, **kwargs):
@@ -214,7 +241,8 @@ class FileServer(object):
                 # 写入内容参数校验
                 if inCorpus is not None:
                     # 内容写入
-                    corpora.MmCorpus.serialize(fullName, corpus=inCorpus)
+                    gensim.corpora.MmCorpus.serialize(fullName, corpus=inCorpus)
+                    logger.debug("Save 本地GensimCourpus2MM文件成功")
                     retVal = True
                 else:
                     raise ValueError
@@ -228,7 +256,7 @@ class FileServer(object):
         """
             :param path: (str)文件所在的目录路径
             :param fileName: 文件名
-            :param dicts: 写入字典对象 --> corpora.Dictionary()
+            :param dicts: 写入字典对象 --> gensim.corpora.Dictionary()
             :return: boolean
         """
         retVal = False
@@ -242,9 +270,10 @@ class FileServer(object):
             try:
                 # 写入内容参数校验
                 if dicts is not None:
-                    if isinstance(dicts, corpora.Dictionary):
+                    if isinstance(dicts, gensim.corpora.Dictionary):
                         # 内容写入
                         dicts.save(fullName)
+                        logger.debug("Save 本地GensimDict文件成功")
                         retVal = True
                     else:
                         raise TypeError
@@ -276,6 +305,8 @@ class FileServer(object):
                     wordcloud = WordCloud(max_words=2000, width=1300, height=600, background_color="white",
                                           font_path='C:/Windows/Fonts/STSONG.TTF').generate_from_frequencies(dicts)
                     wordcloud.to_file(fullName)
+                    logger.debug("Save 本地WordCloudImg文件成功")
+                    retVal = True
                 else:
                     raise TypeError
             except FileNotFoundError:
