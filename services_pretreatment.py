@@ -54,11 +54,11 @@ class BaseStructData(object):
             self.bunch4bow = Bunch(txtIds=[], classNames=[], labels=[], contents=[])
             for record in wordSeqs:
                 if isinstance(record, list):
-                    self.bunch4bow.contents.append(' '.join(record))
+                    self.bunch4bow.contents.append(" ".join(record))
                 else:
-                    print("wordSeqs 的内容结构错误！wordSeqs --> [[column,],]")
+                    logger.warning("wordSeqs 的内容结构错误！wordSeqs --> [[column,],]")
         else:
-            print("wordSeqs is None！请输入正确的参数 wordSeqs --> [[column,],]")
+            logger.warning("wordSeqs is None！请输入正确的参数 wordSeqs --> [[column,],]")
         return self.bunch4bow
 
     def buildGensimCorpusByCorporaDicts(self, dataSets=None, dictObj=None):
@@ -73,7 +73,7 @@ class BaseStructData(object):
         elif isinstance(self.dictObj, corpora.Dictionary):
             corpus = [self.dictObj.doc2bow(record) for record in dataSets]
         else:
-            print("非法的dictObj对象 (%s)，需要有效的 corpora.Dictionary对象！！！" % dictObj)
+            logger.warning("非法的dictObj对象 (%s)，需要有效的 corpora.Dictionary对象！！！" % dictObj)
         return corpus
 
 
@@ -102,7 +102,7 @@ class StatisticalData(object):
                                          vocabulary=self.TFIDF_Train_Vecs.vocabulary)  # 将测试集文本映射到训练集词典中
             self.TFIDF_Train_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
         else:
-            print("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
+            logger.warning("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
         return self.TFIDF_Train_Vecs
 
     def buildTFIDF2Test(self, bowObj=None, trainTfidfObj=None):
@@ -123,7 +123,7 @@ class StatisticalData(object):
                                              vocabulary=trainTfidfObj.vocabulary)  # 将测试集文本映射到训练集词典中
                 self.TFIDF_Test_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
         else:
-            print("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
+            logger.warning("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
         return self.TFIDF_Test_Vecs
 
     def buildGensimTFIDF(self, **kwargs):
@@ -144,9 +144,9 @@ class StatisticalData(object):
             elif isinstance(corpus, list):
                 retVal = self.TFIDF_Vecs[corpus]
             else:
-                print("TFIDF向量空间生成失败。 (%s, %s)" % (record, corpus))
+                logger.warning("TFIDF向量空间生成失败。 (%s, %s)" % (record, corpus))
         else:
-            print("参数initCorpus 类型错误 (%s)！请输入正确的initCorpus参数。" % initCorpus)
+            logger.warning("参数initCorpus 类型错误 (%s)！请输入正确的initCorpus参数。" % initCorpus)
 
         return retVal
 
