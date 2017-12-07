@@ -138,7 +138,7 @@ class StatisticalData(object):
         corpus = kwargs.get("corpus", None)
         if initCorpus is not None:
             self.TFIDF_Vecs = models.TfidfModel(initCorpus)
-            logger.debug("Build TFIDF Model Success")
+            logger.info("Build TFIDF Model Success")
             retVal = self.TFIDF_Vecs
             if isinstance(record, list):
                 retVal = self.TFIDF_Vecs[record]
