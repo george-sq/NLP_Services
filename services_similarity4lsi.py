@@ -24,9 +24,9 @@ def main():
 
     # lsi相似性
     lsi = models.LsiModel(corpus, id2word=dicts, num_topics=11)
-    lsi.save("./Out/LSI_11Topic.mdl")
+    lsi.save("./Out/TopicModels/LSI_11Topic.mdl")
     indexLsi = similarities.MatrixSimilarity(lsi[corpus])
-    indexLsi.save("./Out/LSI_11Topic.idx")
+    indexLsi.save("./Out/TopicModels/LSI_11Topic.idx")
 
     queryTxtA = "心理上的，你提到的这个问题，有些老年人这个症状，我们医生看病肯定要听病人的主诉，这是一方面，" \
                 "还要我们自己去检查发现他到底是不是有问题，我们专业叫体征，你看他有没有体征。再一个，" \
