@@ -36,54 +36,6 @@ def doCutWord(record):
     return retVal
 
 
-def buildWord2Vector(**kwargs):
-    retVal = None
-    corpus = kwargs.get("dataSet", None)
-    if corpus is not None:
-        logger.info("基于案件记录数据,构建Word2Vector模型")
-        model_w2v = gensim.models.Word2Vec(sentences=corpus, min_count=1, hs=1, workers=multiprocessing.cpu_count())
-        fs.FileServer().saveWord2VectorModel(path="./Out/Word2Vector/", fileName="word2vector_anjian.w2v",
-                                             wvmodel=model_w2v)
-        logger.info("构建Word2Vector模型完成")
-        retVal = model_w2v
-    else:
-        logger.warning("参数错误（dataSet=%s），需要输入参数dataSet" % corpus)
-    return retVal
-
-
-def convertTxtVectorByWord2Vector(record=None):
-    retVal = None
-    if record is not None:
-        wordSeqs = record[0]
-        model_w2v = record[1]
-        w2vs = []
-        for word in wordSeqs:
-            w2vs.append(model_w2v[word])
-        retVal = reduce(lambda x, y: x + y, w2vs) / len(wordSeqs)
-        logger.info("文本向量转化 +1")
-    else:
-        logger.warning("参数错误（record=%s）" % record)
-
-    return retVal
-
-
-def doTxtQuantizationByWord2Vector(**kwargs):
-    retVal = None
-    model_w2v = kwargs.get("model", None)
-    corpus = kwargs.get("dataSet", None)
-    if corpus is not None and isinstance(model_w2v, gensim.models.Word2Vec):
-        dataSet = [(wordSeqs, model_w2v) for wordSeqs in corpus]
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
-        result_convertor = pool.map(convertTxtVectorByWord2Vector, dataSet)
-        pool.close()
-        pool.join()
-        logger.info("文本向量转化完成, 转化总数: %s records" % len(result_convertor))
-        retVal = result_convertor
-    else:
-        logger.warning("参数错误（corpus=%s , model_w2v=%s）" % (corpus, model_w2v))
-    return retVal
-
-
 def splitTxt(docs=None):
     logger.info("对数据进行分词处理")
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
@@ -110,12 +62,6 @@ def getRawCorpus():
     # 原始文本集
     txtIds = [str(record[0]) for record in result_query[1:]]
     raw = Bunch(txtIds=txtIds, rawCorpus=dataSets)
-
-    # 构建Word2Vector
-    model_w2v = buildWord2Vector(dataSet=dataSets)
-
-    # 文本数字化
-    txtVecs = doTxtQuantizationByWord2Vector(dataSet=dataSets, model=model_w2v)
 
     # 数据标准化
     structDataHandler = structdata.BaseStructData()
