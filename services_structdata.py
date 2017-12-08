@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    @File   : services_pretreatment.py
+    @File   : services_structdata.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2017/11/17 9:11
     @Todo   : 提供关于文本预处理的服务
