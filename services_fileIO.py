@@ -70,7 +70,7 @@ class FileServer(object):
             try:
                 # 加载文件
                 with open(fullName, 'r', encoding=self.filecode) as txtr:
-                    logger.debug("Loading 本地TXT文件(UTF-8)成功")
+                    logger.debug("Loading TXT File(UTF-8) Success")
                     return txtr.read()
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -90,7 +90,7 @@ class FileServer(object):
             try:
                 # 加载文件
                 with open(fullName, 'rb') as ldf:
-                    logger.debug("Loading 本地pickled文件成功")
+                    logger.debug("Loading Pickled File Success")
                     return self.pick.load(ldf)
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -113,10 +113,10 @@ class FileServer(object):
                 # 加载文件
                 retVal = gensim.corpora.MmCorpus(fullName)
                 if isinstance(retVal, gensim.corpora.MmCorpus):
-                    logger.debug("Loading 本地gensim.corpora.MmCorpus文件成功")
+                    logger.debug("Loading gensim.corpora.MmCorpus File Success")
                 else:
                     retVal = None
-                    logger.warning("Loading 本地gensim.corpora.MmCorpus文件失败")
+                    logger.warning("Loading gensim.corpora.MmCorpus File Failed")
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
@@ -136,10 +136,10 @@ class FileServer(object):
                 # 加载文件
                 retVal = gensim.corpora.Dictionary.load(fullName)
                 if isinstance(retVal, gensim.corpora.Dictionary):
-                    logger.debug("Loading 本地Gensim.Dictionary文件成功")
+                    logger.debug("Loading Gensim.Dictionary File Success")
                 else:
                     retVal = None
-                    logger.warning("Loading 本地Gensim.Dictionary文件失败")
+                    logger.warning("Loading Gensim.Dictionary File Failed")
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
@@ -154,10 +154,10 @@ class FileServer(object):
                 # 加载文件
                 retVal = gensim.models.Word2Vec.load(fullName)
                 if isinstance(retVal, gensim.models.Word2Vec):
-                    logger.debug("Loading 本地Gensim.Word2VectorModel文件成功")
+                    logger.debug("Loading Gensim.Word2VectorModel File Success")
                 else:
                     retVal = None
-                    logger.warning("Loading 本地Gensim.Word2VectorModel文件失败")
+                    logger.warning("Loading 本地Gensim.Word2VectorModel File Failed")
             else:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
         return retVal
@@ -279,7 +279,7 @@ class FileServer(object):
                         txtw.writelines(lines)
                     else:
                         raise ValueError
-                    logger.debug("Save 本地TXT文件(UTF-8)成功")
+                    logger.debug("Save TXT File(UTF-8) Success")
                     retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -308,7 +308,7 @@ class FileServer(object):
                     # 内容写入
                     with open(fullName, "wb")as pobj:
                         self.pick.dump(writeContentObj, pobj)
-                        logger.debug("Save pickled file Success")
+                        logger.debug("Save Pickled File Success(%s)" % pobj)
                         retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -328,7 +328,7 @@ class FileServer(object):
                 if isinstance(index, gensim.similarities.SparseMatrixSimilarity):
                     # 内容写入
                     index.save(fullName)
-                    logger.debug("Save Similarity Index of TFIDF Success")
+                    logger.debug("Save Similarity Index of TFIDF Success(%s)" % index)
                     retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -348,7 +348,7 @@ class FileServer(object):
                 if isinstance(index, gensim.similarities.MatrixSimilarity):
                     # 内容写入
                     index.save(fullName)
-                    logger.debug("Save Similarity Index of Topics Model Success")
+                    logger.debug("Save Similarity Index of Topics Model Success(%s)" % index)
                     retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -410,7 +410,7 @@ class FileServer(object):
                 if isinstance(wvmodel, gensim.models.Word2Vec):
                     # 内容写入
                     wvmodel.save(fullName)
-                    logger.debug("Save 本地Word2VectorModel文件成功")
+                    logger.debug("Save gensim.models.Word2Vec Model File Success(%s)" % wvmodel)
                     retVal = True
             except FileNotFoundError:
                 logger.error("FileNotFoundError: 文件目录的路径错误 (%s) ！！！" % path)
@@ -438,7 +438,7 @@ class FileServer(object):
                 if inCorpus is not None:
                     # 内容写入
                     gensim.corpora.MmCorpus.serialize(fullName, corpus=inCorpus)
-                    logger.debug("Save 本地GensimCourpus2MM文件成功")
+                    logger.debug("Save GensimCourpus2MM File Success")
                     retVal = True
                 else:
                     raise ValueError
@@ -469,7 +469,7 @@ class FileServer(object):
                     if isinstance(dicts, gensim.corpora.Dictionary):
                         # 内容写入
                         dicts.save(fullName)
-                        logger.debug("Save 本地GensimDict文件成功")
+                        logger.debug("Save GensimDict File Success(%s)" % dicts)
                         retVal = True
                     else:
                         raise TypeError
@@ -501,7 +501,7 @@ class FileServer(object):
                     wordcloud = WordCloud(max_words=2000, width=1300, height=600, background_color="white",
                                           font_path='C:/Windows/Fonts/STSONG.TTF').generate_from_frequencies(dicts)
                     wordcloud.to_file(fullName)
-                    logger.debug("Save 本地WordCloudImg文件成功")
+                    logger.debug("Save WordCloudImg File Success")
                     retVal = True
                 else:
                     raise TypeError
