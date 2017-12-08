@@ -145,7 +145,7 @@ class StatisticalData(object):
             elif isinstance(corpus, list):
                 retVal = self.TFIDF_Vecs[corpus]
             else:
-                logger.warning("Build TFIDF Vector Spaces Failed。 (record=%s, corpus=%s)" % (record, corpus))
+                logger.warning("Build TFIDF Vector Spaces Failed (record=%s, corpus=%s)" % (record, corpus))
         else:
             logger.warning("参数initCorpus 类型错误 (%s)！请输入正确的initCorpus参数。" % initCorpus)
 
