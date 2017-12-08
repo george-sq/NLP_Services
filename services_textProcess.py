@@ -8,7 +8,7 @@
 
 import services_database as dbs
 import services_fileIO as fs
-import services_pretreatment as pts
+import services_structdata as structdata
 import jieba
 import random
 from gensim import corpora
@@ -38,11 +38,19 @@ def doCutWord(record):
         :return:
     """
     retVal = []
-    txtid = record[0]
-    label = record[1]
-    wordSeqs = jieba.cut(record[2].replace('\r\n', '').replace('\n', '').replace(' ', ''))
-    retVal.extend([txtid, label, list(wordSeqs)])
+    wordSeqs = jieba.cut(record.replace('\r\n', '').replace('\n', '').replace(' ', ''))
+    retVal.extend(list(wordSeqs))
     return retVal
+
+
+def splitTxt(docs=None):
+    logger.info("对数据进行分词处理")
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    dataSets = pool.map(doCutWord, docs)
+    pool.close()
+    pool.join()
+    logger.info("分词处理完成")
+    return dataSets
 
 
 def baseProcess():
@@ -51,51 +59,45 @@ def baseProcess():
     mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
 
     # 获取原始语料库数据
-    qs = mysqls.executeSql("SELECT * FROM tb_txtcate ORDER BY txtId")
-    records = [[str(record[0]), record[2], record[3]] for record in qs[1:]]
+    result_query = mysqls.executeSql("SELECT * FROM tb_txtcate ORDER BY txtId")
+    labels = [record[2] for record in result_query[1:]]
+    txts = [record[3] for record in result_query[1:]]
     stopWords = getStopWords()
 
     # 分词处理
-    pool = Pool(multiprocessing.cpu_count())
-    dataSets = pool.map(doCutWord, records)
-    pool.close()
-    pool.join()
+    dataSets = splitTxt(txts)
 
     # 数据标准化
-    structDataHandler = pts.BaseStructData()
-
-    # 原始文本集
-    rawCorpus = [record[2] for record in dataSets]
-    labels = [record[1] for record in dataSets]
+    structDataHandler = structdata.BaseStructData()
 
     # 频率信息
-    itermFreqs = structDataHandler.buildWordFrequencyDict(rawCorpus)
+    itermFreqs = structDataHandler.buildWordFrequencyDict(dataSets)
     freqData = []
     wordFreq = sorted(itermFreqs.items(), key=lambda twf: twf[1], reverse=True)
     for w, f in wordFreq:
         freqData.append(str(w) + '\t' + str(f) + '\n')
 
     # 语料库词典
-    dicts4corpus = structDataHandler.buildGensimDict(rawCorpus)
+    dicts4corpus = structDataHandler.buildGensimDict(dataSets)
     fileHandler = fs.FileServer()
     dicts4stopWords = structDataHandler.buildGensimDict([list(stopWords)])
     fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
 
     # 去停用词
-    for i in range(len(rawCorpus)):
-        txt = rawCorpus[i]
+    for i in range(len(dataSets)):
+        txt = dataSets[i]
         newTxt = []
         for j in range(len(txt)):
             word = txt[j]
             if word not in stopWords:
                 newTxt.append(word)
-        rawCorpus[i] = newTxt
+        dataSets[i] = newTxt
 
     # 标准化语料库
-    corpus = structDataHandler.buildGensimCorpusByCorporaDicts(rawCorpus, dicts4corpus)
+    corpus = structDataHandler.buildGensimCorpusByCorporaDicts(dataSets, dicts4corpus)
 
     # 统计TFIDF数据
-    statDataHandler = pts.StatisticalData()
+    statDataHandler = structdata.StatisticalData()
     tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus, corpus=corpus)
     tfidfModel = statDataHandler.TFIDF_Vecs
 
@@ -182,7 +184,6 @@ def main():
     storeData(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqFile)
     storeData(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts)
     storeData(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus)
-    del freqFile
 
 
 if __name__ == '__main__':

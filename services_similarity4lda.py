@@ -16,6 +16,7 @@ import services_fileIO as fs
 import jieba
 
 jieba.setLogLevel(log_level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def main():
