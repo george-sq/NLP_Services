@@ -60,6 +60,7 @@ def doTxtQuantizationByWord2Vector(**kwargs):
     corpus = kwargs.get("dataSet", None)
     if corpus is not None and isinstance(model_w2v, gensim.models.Word2Vec):
         dataSet = [(wordSeqs, model_w2v) for wordSeqs in corpus]
+        logger.info("开始转化文本向量")
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         result_convertor = pool.map(convertTxtVectorByWord2Vector, dataSet)
         pool.close()
