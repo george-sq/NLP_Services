@@ -134,18 +134,17 @@ def main():
     num_features = len(dicts)
     fileHandler = fs.FileServer()
     fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="dict_anjian.dict", dicts=dicts)
-    fileHandler.saveGensimTfidfModel(path="./Out/Models/", fileName="tfidf_anjian.mdl", tfidf=tfidfModel)
-    fileHandler.savePickledObjFile(path="./Out/", fileName="raw_anjian.dat", writeContentObj=raw)
+    fileHandler.saveGensimTfidfModel(path="./Out/Models/", fileName="model_TfidfModel_anjian.mdl", tfidf=tfidfModel)
     fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus_anjian.mm", inCorpus=corpus)
+    fileHandler.savePickledObjFile(path="./Out/", fileName="raw_anjian.dat", writeContentObj=raw)
 
     # tfidf相似性
     indexTfidf = gensim.similarities.SparseMatrixSimilarity(tfidfVecs, num_features=num_features)
-    fileHandler.saveIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="Index_TFIDF_anjian.idx",
+    fileHandler.saveIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="index_TfidfModel_anjian.idx",
                                           index=indexTfidf)
 
     queryTxt = "事情是这样的，我今天收到一组协查公文，北京东城公安局今年1月在酒店发现一名吸毒过量的女性死者，据现场勘验死者为女性，" \
                "36岁。我问你，为什么在死者的信用卡中有一张是以你的名义办的？"
-    # queryTxt = "收到假的工行积分兑换，点击链接(www.95588oy.cc)，输入号码和验证码，被骗1260元"
     bow_query = dicts.doc2bow(list(jieba.cut(queryTxt)))
 
     # 数字向量化
@@ -154,7 +153,11 @@ def main():
     # tfidf相似性
     sim_tfidf_query = indexTfidf[tfidf_query]
 
-    print("query tfidf相似性：", sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5])
+    results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
+    print(results)
+    txtIds = raw.txtIds
+    results = [(txtIds[index], freq) for index, freq in results]
+    print("query tfidf相似性：", results)
 
 
 if __name__ == '__main__':
