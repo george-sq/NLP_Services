@@ -34,7 +34,7 @@ def getStopWords():
 
 def doCutWord(record):
     """
-        :param record: [content]
+        :param record: str
         :return:
     """
     retVal = []
