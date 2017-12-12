@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def doCutPos(record):
     """
-        :param record: [content]
+        :param record: str
         :return:
     """
     retVal = []
@@ -38,21 +38,22 @@ def splitTxt(docs=None):
 
 
 def main():
-    # 初始化Mysql数据库连接
-    mysqls = dbs.MysqlServer()
-    mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
-
-    # 获取原始语料库数据
-    result_query = mysqls.executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='电信诈骗' ORDER BY txtId")
-    txts = [record[3] for record in result_query[1:]]
-    logger.info("获得案件记录数据,记录总数 %s records" % len(txts))
-
-    # 分词处理
-    dataSets = splitTxt(txts)
-
-    # 原始文本集
-    txtIds = [str(record[0]) for record in result_query[1:]]
-
+    # # 初始化Mysql数据库连接
+    # mysqls = dbs.MysqlServer()
+    # mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
+    #
+    # # 获取原始语料库数据
+    # result_query = mysqls.executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='电信诈骗' ORDER BY txtId")
+    # txts = [record[3] for record in result_query[1:]]
+    # logger.info("获得案件记录数据,记录总数 %s records" % len(txts))
+    #
+    # # 分词处理
+    # dataSets = splitTxt(txts)
+    #
+    # # 原始文本集
+    # txtIds = [str(record[0]) for record in result_query[1:]]
+    txt = "在网上购物对方让其退款点击链接发现损失1904元，半小时前操作，对方手机号：13566018281，己方帐号6217000060006070435，请妥善处置（电信诈骗已骗成）"
+    result = doCutPos()
     pass
 
 
