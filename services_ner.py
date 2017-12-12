@@ -9,17 +9,28 @@
 import logging
 import multiprocessing
 import services_database as dbs
-import services_textProcess as tp
 import jieba
+from jieba import posseg
 
 jieba.setLogLevel(log_level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def doCutPos(record):
+    """
+        :param record: [content]
+        :return:
+    """
+    retVal = []
+    wordSeqs = posseg.cut(record.replace('\r\n', '').replace('\n', '').replace(' ', ''))
+    retVal.extend(list(wordSeqs))
+    return retVal
+
+
 def splitTxt(docs=None):
     logger.info("对数据进行分词处理")
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
-    dataSets = pool.map(tp.doCutWord, docs)
+    dataSets = pool.map(doCutPos, docs)
     pool.close()
     pool.join()
     logger.info("分词处理完成")
