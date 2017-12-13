@@ -52,10 +52,11 @@ def main():
     #
     # # 原始文本集
     # txtIds = [str(record[0]) for record in result_query[1:]]
-    txt = "在网上购物对方让其退款点击链接发现损失1904元，半小时前操作，对方手机号：13566018281，己方帐号6217000060006070435，请妥善处置（电信诈骗已骗成）"
+    txt = "在网上购物对方让其退款点击链接http://www.95588oy.cc 发现损失1904元，半小时前操作，对方手机号：13566018281，" \
+          "己方帐号6217000060006070435，请妥善处置（电信诈骗已骗成）"
     result = doCutPos(txt)
     for p in result:
-        print(p)
+        print(tuple(p))
     pass
 
 
