@@ -8,6 +8,7 @@
 
 import logging
 import multiprocessing
+import re
 import services_database as dbs
 import jieba
 from jieba import posseg
@@ -52,10 +53,16 @@ def main():
     #
     # # 原始文本集
     # txtIds = [str(record[0]) for record in result_query[1:]]
-    txt = "在网上购物对方让其退款点击链接发现损失1904元，半小时前操作，对方手机号：13566018281，己方帐号6217000060006070435，请妥善处置（电信诈骗已骗成）"
+    url_regx = r"((https?|ftp|file)://|www\.|ftp\.)[A-Z0-9+&@#/%=~_|$?!:,.-]*[A-Z0-9+&@#/%=~_|$]"
+    pat = re.compile(url_regx, re.IGNORECASE)
+    txt = "在网上购物对方让其退款点击链接http://www.95588oy.cc 发现损失1904元，半小时前操作，对方手机号：13566018281，" \
+          "己方帐号6217000060006070435，请妥善处置（电信诈骗已骗成）"
+    r = pat.search(txt)
+    print(r.group())
+    print(r.groups())
     result = doCutPos(txt)
     for p in result:
-        print(p)
+        print(tuple(p))
     pass
 
 
