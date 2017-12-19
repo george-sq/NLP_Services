@@ -14,19 +14,19 @@ logger = logging.getLogger(__name__)
 url_regExp = re.compile(r"((?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-zA-Z0-9+&@#/%=~_|$?!:,.-]*"
                         r"[a-zA-Z0-9+&@#/%=~_|$])")
 
-money_regExp = re.compile(r"((?:\d|one|two|three|four|five|six|seven|eight|nine|ten|一|二|两|三|四|五|六|七|八|九|十|零|"
-                          r"兆|亿|万|千|百|拾|玖|捌|柒|陆|伍|肆|叁|贰|壹)+)(\s*(?:hundred|thousand|Million|Billion)?\s*)"
-                          r"(元|人民币|rmb|美元|美金|dollars?|韩元|日元|欧元|英镑)",
+money_regExp = re.compile(r"((?:(?:\d|one|two|three|four|five|six|seven|eight|nine|ten|一|二|两|三|四|五|六|七|八|九|十|零"
+                          r"|兆|亿|万|千|百|拾|玖|捌|柒|陆|伍|肆|叁|贰|壹)+)(?:\s*(?:hundred|thousand|Million|Billion)?\s*)"
+                          r"(?:元|人民币|rmb|美元|美金|dollars?|韩元|日元|欧元|英镑))",
                           re.IGNORECASE)
 
-idcard_regExp = re.compile(r"(([1-9]\d{5})((18|19|2\d)\d{2}[0-1]\d[0-3]\d)(\d{3})[\dxX])|"
-                           r"[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}[0-9Xx]")
+idcard_regExp = re.compile(r"((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]\d[0-3]\d)(?:\d{3})[\dxX])|[1-9]\d{5}\d{2}"
+                           r"(?:(?:0[1-9])|(?:10|11|12))(?:(?:[0-2][1-9])|10|20|30|31)\d{2}[0-9Xx])")
 
-phoneNumber_regExp = re.compile(r"")
+phoneNumber_regExp = re.compile(r"((?<!\d)(?:[(+]*(?:[0-9]{1,4})?(?:\)|\) |-| - )*)(?:[1-9]\d{7,10})(?!\d))")
 
 bankcardId_regExp = re.compile(r"")
 
-email_regExp = re.compile(r"")
+email_regExp = re.compile(r"([A-Z0-9._%+-]+@[A-Z0-9._%-]+\.[A-Z]{2,})", re.IGNORECASE)
 
 
 def main():
@@ -81,20 +81,29 @@ def main():
 
     # 测试电话的正则表达式
     print(">>测试电话的正则表达式")
+    rPhone = phoneNumber_regExp.search(txt)
+    print(">>group() :", rPhone.group())
+    print(">>groups() :", rPhone.groups())
+    print(">>findall() :", phoneNumber_regExp.findall(txt))
 
     print()
     print("**********" * 15)
+
     # 测试电子邮件地址的正则表达式
     print(">>测试电子邮件地址的正则表达式")
+    rEmail = email_regExp.search(txt)
+    print(">>group() :", rEmail.group())
+    print(">>groups() :", rEmail.groups())
+    print(">>findall() :", email_regExp.findall(txt))
 
     print()
     print("**********" * 15)
+
     # 测试银行卡的正则表达式
     print(">>测试银行卡的正则表达式")
 
     print()
     print("**********" * 15)
-    pass
 
 
 if __name__ == '__main__':
