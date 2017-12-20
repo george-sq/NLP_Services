@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 def getStopWords():
     stopWords = []
-    stopWords_EN = fs.FileServer().loadLocalTextByUTF8('./StopWords/', 'stopWords_EN.txt')
-    stopWords_CN = fs.FileServer().loadLocalTextByUTF8('./StopWords/', 'stopWords_CN.txt')
+    stopWords_EN = fs.FileServer().loadTextByUTF8('./StopWords/', 'stopWords_EN.txt')
+    stopWords_CN = fs.FileServer().loadTextByUTF8('./StopWords/', 'stopWords_CN.txt')
     stopWords.extend(stopWords_EN)
     stopWords.extend(stopWords_CN)
     stopWords.append(' ')

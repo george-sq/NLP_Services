@@ -33,10 +33,22 @@ email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
 
 def urlMatch(inStr):
     # 测试url的正则表达式
-    rUrl = url_regExp.search(inStr)
-    print(">>group() :", rUrl.group())
-    print(">>groups() :", rUrl.groups())
-    print(">>findall() :", url_regExp.findall(inStr))
+    rUrl = url_regExp.findall(inStr)
+    print(">>findall() :", rUrl)
+    # 获取匹配结果
+    # 统计匹配结果
+    # 构建索引集合
+    l = len(rUrl)
+    indexs = []
+    for i in range(l):
+        url = rUrl[i]
+        if 0 == len(indexs):
+            idx = inStr.find(url)
+            print(idx, len(url))
+        else:
+            start = indexs[-1][-1] + len(rUrl[i - 1])
+            idx = inStr.find(url, start)
+        indexs.append((0, idx))
     return url_regExp.findall(inStr)
 
 
@@ -107,6 +119,7 @@ def main():
             银行卡号：6228480402564890018（19位）,农业银行.金穗通宝卡（个人普卡），中国银联卡
             举例：625965087177209（不含校验码的15位银行卡号）
             查询的银行卡号： 6212262102012020709 （19位）
+            http://jiebademo.ap01.aws.af.cm/
             """
 
     # 测试url的正则表达式
