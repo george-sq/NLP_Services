@@ -39,16 +39,16 @@ def urlMatch(inStr):
     # 统计匹配结果
     # 构建索引集合
     l = len(rUrl)
-    indexs = []
+    indexs = [0]
     for i in range(l):
         url = rUrl[i]
         if 0 == len(indexs):
             idx = inStr.find(url)
             print(idx, len(url))
         else:
-            start = indexs[-1][-1] + len(rUrl[i - 1])
+            start = indexs[-1] + len(rUrl[i - 1])
             idx = inStr.find(url, start)
-        indexs.append((0, idx))
+        indexs.append(idx)
     return url_regExp.findall(inStr)
 
 
