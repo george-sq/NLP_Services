@@ -19,15 +19,70 @@ money_regExp = re.compile(r"((?:(?:\d|one|two|three|four|five|six|seven|eight|ni
                           r"(?:元|人民币|rmb|美元|美金|dollars?|韩元|日元|欧元|英镑))",
                           re.IGNORECASE)
 
-idcard_regExp = re.compile(r"((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]\d[0-3]\d)(?:\d{3})[\dxX])|[1-9]\d{5}\d{2}"
-                           r"(?:(?:0[1-9])|(?:10|11|12))(?:(?:[0-2][1-9])|10|20|30|31)\d{2}[0-9Xx])")
+idcard_regExp = re.compile(r"(?<!\d)((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]\d[0-3]\d)(?:\d{3})[\dxX])|"
+                           r"[1-9]\d{5}\d{2}(?:(?:0[1-9])|(?:10|11|12))(?:(?:[0-2][1-9])|10|20|30|31)\d{2}[0-9Xx])"
+                           r"(?!\d)")
 
-phoneNumber_regExp = re.compile(r"((?<!\d)(?:[(+]*(?:[0-9]{1,4})?(?:\)|\) |-| - )*)(?:[1-9]\d{7,10})(?!\d))")
+phoneNumber_regExp = re.compile(r"((?<!\d)(?:\(?\+?(?:[0-9]{1,4} ?)?(?:\)|\) |-| - )*)(?:[1-9]\d{7,10})(?!\d))")
 
-bankcardId_regExp = re.compile(r"((?<!\d)([\d]{6})([\d]{6,12})[\d ]?(?!\d))")
+bankCard_regExp = re.compile(r"((?<![0-9_+=-])([\d]{6})([\d]{6,12})[\d ]?(?!\d))")
 
 email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
                           r"(?:(?:[a-z0-9]+|\[)+(?:\.(?!\.+)))+(?:(?:[a-z0-9]+|\])+)?)", re.IGNORECASE)
+
+
+def urlMatch(inStr):
+    # 测试url的正则表达式
+    rUrl = url_regExp.search(inStr)
+    print(">>group() :", rUrl.group())
+    print(">>groups() :", rUrl.groups())
+    print(">>findall() :", url_regExp.findall(inStr))
+    return url_regExp.findall(inStr)
+
+
+def emailMatch(inStr):
+    # 测试电子邮件地址的正则表达式
+    rEmail = email_regExp.search(inStr)
+    print(">>group() :", rEmail.group())
+    print(">>groups() :", rEmail.groups())
+    print(">>findall() :", email_regExp.findall(inStr))
+    return email_regExp.findall(inStr)
+
+
+def moneyMatch(inStr):
+    # 测试货币金额的正则表达式
+    rMoney = money_regExp.search(inStr)
+    print(">>group() :", rMoney.group())
+    print(">>groups() :", rMoney.groups())
+    print(">>findall() :", money_regExp.findall(inStr))
+    return money_regExp.findall(inStr)
+
+
+def idcardMatch(inStr):
+    # 测试身份证的正则表达式
+    rIdcard = idcard_regExp.search(inStr)
+    print(">>group() :", rIdcard.group())
+    print(">>groups() :", rIdcard.groups())
+    print(">>findall() :", idcard_regExp.findall(inStr))
+    return idcard_regExp.findall(inStr)
+
+
+def phoneMatch(inStr):
+    # 测试电话的正则表达式
+    rPhone = phoneNumber_regExp.search(inStr)
+    print(">>group() :", rPhone.group())
+    print(">>groups() :", rPhone.groups())
+    print(">>findall() :", phoneNumber_regExp.findall(inStr))
+    return phoneNumber_regExp.findall(inStr)
+
+
+def bankCardMatch(inStr):
+    # 测试银行卡的正则表达式
+    rBankCard = bankCard_regExp.search(inStr)
+    print(">>group() :", rBankCard.group())
+    print(">>groups() :", rBankCard.groups())
+    print(">>findall() :", bankCard_regExp.findall(inStr))
+    return bankCard_regExp.findall(inStr)
 
 
 def main():
@@ -56,60 +111,42 @@ def main():
 
     # 测试url的正则表达式
     print(">>测试url的正则表达式")
-    rUrl = url_regExp.search(txt)
-    print(">>group() :", rUrl.group())
-    print(">>groups() :", rUrl.groups())
-    print(">>findall() :", url_regExp.findall(txt))
-
-    print()
-    print("**********" * 15)
-
-    # 测试货币金额的正则表达式
-    print(">>测试货币金额的正则表达式")
-    rMoney = money_regExp.search(txt)
-    print(">>group() :", rMoney.group())
-    print(">>groups() :", rMoney.groups())
-    print(">>findall() :", money_regExp.findall(txt))
-
-    print()
-    print("**********" * 15)
-
-    # 测试身份证的正则表达式
-    print(">>测试身份证的正则表达式")
-    rIdcard = idcard_regExp.search(txt)
-    print(">>group() :", rIdcard.group())
-    print(">>groups() :", rIdcard.groups())
-    print(">>findall() :", idcard_regExp.findall(txt))
-
-    print()
-    print("**********" * 15)
-
-    # 测试电话的正则表达式
-    print(">>测试电话的正则表达式")
-    rPhone = phoneNumber_regExp.search(txt)
-    print(">>group() :", rPhone.group())
-    print(">>groups() :", rPhone.groups())
-    print(">>findall() :", phoneNumber_regExp.findall(txt))
+    rUrl = urlMatch(txt)
 
     print()
     print("**********" * 15)
 
     # 测试电子邮件地址的正则表达式
     print(">>测试电子邮件地址的正则表达式")
-    rEmail = email_regExp.search(txt)
-    print(">>group() :", rEmail.group())
-    print(">>groups() :", rEmail.groups())
-    print(">>findall() :", email_regExp.findall(txt))
+    rEmail = emailMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试货币金额的正则表达式
+    print(">>测试货币金额的正则表达式")
+    rMoney = moneyMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试身份证的正则表达式
+    print(">>测试身份证的正则表达式")
+    rIdcard = idcardMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试电话的正则表达式
+    print(">>测试电话的正则表达式")
+    rPhone = phoneMatch(txt)
 
     print()
     print("**********" * 15)
 
     # 测试银行卡的正则表达式
     print(">>测试银行卡的正则表达式")
-    rBankCard = bankcardId_regExp.search(txt)
-    print(">>group() :", rBankCard.group())
-    print(">>groups() :", rBankCard.groups())
-    print(">>findall() :", bankcardId_regExp.findall(txt))
+    rBankCard = bankCardMatch(txt)
 
     print()
     print("**********" * 15)
