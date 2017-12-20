@@ -8,6 +8,7 @@
 
 import logging
 import re
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,9 @@ def urlMatch(inStr):
     rUrl = url_regExp.findall(inStr)
     print(">>findall() :", rUrl)
     # 获取匹配结果
+    urls = defaultdict(int)
+    for url in rUrl:
+        urls[url] += 1
     # 统计匹配结果
     # 构建索引集合
     l = len(rUrl)
