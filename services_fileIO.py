@@ -58,7 +58,7 @@ class FileServer(object):
                     os.mkdir(mkPath)
                 return "MK"
 
-    def loadLocalTextByUTF8(self, path, fileName):
+    def loadTextByUTF8(self, path, fileName):
         """ 加载本地Text文件
             :param path: (str)文件所在的目录路径
             :param fileName: 文件名
