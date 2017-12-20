@@ -24,9 +24,10 @@ idcard_regExp = re.compile(r"((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]\d[0-3]
 
 phoneNumber_regExp = re.compile(r"((?<!\d)(?:[(+]*(?:[0-9]{1,4})?(?:\)|\) |-| - )*)(?:[1-9]\d{7,10})(?!\d))")
 
-bankcardId_regExp = re.compile(r"")
+bankcardId_regExp = re.compile(r"((?<!\d)([\d ]{6})([\d ]{6,12}) ?(\d?)(?!\d))")
 
-email_regExp = re.compile(r"([A-Z0-9._%+-]+@[A-Z0-9._%-]+\.[A-Z]{2,})", re.IGNORECASE)
+email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
+                          r"(?:(?:[a-z0-9]+|\[)+(?:\.(?!\.+)))+(?:(?:[a-z0-9]+|\])+)?)", re.IGNORECASE)
 
 
 def main():
@@ -101,6 +102,10 @@ def main():
 
     # 测试银行卡的正则表达式
     print(">>测试银行卡的正则表达式")
+    rBankCard = bankcardId_regExp.search(txt)
+    print(">>group() :", rBankCard.group())
+    print(">>groups() :", rBankCard.groups())
+    print(">>findall() :", bankcardId_regExp.findall(txt))
 
     print()
     print("**********" * 15)
