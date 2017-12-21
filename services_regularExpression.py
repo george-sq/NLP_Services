@@ -34,25 +34,10 @@ email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
 
 def urlMatch(inStr):
     # 测试url的正则表达式
-    rUrl = url_regExp.findall(inStr)
-    print(">>findall() :", rUrl)
-    # 获取匹配结果
-    urls = defaultdict(int)
-    for url in rUrl:
-        urls[url] += 1
-    # 统计匹配结果
-    # 构建索引集合
-    l = len(rUrl)
-    indexs = [0]
-    for i in range(l):
-        url = rUrl[i]
-        if 0 == len(indexs):
-            idx = inStr.find(url)
-            print(idx, len(url))
-        else:
-            start = indexs[-1] + len(rUrl[i - 1])
-            idx = inStr.find(url, start)
-        indexs.append(idx)
+    rUrl = url_regExp.search(inStr)
+    print(">>group() :", rUrl.group())
+    print(">>groups() :", rUrl.groups())
+    print(">>findall() :", url_regExp.findall(inStr))
     return url_regExp.findall(inStr)
 
 
@@ -99,6 +84,34 @@ def bankCardMatch(inStr):
     print(">>groups() :", rBankCard.groups())
     print(">>findall() :", bankCard_regExp.findall(inStr))
     return bankCard_regExp.findall(inStr)
+
+
+def fullMatch(inStr):
+    # 获取匹配结果
+    rUrl = url_regExp.findall(inStr)
+    # 统计匹配结果
+    content = []
+    for url in rUrl:
+        idx = inStr.find(url)
+        pre = inStr[:idx]
+        content.append([pre])
+        content.append([url, "url"])
+        idx += len(url)
+        inStr = inStr[idx:]
+
+    # 构建索引集合
+    l = len(rUrl)
+    indexs = [0]
+    for i in range(l):
+        url = rUrl[i]
+        if 0 == len(indexs):
+            idx = inStr.find(url)
+            print(idx, len(url))
+        else:
+            start = indexs[-1] + len(rUrl[i - 1])
+            idx = inStr.find(url, start)
+        indexs.append(idx)
+    pass
 
 
 def main():
