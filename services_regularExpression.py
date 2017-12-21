@@ -26,33 +26,23 @@ idcard_regExp = re.compile(r"(?<!\d)((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]
 
 phoneNumber_regExp = re.compile(r"((?<!\d)(?:\(?\+?(?:[0-9]{1,4} ?)?(?:\)|\) |-| - )*)(?:[1-9]\d{7,10})(?!\d))")
 
-bankCard_regExp = re.compile(r"((?<![0-9_+=-])([\d]{6})([\d]{6,12})[\d ]?(?!\d))")
+bankCard_regExp = re.compile(r"((?<![0-9_+=-])(?:[\d]{6})(?:[\d]{6,12})[\d ]?(?!\d))")
 
 email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
                           r"(?:(?:[a-z0-9]+|\[)+(?:\.(?!\.+)))+(?:(?:[a-z0-9]+|\])+)?)", re.IGNORECASE)
 
+# regExpSets = {1: url_regExp, 2: email_regExp, 3: money_regExp, 4: idcard_regExp, 5: phoneNumber_regExp,
+#               6: bankCard_regExp}
+regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "idcard": idcard_regExp,
+              "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp}
+
 
 def urlMatch(inStr):
     # 测试url的正则表达式
-    rUrl = url_regExp.findall(inStr)
-    print(">>findall() :", rUrl)
-    # 获取匹配结果
-    urls = defaultdict(int)
-    for url in rUrl:
-        urls[url] += 1
-    # 统计匹配结果
-    # 构建索引集合
-    l = len(rUrl)
-    indexs = [0]
-    for i in range(l):
-        url = rUrl[i]
-        if 0 == len(indexs):
-            idx = inStr.find(url)
-            print(idx, len(url))
-        else:
-            start = indexs[-1] + len(rUrl[i - 1])
-            idx = inStr.find(url, start)
-        indexs.append(idx)
+    rUrl = url_regExp.search(inStr)
+    print(">>group() :", rUrl.group())
+    print(">>groups() :", rUrl.groups())
+    print(">>findall() :", url_regExp.findall(inStr))
     return url_regExp.findall(inStr)
 
 
@@ -99,6 +89,98 @@ def bankCardMatch(inStr):
     print(">>groups() :", rBankCard.groups())
     print(">>findall() :", bankCard_regExp.findall(inStr))
     return bankCard_regExp.findall(inStr)
+
+
+def useRegexpPattern(inStr, regExpK=None):
+    # inStr = inList[0]
+    content = []
+    if 0 != len(inStr.strip()):
+        regExp = regExpSets.get(regExpK, None)
+        if isinstance(regExp, type(re.compile(""))):
+            resultSet = regExp.findall(inStr.strip())
+            # 根据正则表达式的匹配结果处理输入inStr
+            if len(resultSet) > 0:
+                post = inStr.strip()
+                for res in resultSet:
+                    idx = post.find(res)
+                    if idx is not None:
+                        pre = post[:idx].strip()
+                        content.append([pre])
+                        content.append([res, regExpK])
+                        idx += len(res)
+                        post = post[idx:].strip()
+                if 0 != len(post.strip()):
+                    content.append([post])
+    else:
+        logger.warning("inStr len = 0")
+        print("inStr len = 0")
+    return content
+
+
+def fullMatch(inStr):
+    # url处理
+    step1 = useRegexpPattern(inStr, regExpK="url")
+    # email处理
+    step2 = []
+    for i in range(len(step1)):
+        sub = step1[i]
+        results = []
+        if 1 == len(sub):
+            results = useRegexpPattern(sub[0], regExpK="email")
+        if len(results) > 0:
+            step2.extend(results)
+        else:
+            step2.append(sub)
+
+    # money处理
+    step3 = []
+    for i in range(len(step2)):
+        sub = step2[i]
+        results = []
+        if 1 == len(sub):
+            results = useRegexpPattern(sub[0], regExpK="money")
+        if len(results) > 0:
+            step3.extend(results)
+        else:
+            step3.append(sub)
+
+    # idcard处理
+    step4 = []
+    for i in range(len(step3)):
+        sub = step3[i]
+        results = []
+        if 1 == len(sub):
+            results = useRegexpPattern(sub[0], regExpK="idcard")
+        if len(results) > 0:
+            step4.extend(results)
+        else:
+            step4.append(sub)
+
+    # bankcard处理
+    step5 = []
+    for i in range(len(step4)):
+        sub = step4[i]
+        results = []
+        if 1 == len(sub):
+            results = useRegexpPattern(sub[0], regExpK="bkcard")
+        if len(results) > 0:
+            step5.extend(results)
+        else:
+            step5.append(sub)
+
+    # phone处理
+    step6 = []
+    for i in range(len(step5)):
+        sub = step5[i]
+        results = []
+        print(len(sub))
+        if 1 == len(sub):
+            results = useRegexpPattern(sub[0], regExpK="phnum")
+        if len(results) > 0:
+            step6.extend(results)
+        else:
+            step6.append(sub)
+    print()
 
 
 def main():
@@ -167,6 +249,8 @@ def main():
 
     print()
     print("**********" * 15)
+
+    fullMatch(txt)
 
 
 if __name__ == '__main__':
