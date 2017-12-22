@@ -8,6 +8,7 @@
 
 import logging
 import re
+from jieba import posseg
 
 logger = logging.getLogger(__name__)
 
@@ -112,9 +113,13 @@ def useRegexpPattern(inList, regExpK=None):
                                 post = post[idx:].strip()
                         if 0 != len(post.strip()):
                             results.append([post])
+                else:
+                    # 分词处理
+                    rPos = [[item, pos] for item, pos in posseg.lcut(content)]
+                    results.extend(rPos)
             else:
-                logger.warning("inStr len = 0")
-                print("inStr len = 0")
+                logger.warning("处理内容的长度错误 len = 0")
+                print("处理内容的长度错误 len = 0")
         if len(results) > 0:
             retVal.extend(results)
         else:
@@ -125,6 +130,7 @@ def useRegexpPattern(inList, regExpK=None):
 def fullMatch(inStr):
     # url处理
     step1 = useRegexpPattern([[inStr]], regExpK="url")
+
     # email处理
     step2 = useRegexpPattern(step1, regExpK="email")
 
@@ -140,7 +146,10 @@ def fullMatch(inStr):
     # phone处理
     step6 = useRegexpPattern(step5, regExpK="phnum")
 
-    for c in step6:
+    # 未标注内容的分词处理
+    step7 = useRegexpPattern(step6)
+
+    for c in step7:
         print(c)
 
 
