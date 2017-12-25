@@ -67,7 +67,7 @@ def getRawCorpus():
     return raw, corpus, dicts4corpus, model_tfidf
 
 
-def main():
+def buildTfidfModel():
     # 预处理
     raw, corpus, dicts, tfidfModel = getRawCorpus()
     tfidfVecs = tfidfModel[corpus]
@@ -82,6 +82,18 @@ def main():
     indexTfidf = gensim.similarities.SparseMatrixSimilarity(tfidfVecs, num_features=num_features)
     fileHandler.saveIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="index_TfidfModel_anjian.idx",
                                           index=indexTfidf)
+
+
+def main():
+    # 生成数据
+    # buildTfidfModel()
+
+    # 加载数据
+    fileHandler = fs.FileServer()
+    dicts = fileHandler.loadLocalGensimDict(path="./Out/Dicts/", fileName="dict_anjian.dict")
+    tfidfModel = fileHandler.loadGensimTfidfModel(path="./Out/Models/", fileName="model_TfidfModel_anjian.mdl")
+    indexTfidf = fileHandler.loadIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="index_TfidfModel_anjian.idx")
+    raw = fileHandler.loadPickledObjFile(path="./Out/", fileName="raw_anjian.dat")
 
     queryTxt = "微信上买手机，转账被骗3100 现在此地，请妥处 嫌疑人微信号qq421149709 "
     bow_query = dicts.doc2bow(list(jieba.cut(queryTxt)))
