@@ -92,10 +92,14 @@ def main():
     # tfidf相似性
     sim_tfidf_query = indexTfidf[tfidf_query]
     results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
-    print(results)
+    # print(results)
     txtIds = raw.txtIds
     results = [(txtIds[index], freq) for index, freq in results]
-    print("query tfidf相似性：", results)
+    print("query tfidf相似性：")
+    print(results)
+    for r in results:
+        q = dbs.MysqlServer().executeSql("select * from tb_tinfo WHERE tid=%s" % r[0])
+        print(q[1:][0][:2])
 
 
 if __name__ == '__main__':
