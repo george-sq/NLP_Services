@@ -16,24 +16,11 @@ import services_structdata as structdata
 import services_textProcess as tp
 import services_fileIO as fs
 import multiprocessing
-from functools import reduce
 from sklearn.datasets.base import Bunch
 import jieba
 
 jieba.setLogLevel(log_level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def doCutWord(record):
-    """
-        :param record: [txtid,label,content]
-        :return:
-    """
-    retVal = []
-    txtid = record[0]
-    wordSeqs = jieba.cut(record[1].replace('\r\n', '').replace('\n', '').replace(' ', ''))
-    retVal.extend([txtid, list(wordSeqs)])
-    return retVal
 
 
 def splitTxt(docs=None):
