@@ -35,61 +35,7 @@ regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "
               "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp}
 
 
-def urlMatch(inStr):
-    # 测试url的正则表达式
-    rUrl = url_regExp.search(inStr)
-    print(">>group() :", rUrl.group())
-    print(">>groups() :", rUrl.groups())
-    print(">>findall() :", url_regExp.findall(inStr))
-    return url_regExp.findall(inStr)
-
-
-def emailMatch(inStr):
-    # 测试电子邮件地址的正则表达式
-    rEmail = email_regExp.search(inStr)
-    print(">>group() :", rEmail.group())
-    print(">>groups() :", rEmail.groups())
-    print(">>findall() :", email_regExp.findall(inStr))
-    return email_regExp.findall(inStr)
-
-
-def moneyMatch(inStr):
-    # 测试货币金额的正则表达式
-    rMoney = money_regExp.search(inStr)
-    print(">>group() :", rMoney.group())
-    print(">>groups() :", rMoney.groups())
-    print(">>findall() :", money_regExp.findall(inStr))
-    return money_regExp.findall(inStr)
-
-
-def idcardMatch(inStr):
-    # 测试身份证的正则表达式
-    rIdcard = idcard_regExp.search(inStr)
-    print(">>group() :", rIdcard.group())
-    print(">>groups() :", rIdcard.groups())
-    print(">>findall() :", idcard_regExp.findall(inStr))
-    return idcard_regExp.findall(inStr)
-
-
-def phoneMatch(inStr):
-    # 测试电话的正则表达式
-    rPhone = phoneNumber_regExp.search(inStr)
-    print(">>group() :", rPhone.group())
-    print(">>groups() :", rPhone.groups())
-    print(">>findall() :", phoneNumber_regExp.findall(inStr))
-    return phoneNumber_regExp.findall(inStr)
-
-
-def bankCardMatch(inStr):
-    # 测试银行卡的正则表达式
-    rBankCard = bankCard_regExp.search(inStr)
-    print(">>group() :", rBankCard.group())
-    print(">>groups() :", rBankCard.groups())
-    print(">>findall() :", bankCard_regExp.findall(inStr))
-    return bankCard_regExp.findall(inStr)
-
-
-def useRegexpPattern(inList, regExpK=None):
+def getNerInfos(inList, regExpK=None):
     retVal = []
     for i in range(len(inList)):
         sub = inList[i]
@@ -129,28 +75,30 @@ def useRegexpPattern(inList, regExpK=None):
 
 def fullMatch(inStr):
     # url处理
-    step1 = useRegexpPattern([[inStr]], regExpK="url")
+    step1 = getNerInfos([[inStr]], regExpK="url")
 
     # email处理
-    step2 = useRegexpPattern(step1, regExpK="email")
+    step2 = getNerInfos(step1, regExpK="email")
 
     # money处理
-    step3 = useRegexpPattern(step2, regExpK="money")
+    step3 = getNerInfos(step2, regExpK="money")
 
     # idcard处理
-    step4 = useRegexpPattern(step3, regExpK="idcard")
+    step4 = getNerInfos(step3, regExpK="idcard")
 
     # bankcard处理
-    step5 = useRegexpPattern(step4, regExpK="bkcard")
+    step5 = getNerInfos(step4, regExpK="bkcard")
 
     # phone处理
-    step6 = useRegexpPattern(step5, regExpK="phnum")
+    step6 = getNerInfos(step5, regExpK="phnum")
 
     # 未标注内容的分词处理
-    step7 = useRegexpPattern(step6)
+    step7 = getNerInfos(step6)
 
-    for c in step7:
-        print(c)
+    # for c in step7:
+    #     print(c)
+
+    return step7
 
 
 def main():
@@ -177,49 +125,6 @@ def main():
             查询的银行卡号： 6212262102012020709 （19位）
             http://jiebademo.ap01.aws.af.cm/
             """
-
-    # 测试url的正则表达式
-    print(">>测试url的正则表达式")
-    urlMatch(txt)
-
-    print()
-    print("**********" * 15)
-
-    # 测试电子邮件地址的正则表达式
-    print(">>测试电子邮件地址的正则表达式")
-    emailMatch(txt)
-
-    print()
-    print("**********" * 15)
-
-    # 测试货币金额的正则表达式
-    print(">>测试货币金额的正则表达式")
-    moneyMatch(txt)
-
-    print()
-    print("**********" * 15)
-
-    # 测试身份证的正则表达式
-    print(">>测试身份证的正则表达式")
-    idcardMatch(txt)
-
-    print()
-    print("**********" * 15)
-
-    # 测试电话的正则表达式
-    print(">>测试电话的正则表达式")
-    phoneMatch(txt)
-
-    print()
-    print("**********" * 15)
-
-    # 测试银行卡的正则表达式
-    print(">>测试银行卡的正则表达式")
-    bankCardMatch(txt)
-
-    print()
-    print("**********" * 15)
-    print()
 
     fullMatch(txt)
 
