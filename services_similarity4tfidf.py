@@ -36,18 +36,21 @@ def splitTxt(docs=None):
 def getRawCorpus():
     # 初始化Mysql数据库连接
     mysqls = dbs.MysqlServer()
-    mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
+    # mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
 
     # 获取原始语料库数据
-    result_query = mysqls.executeSql("SELECT * FROM tb_txtcate WHERE txtLabel='电信诈骗' ORDER BY txtId")
-    txts = [record[3] for record in result_query[1:]]
+    result_query = mysqls.executeSql("SELECT * FROM tb_tinfo ORDER BY tId")
+    txts = []
+    txtIds = []
+    for record in result_query[1:]:
+        txtIds.append(str(record[0]))
+        txts.append(record[1])
     logger.info("获得案件记录数据,记录总数 %s records" % len(txts))
 
     # 分词处理
     dataSets = splitTxt(txts)
 
     # 原始文本集
-    txtIds = [str(record[0]) for record in result_query[1:]]
     raw = Bunch(txtIds=txtIds, rawCorpus=dataSets)
 
     # 数据标准化
@@ -88,7 +91,6 @@ def main():
 
     # tfidf相似性
     sim_tfidf_query = indexTfidf[tfidf_query]
-
     results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
     print(results)
     txtIds = raw.txtIds
