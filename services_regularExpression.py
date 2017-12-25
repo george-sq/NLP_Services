@@ -35,70 +35,58 @@ regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "
               "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp}
 
 
-def getNerInfos(inList, regExpK=None):
-    retVal = []
-    for i in range(len(inList)):
-        sub = inList[i]
-        results = []
-        if 1 == len(sub):
-            content = sub[0].strip()
-            if 0 != len(content):
-                regExp = regExpSets.get(regExpK, None)
-                if isinstance(regExp, type(re.compile(""))):
-                    resultSet = regExp.findall(content)
-                    # 根据正则表达式的匹配结果处理输入inStr
-                    if len(resultSet) > 0:
-                        post = content
-                        for res in resultSet:
-                            idx = post.find(res)
-                            if idx is not None:
-                                pre = post[:idx].strip()
-                                results.append([pre])
-                                results.append([res, regExpK])
-                                idx += len(res)
-                                post = post[idx:].strip()
-                        if 0 != len(post.strip()):
-                            results.append([post])
-                else:
-                    # 分词处理
-                    rPos = [[item, pos] for item, pos in posseg.lcut(content)]
-                    results.extend(rPos)
-            else:
-                logger.warning("处理内容的长度错误 len = 0")
-                print("处理内容的长度错误 len = 0")
-        if len(results) > 0:
-            retVal.extend(results)
-        else:
-            retVal.append(sub)
-    return retVal
+def urlMatch(inStr):
+    # 测试url的正则表达式
+    rUrl = url_regExp.search(inStr)
+    print(">>group() :", rUrl.group())
+    print(">>groups() :", rUrl.groups())
+    print(">>findall() :", url_regExp.findall(inStr))
+    return url_regExp.findall(inStr)
 
 
-def fullMatch(inStr):
-    # url处理
-    step1 = getNerInfos([[inStr]], regExpK="url")
+def emailMatch(inStr):
+    # 测试电子邮件地址的正则表达式
+    rEmail = email_regExp.search(inStr)
+    print(">>group() :", rEmail.group())
+    print(">>groups() :", rEmail.groups())
+    print(">>findall() :", email_regExp.findall(inStr))
+    return email_regExp.findall(inStr)
 
-    # email处理
-    step2 = getNerInfos(step1, regExpK="email")
 
-    # money处理
-    step3 = getNerInfos(step2, regExpK="money")
+def moneyMatch(inStr):
+    # 测试货币金额的正则表达式
+    rMoney = money_regExp.search(inStr)
+    print(">>group() :", rMoney.group())
+    print(">>groups() :", rMoney.groups())
+    print(">>findall() :", money_regExp.findall(inStr))
+    return money_regExp.findall(inStr)
 
-    # idcard处理
-    step4 = getNerInfos(step3, regExpK="idcard")
 
-    # bankcard处理
-    step5 = getNerInfos(step4, regExpK="bkcard")
+def idcardMatch(inStr):
+    # 测试身份证的正则表达式
+    rIdcard = idcard_regExp.search(inStr)
+    print(">>group() :", rIdcard.group())
+    print(">>groups() :", rIdcard.groups())
+    print(">>findall() :", idcard_regExp.findall(inStr))
+    return idcard_regExp.findall(inStr)
 
-    # phone处理
-    step6 = getNerInfos(step5, regExpK="phnum")
 
-    # 未标注内容的分词处理
-    step7 = getNerInfos(step6)
+def phoneMatch(inStr):
+    # 测试电话的正则表达式
+    rPhone = phoneNumber_regExp.search(inStr)
+    print(">>group() :", rPhone.group())
+    print(">>groups() :", rPhone.groups())
+    print(">>findall() :", phoneNumber_regExp.findall(inStr))
+    return phoneNumber_regExp.findall(inStr)
 
-    # for c in step7:
-    #     print(c)
 
-    return step7
+def bankCardMatch(inStr):
+    # 测试银行卡的正则表达式
+    rBankCard = bankCard_regExp.search(inStr)
+    print(">>group() :", rBankCard.group())
+    print(">>groups() :", rBankCard.groups())
+    print(">>findall() :", bankCard_regExp.findall(inStr))
+    return bankCard_regExp.findall(inStr)
 
 
 def main():
@@ -126,7 +114,48 @@ def main():
             http://jiebademo.ap01.aws.af.cm/
             """
 
-    fullMatch(txt)
+    # 测试url的正则表达式
+    print(">>测试url的正则表达式")
+    urlMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试电子邮件地址的正则表达式
+    print(">>测试电子邮件地址的正则表达式")
+    emailMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试货币金额的正则表达式
+    print(">>测试货币金额的正则表达式")
+    moneyMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试身份证的正则表达式
+    print(">>测试身份证的正则表达式")
+    idcardMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试电话的正则表达式
+    print(">>测试电话的正则表达式")
+    phoneMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试银行卡的正则表达式
+    print(">>测试银行卡的正则表达式")
+    bankCardMatch(txt)
+
+    print()
+    print("**********" * 15)
+    print()
 
 
 if __name__ == '__main__':
