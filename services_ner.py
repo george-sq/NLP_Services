@@ -73,7 +73,9 @@ def getNerInfos(inList, regExpK=None):
     return retVal
 
 
-def fullMatch(inStr):
+def fullMatch(record):
+    tid = record[0]
+    inStr = record[1]
     # url处理
     step1 = getNerInfos([[inStr]], regExpK="url")
 
@@ -95,10 +97,10 @@ def fullMatch(inStr):
     # 未标注内容的分词处理
     step7 = getNerInfos(step6)
 
-    for c in step7:
-        print(c)
+    # for c in step7:
+    #     print(c)
 
-    return step7
+    return tid, step7
 
 
 def main():
@@ -126,7 +128,7 @@ def main():
             http://jiebademo.ap01.aws.af.cm/
             """
 
-    fullMatch(txt)
+    fullMatch((0, txt))
 
 
 if __name__ == '__main__':
