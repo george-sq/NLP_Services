@@ -14,6 +14,7 @@ from gensim import models
 from gensim import similarities
 import services_fileIO as fs
 import jieba
+import services_database as dbs
 
 jieba.setLogLevel(log_level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -48,12 +49,15 @@ def main():
     sim_lda_query = indexLda[lda_query]
 
     results = sorted(enumerate(sim_lda_query), key=lambda item: -item[1])[:5]
-
-    print(results)
+    # print(results)
     txtIds = raw.txtIds
     results = [(txtIds[index], freq) for index, freq in results]
 
-    print("query lda相似性：", results)
+    print("query lda相似性：")
+    print(results)
+    for r in results:
+        q = dbs.MysqlServer().executeSql("select * from tb_tinfo WHERE tid=%s" % r[0])
+        print(q[1:][0][:2])
 
 
 if __name__ == '__main__':
