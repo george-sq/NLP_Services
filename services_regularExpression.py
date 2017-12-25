@@ -156,7 +156,7 @@ def fullMatch(inStr):
 def main():
     txt = """
             软件费用: 20元/月，50人民币/季度，160美元/年，220美金/2年，1000欧元/5年，2000英镑/10年，2万日元/月，八十万 韩元/年
-            在线演示
+            在线演示 QQ上买手机被骗一千，在此地汇款，请妥处
             http://jiebademo.ap01.aws.af.cm/
             网站代码：https://github.com/fxsjy/jiebademo
             全自动安装：easy_install jieba 或者 pip install jieba / pip3 install jieba
