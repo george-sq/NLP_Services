@@ -166,7 +166,7 @@ def main():
             范例：
             自定义词典：https://github.com/fxsjy/jieba/blob/master/test/userdict.txt
             用法示例：https://github.com/fxsjy/jieba/blob/master/test/test_userdict.py
-            联系我
+            联系方式
             我的博客: http://blog.csdn.net/qibin0506
             我的邮箱: qibin0506@gmail.com
             联系电话: 13507453457
