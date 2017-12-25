@@ -35,7 +35,7 @@ regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "
               "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp}
 
 
-def getNerInfos(inList, regExpK=None):
+def getNamedEntity(inList, regExpK=None):
     retVal = []
     for i in range(len(inList)):
         sub = inList[i]
@@ -63,9 +63,10 @@ def getNerInfos(inList, regExpK=None):
                     # 分词处理
                     rPos = [[item, pos] for item, pos in posseg.lcut(content)]
                     results.extend(rPos)
-            else:
-                logger.warning("处理内容的长度错误 len = 0")
-                print("处理内容的长度错误 len = 0")
+                    # else:
+                    #     logger.warning("处理内容的长度错误 len = 0")
+                    #     print("处理内容的长度错误 len = 0")
+                    #     print("sub : %s" % sub)
         if len(results) > 0:
             retVal.extend(results)
         else:
@@ -75,27 +76,30 @@ def getNerInfos(inList, regExpK=None):
 
 def fullMatch(record):
     tid = record[0]
+    # print(tid)
     inStr = record[1]
+    # print(inStr)
+
     # url处理
-    step1 = getNerInfos([[inStr]], regExpK="url")
+    step1 = getNamedEntity([[inStr]], regExpK="url")
 
     # email处理
-    step2 = getNerInfos(step1, regExpK="email")
+    step2 = getNamedEntity(step1, regExpK="email")
 
     # money处理
-    step3 = getNerInfos(step2, regExpK="money")
+    step3 = getNamedEntity(step2, regExpK="money")
 
     # idcard处理
-    step4 = getNerInfos(step3, regExpK="idcard")
+    step4 = getNamedEntity(step3, regExpK="idcard")
 
     # bankcard处理
-    step5 = getNerInfos(step4, regExpK="bkcard")
+    step5 = getNamedEntity(step4, regExpK="bkcard")
 
     # phone处理
-    step6 = getNerInfos(step5, regExpK="phnum")
+    step6 = getNamedEntity(step5, regExpK="phnum")
 
     # 未标注内容的分词处理
-    step7 = getNerInfos(step6)
+    step7 = getNamedEntity(step6)
 
     # for c in step7:
     #     print(c)
