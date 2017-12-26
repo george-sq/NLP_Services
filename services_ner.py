@@ -31,8 +31,13 @@ bankCard_regExp = re.compile(r"((?<![0-9_+=-])(?:[\d]{6})(?:[\d]{6,12})[\d ]?(?!
 email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
                           r"(?:(?:[a-z0-9]+|\[)+(?:\.(?!\.+)))+(?:(?:[a-z0-9]+|\])+)?)", re.IGNORECASE)
 
+time_regExp = re.compile(r"(?:上午|中午|下午|凌晨)?(?:(?:[0-2]?\d+|[零一二两三四五六七八九十]+)[点时])(?:(?:(?:[0-5]?\d+|"
+                         r"[零一二两三四五六七八九十]+)分)(?:(?:[0-5]?\d+|[零一二两三四五六七八九十]+)秒)?|"
+                         r"(?:多|一刻钟|一刻|半|钟))?|(?<!\d)(?:[0-2]?[0-9][：:]+[0-5]?[0-9])[:：]?"
+                         r"(?:[0-5]?[0-9]\.?[0-9]+)?(?: ?am| ?pm)?(?!\d)", re.IGNORECASE)
+
 regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "idcard": idcard_regExp,
-              "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp}
+              "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp}
 
 
 def getNamedEntity(inList, regExpK=None):
@@ -98,19 +103,31 @@ def fullMatch(record):
     # phone处理
     step6 = getNamedEntity(step5, regExpK="phnum")
 
+    # time处理
+    step7 = getNamedEntity(step6, regExpK="time")
+
     # 未标注内容的分词处理
-    step7 = getNamedEntity(step6)
+    step8 = getNamedEntity(step7)
 
     # for c in step7:
     #     print(c)
 
-    return tid, step7
+    return tid, step8
 
 
 def main():
     txt = """
             软件费用: 20元/月，50人民币/季度，160美元/年，220美金/2年，1000欧元/5年，2000英镑/10年，2万日元/月，八十万 韩元/年
             在线演示 QQ上买手机被骗一千，在此地汇款，请妥处
+            事发地11点多接到诈骗电话，支付宝汇款10万元，请核实
+            2:15 12:36
+            12:36:45.3654 12:36 am  12:36 AM 12:36pm 12:36PM1 12:36am啊 12:36AMa 
+            12:35:34 12:35:34 pm 12:35:34 PM 12:35:34 am 12:35:34 AM 12:35:34am 12:35:34AM 12:35:34pm 12:35:34PM
+            13 pm	16: 
+            12：35：34 13点24分  13点8分	13点07分 13点07分46秒	13点07分46秒 
+            06时 一点 三点一刻 两点半 十二点多 凌晨 四点钟 5点一刻钟	23时
+            11时38分 11时28分54秒 11时28分54 
+            13点46分     1点多	下午3点 上午5点 凌晨1点 六点三十三分 七点零九分
             http://jiebademo.ap01.aws.af.cm/
             网站代码：https://github.com/fxsjy/jiebademo
             全自动安装：easy_install jieba 或者 pip install jieba / pip3 install jieba
