@@ -42,13 +42,13 @@ regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "
 
 def getNamedEntity(inList, regExpK=None):
     retVal = []
+    regExp = regExpSets.get(regExpK, None)
     for i in range(len(inList)):
         sub = inList[i]
         results = []
         if 1 == len(sub):
             content = sub[0].strip()
             if 0 != len(content):
-                regExp = regExpSets.get(regExpK, None)
                 if isinstance(regExp, type(re.compile(""))):
                     resultSet = regExp.findall(content)
                     # 根据正则表达式的匹配结果处理输入inStr
@@ -58,24 +58,27 @@ def getNamedEntity(inList, regExpK=None):
                             idx = post.find(res)
                             if idx is not None:
                                 pre = post[:idx].strip()
-                                results.append([pre])
+                                if len(pre) > 0:
+                                    results.append([pre])
                                 results.append([res, regExpK])
                                 idx += len(res)
                                 post = post[idx:].strip()
-                        if 0 != len(post.strip()):
-                            results.append([post])
+                        endPart = post.strip()
+                        if len(endPart) > 0:
+                            results.append([endPart])
                 else:
                     # 分词处理
-                    rPos = [[item, pos] for item, pos in posseg.lcut(content)]
+                    rPos = [[item, pos] for item, pos in posseg.lcut(content) if len(item.strip()) > 0]
                     results.extend(rPos)
-                    # else:
-                    #     logger.warning("处理内容的长度错误 len = 0")
-                    #     print("处理内容的长度错误 len = 0")
-                    #     print("sub : %s" % sub)
+            else:
+                logger.warning("处理内容的长度错误 len = 0")
+                print("处理内容的长度错误 len = 0")
+                print("sub : %s" % sub)
         if len(results) > 0:
             retVal.extend(results)
-        else:
+        elif len(sub[0].strip()) > 0:
             retVal.append(sub)
+
     return retVal
 
 
@@ -109,7 +112,7 @@ def fullMatch(record):
     # 未标注内容的分词处理
     step8 = getNamedEntity(step7)
 
-    # for c in step7:
+    # for c in step8:
     #     print(c)
 
     return tid, step8
