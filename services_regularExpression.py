@@ -8,7 +8,6 @@
 
 import logging
 import re
-from jieba import posseg
 
 logger = logging.getLogger(__name__)
 
@@ -132,10 +131,7 @@ def main():
             06时 一点 三点一刻 两点半 十二点多 凌晨 四点钟 5点一刻钟	23时
             11时38分 11时28分54秒 11时28分54 
             13点46分     1点多	下午3点 上午5点 凌晨1点 六点三十三分 七点零九分
-            1999/12/31
-            1999.12.31
-            1999 12 31
-            2048年10月3日
+            1999/12/31            1999.12.31            1999 12 31            2048年10月3日
             2048年10月6日 2048年10月6号
             http://jiebademo.ap01.aws.af.cm/
             网站代码：https://github.com/fxsjy/jiebademo
