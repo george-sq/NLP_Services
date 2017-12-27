@@ -10,6 +10,8 @@ import datetime
 from socket import *
 from multiprocessing import *
 import services_online
+import services_similarity4tfidf as tfidfss
+import services_ner as ner
 
 
 def usage():
@@ -25,6 +27,9 @@ def usage():
         For Example:
             python xxx.py -c|--content textContent -s|--stpwd stpwd_path -m|--model model_path
     """
+
+
+servicesDicts = {"base": services_online.main, "sim": tfidfss.tfidfSimilartyProcess, "ner": ner}
 
 
 # 处理客户端的请求并为其服务
