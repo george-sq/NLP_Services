@@ -82,6 +82,9 @@ def buildTfidfModel():
     indexTfidf = gensim.similarities.SparseMatrixSimilarity(tfidfVecs, num_features=num_features)
     fileHandler.saveIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="index_TfidfModel_anjian.idx",
                                           index=indexTfidf)
+    similarityModel = Bunch(txtIds=raw.txtIds, dicts=dicts, tfidfModel=tfidfModel, indexTfidf=indexTfidf)
+    fileHandler.savePickledObjFile(path="./Out/", fileName="model_tfidfSimilarity_anjian.pickle",
+                                   writeContentObj=similarityModel)
 
 
 def main():
@@ -90,10 +93,11 @@ def main():
 
     # 加载数据
     fileHandler = fs.FileServer()
-    dicts = fileHandler.loadLocalGensimDict(path="./Out/Dicts/", fileName="dict_anjian.dict")
-    tfidfModel = fileHandler.loadGensimTfidfModel(path="./Out/Models/", fileName="model_TfidfModel_anjian.mdl")
-    indexTfidf = fileHandler.loadIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="index_TfidfModel_anjian.idx")
-    raw = fileHandler.loadPickledObjFile(path="./Out/", fileName="raw_anjian.dat")
+    similarityModel = fileHandler.loadPickledObjFile(path="./Out/", fileName="model_tfidfSimilarity_anjian.pickle")
+    txtIds = similarityModel.txtIds
+    dicts = similarityModel.dicts
+    tfidfModel = similarityModel.tfidfModel
+    indexTfidf = similarityModel.indexTfidf
 
     queryTxt = "微信上买手机，转账被骗3100 现在此地，请妥处 嫌疑人微信号qq421149709 "
     bow_query = dicts.doc2bow(list(jieba.cut(queryTxt)))
@@ -104,8 +108,9 @@ def main():
     # tfidf相似性
     sim_tfidf_query = indexTfidf[tfidf_query]
     results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
+    # results = results[:5]
     # print(results)
-    txtIds = raw.txtIds
+
     results = [(txtIds[index], freq) for index, freq in results]
     print("query tfidf相似性：")
     print(results)
