@@ -87,6 +87,33 @@ def buildTfidfModel():
                                    writeContentObj=similarityModel)
 
 
+def tfidfSimilartyProcess(queryTxt):
+    # 加载数据
+    fileHandler = fs.FileServer()
+    similarityModel = fileHandler.loadPickledObjFile(path="./Out/", fileName="model_tfidfSimilarity_anjian.pickle")
+    txtIds = similarityModel.txtIds
+    dicts = similarityModel.dicts
+    tfidfModel = similarityModel.tfidfModel
+    indexTfidf = similarityModel.indexTfidf
+
+    # 数字向量化
+    bow_query = dicts.doc2bow(list(jieba.cut(queryTxt)))
+    tfidf_query = tfidfModel[bow_query]
+
+    # tfidf相似性
+    sim_tfidf_query = indexTfidf[tfidf_query]
+    results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
+    results = [(txtIds[index], freq) for index, freq in results]
+
+    print("query tfidf相似性：")
+    print(results)
+    for r in results:
+        q = dbs.MysqlServer().executeSql("select * from tb_tinfo WHERE tid=%s" % r[0])
+        print(q[1:][0][:2])
+
+    return results
+
+
 def main():
     # 生成数据
     # buildTfidfModel()
