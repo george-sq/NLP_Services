@@ -36,8 +36,15 @@ time_regExp = re.compile(r"(?:上午|中午|下午|凌晨)?(?:(?:[0-2]?\d+|[零�
                          r"(?:多|一刻钟|一刻|半|钟))?|(?<!\d)(?:[0-2]?[0-9][：:]+[0-5]?[0-9])[:：]?"
                          r"(?:[0-5]?[0-9]\.?[0-9]+)?(?: ?am| ?pm)?(?!\d)", re.IGNORECASE)
 
+date_regExp = re.compile(r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])"
+                         r"(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)"
+                         r"(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)"
+                         r"(?:(?:19|20)[0-9]{2})(?!\d)[ 年/.-])(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ 月/.-])(?:(?<!\d)"
+                         r"(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[月/.-])"
+                         r"(?:(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)")
+
 regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "idcard": idcard_regExp,
-              "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp}
+              "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp, "date": date_regExp}
 
 
 def urlMatch(inStr):
@@ -65,6 +72,15 @@ def timeMatch(inStr):
     print(">>groups() :", rTime.groups())
     print(">>findall() :", time_regExp.findall(inStr))
     return time_regExp.findall(inStr)
+
+
+def dateMatch(inStr):
+    # 测试电子邮件地址的正则表达式
+    rDate = date_regExp.search(inStr)
+    print(">>group() :", rDate.group())
+    print(">>groups() :", rDate.groups())
+    print(">>findall() :", date_regExp.findall(inStr))
+    return date_regExp.findall(inStr)
 
 
 def moneyMatch(inStr):
@@ -116,6 +132,11 @@ def main():
             06时 一点 三点一刻 两点半 十二点多 凌晨 四点钟 5点一刻钟	23时
             11时38分 11时28分54秒 11时28分54 
             13点46分     1点多	下午3点 上午5点 凌晨1点 六点三十三分 七点零九分
+            1999/12/31
+            1999.12.31
+            1999 12 31
+            2048年10月3日
+            2048年10月6日 2048年10月6号
             http://jiebademo.ap01.aws.af.cm/
             网站代码：https://github.com/fxsjy/jiebademo
             全自动安装：easy_install jieba 或者 pip install jieba / pip3 install jieba
@@ -147,6 +168,13 @@ def main():
     # 测试时间的正则表达式
     print(">>测试time的正则表达式")
     timeMatch(txt)
+
+    print()
+    print("**********" * 15)
+
+    # 测试日期的正则表达式
+    print(">>测试date的正则表达式")
+    dateMatch(txt)
 
     print()
     print("**********" * 15)
