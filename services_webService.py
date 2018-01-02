@@ -28,7 +28,7 @@ class HTTPServer(object):
     """"""
 
     def __init__(self):
-        """构造函数， application指的是框架的app"""
+        """构造函数"""
         self.serSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.response_headers = ""
@@ -52,7 +52,7 @@ class HTTPServer(object):
                 print('>> %s [ HTTP服务器: 服务器出错 ：%s ]' % (datetime.datetime.now(), er))
                 self.serSocket.close()
                 print('>> %s [ HTTP服务器: 重启TCP服务器...... ]' % datetime.datetime.now())
-                main()
+                self.start()
             finally:
                 # 当为所有的客户端服务完之后再进行关闭，表示不再接收新的客户端的链接
                 self.serSocket.close()
@@ -89,7 +89,7 @@ class HTTPServer(object):
         response = self.response_headers + "\r\n" + response_body
 
         # 向客户端返回响应数据
-        client_socket.send(bytes(response, "utf-8"))
+        client_socket.send(response.encode("utf-8"))
 
         # 关闭客户端连接
         client_socket.close()
