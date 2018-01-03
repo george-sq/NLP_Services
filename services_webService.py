@@ -67,9 +67,8 @@ class HTTPServer(object):
         else:
             print(">> %s 客户端服务子进程: 客户端%s 请求数据长度异常. len=%d" %
                   (datetime.datetime.now(), str(destAddr), len(request_data)))
+
         print("**********" * 20)
-        # print("request data :")
-        # print("request_data :", request_data)
         request_lines = request_data.splitlines()
         for line in request_lines:
             print(line)
