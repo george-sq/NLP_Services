@@ -45,30 +45,31 @@ class HTTPServer(object):
         # 获取客户端请求数据
         print(">> %s 客户端服务子进程: 客户端%s 服务子进程开启!!!" % (datetime.datetime.now(), str(destAddr)))
         request_data = ""
+        print("**********" * 20)
+        i = 0
         while True:
-            print("000" * 3)
+            i += 1
+            print("迭代次数 %d" % i)
             recvData = client_socket.recv(2048)
-            print("111" * 3)
+            print(">> %s 客户端服务子进程: 接收客户端%s 请求数据......" % (datetime.datetime.now(), str(destAddr)))
             print("recvData len :", len(recvData))
-            print("request_data len :", len(request_data))
-            if len(recvData) > 0:
-                print("recvData :", recvData)
-                print(">> %s 客户端服务子进程: 开始接收客户端%s 请求数据!!!" % (datetime.datetime.now(), str(destAddr)))
+            if 0 < len(recvData):
                 request_data += recvData.decode("utf-8")
-                print("request_data :", request_data)
-            else:
-                print(">> %s 客户端服务子进程: 客户端%s 请求数据接收完成." % (datetime.datetime.now(), str(destAddr)))
-                if len(request_data) > 0:
-                    print(">> %s 客户端服务子进程: 客户端%s 开始数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
-                    print("request data :")
-                    print(request_data)
-                    break
-                else:
-                    print(">> %s 客户端服务子进程: 客户端%s 请求数据长度为0." % (datetime.datetime.now(), str(destAddr)))
-                    break
+            if 1024 > (1024 - len(recvData)):
+                request_data += recvData.decode("utf-8")
+                break
 
-        print("request data :")
-        print("request_data :", request_data)
+        print(">> %s 客户端服务子进程: 客户端%s 请求数据接收完成." % (datetime.datetime.now(), str(destAddr)))
+        if len(request_data) > 0:
+            print(">> %s 客户端服务子进程: 客户端%s 开始数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
+            print("request data :")
+            print(request_data)
+        else:
+            print(">> %s 客户端服务子进程: 客户端%s 请求数据长度异常. len=%d" %
+                  (datetime.datetime.now(), str(destAddr), len(request_data)))
+        print("**********" * 20)
+        # print("request data :")
+        # print("request_data :", request_data)
         request_lines = request_data.splitlines()
         for line in request_lines:
             print(line)
