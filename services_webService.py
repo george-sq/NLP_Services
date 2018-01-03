@@ -38,26 +38,12 @@ class HTTPServer(object):
     def getResponseHeaders(self, status):
         self.response_headers = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "text/html; charset=UTF-8")
 
-    def clientHandler(self, client_socket, destAddr):
-        """处理客户端请求"""
-
-        # 1.获取客户端请求数据
-        print(">> %s 客户端服务子进程: 客户端%s 服务子进程开启!!!" % (datetime.datetime.now(), str(destAddr)))
-        request_data = ""
-        while True:
-            recvData = client_socket.recv(2048)
-            print(">> %s 客户端服务子进程: 接收客户端%s 请求数据......" % (datetime.datetime.now(), str(destAddr)))
-            if 2048 == len(recvData):
-                request_data += recvData.decode("utf-8")
-            elif 0 < (2048 - len(recvData)):
-                request_data += recvData.decode("utf-8")
-                break
-
-        # 2.解析客户端请求数据
+    def getResposeInfos(self, request_data, destAddr):
+        # 2.1 解析客户端请求数据
         request_start_line = ""
-        print(">> %s 客户端服务子进程: 客户端%s 请求数据接收完成." % (datetime.datetime.now(), str(destAddr)))
+        print(">> %s 客户端服务子进程: 完成客户端%s 请求数据接收." % (datetime.datetime.now(), str(destAddr)))
         if len(request_data) > 0:
-            print(">> %s 客户端服务子进程: 客户端%s 开始数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
+            print(">> %s 客户端服务子进程: 开始客户端%s 数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
             request_lines = request_data.splitlines()
             request_start_line = request_lines[0]
             print("<<<<<<<<<<" * 20)
@@ -70,7 +56,7 @@ class HTTPServer(object):
             print(">> %s 客户端服务子进程: 客户端%s 请求数据长度异常. len=%d" %
                   (datetime.datetime.now(), str(destAddr), len(request_data)))
 
-        # 3.生成响应数据
+        # 2.2 生成响应数据
         response = "缺省响应信息"
         actKey = request_start_line.split()[1]
         action = ACTION_DICTS.get(actKey, None)
@@ -81,16 +67,39 @@ class HTTPServer(object):
         if self.response_headers and self.response_body:
             response = self.response_headers + "\r\n" + self.response_body
 
-        # 4.向客户端返回响应数据
         print()
         print(">>>>>>>>>>" * 20)
         print("响应数据 :")
         print(response)
         print(">>>>>>>>>>" * 20)
-        client_socket.send(response.encode("utf-8"))
+        return response
 
-        # 5.关闭客户端连接
-        client_socket.close()
+    def clientHandler(self, client_socket, destAddr):
+        """处理客户端请求"""
+
+        # 1.获取客户端请求数据
+        print(">> %s 客户端服务子进程: 开启客户端%s 服务子进程!!!" % (datetime.datetime.now(), str(destAddr)))
+        request_data = ""
+        client_socket.settimeout(0.5)
+        try:
+            while True:
+                recvData = client_socket.recv(2048)
+                print(">> %s 客户端服务子进程: 接收客户端%s 请求数据......" % (datetime.datetime.now(), str(destAddr)))
+                if 2048 == len(recvData):
+                    request_data += recvData.decode("utf-8")
+                elif 0 < (2048 - len(recvData)):
+                    request_data += recvData.decode("utf-8")
+                    break
+        except socket.timeout as e:
+            print(e)
+        finally:
+            # 2.生成响应数据
+            response = self.getResposeInfos(request_data, destAddr)
+            # 3.向客户端返回响应数据
+            client_socket.send(response.encode("utf-8"))
+
+            # 4.关闭客户端连接
+            client_socket.close()
 
     def start(self):
         self.serSocket.listen(128)
