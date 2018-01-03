@@ -35,50 +35,46 @@ class HTTPServer(object):
         if isinstance(addr, tuple):
             self.serSocket.bind(addr)
 
-    def start(self):
-        self.serSocket.listen(128)
-        print('>> %s [ HTTP服务器: 启动成功!!! ]' % datetime.datetime.now())
-        while True:
-            try:
-                print('>> %s [ HTTP服务器: 主进程等待客户端请求...... ]' % datetime.datetime.now())
-                newSocket, destAddr = self.serSocket.accept()
-                print('>> %s [ HTTP服务器: 收到客户端%s请求，创建客户端服务子进程. ]' % (datetime.datetime.now(), str(destAddr)))
-                client = Process(target=self.clientHandler, args=(newSocket,))
-                client.start()
-                print('>> %s [ HTTP服务器: 关闭客户端%s ]' % (datetime.datetime.now(), str(destAddr)))
-                newSocket.close()
-            except Exception as er:
-                print('>> %s [ HTTP服务器: 服务器出错 ：%s ]' % (datetime.datetime.now(), er))
-                self.serSocket.close()
-                print('>> %s [ HTTP服务器: 重启TCP服务器...... ]' % datetime.datetime.now())
-                self.start()
-            finally:
-                # 当为所有的客户端服务完之后再进行关闭，表示不再接收新的客户端的链接
-                self.serSocket.close()
-
     def getResponseHeaders(self, status):
         response_headers = STATUS_Dicts[status]
         response_headers += "%s: %s\r\n" % ("Content-Type", "text/html; charset=UTF-8")
         self.response_headers = response_headers
 
-    def clientHandler(self, client_socket):
+    def clientHandler(self, client_socket, destAddr):
         """处理客户端请求"""
         # 获取客户端请求数据
+        print(">> %s 客户端服务子进程: 客户端%s 服务子进程开启!!!" % (datetime.datetime.now(), str(destAddr)))
         request_data = ""
         while True:
-            recvData = client_socket.recv(1024)
+            print("000" * 3)
+            recvData = client_socket.recv(2048)
+            print("111" * 3)
+            print("recvData len :", len(recvData))
+            print("request_data len :", len(request_data))
             if len(recvData) > 0:
+                print("recvData :", recvData)
+                print(">> %s 客户端服务子进程: 开始接收客户端%s 请求数据!!!" % (datetime.datetime.now(), str(destAddr)))
                 request_data += recvData.decode("utf-8")
+                print("request_data :", request_data)
             else:
-                break
+                print(">> %s 客户端服务子进程: 客户端%s 请求数据接收完成." % (datetime.datetime.now(), str(destAddr)))
+                if len(request_data) > 0:
+                    print(">> %s 客户端服务子进程: 客户端%s 开始数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
+                    print("request data :")
+                    print(request_data)
+                    break
+                else:
+                    print(">> %s 客户端服务子进程: 客户端%s 请求数据长度为0." % (datetime.datetime.now(), str(destAddr)))
+                    break
 
         print("request data :")
+        print("request_data :", request_data)
         request_lines = request_data.splitlines()
         for line in request_lines:
             print(line)
 
         # 解析请求报文
-        # 'GET / HTTP/1.1'
+        # "GET / HTTP/1.1"
         request_start_line = request_lines[0]
         print("*" * 10)
         print("request_start_line :", request_start_line)
@@ -97,10 +93,32 @@ class HTTPServer(object):
         # 关闭客户端连接
         client_socket.close()
 
+    def start(self):
+        self.serSocket.listen(128)
+        print(">> %s [ HTTP服务器: 启动成功!!! ]" % datetime.datetime.now())
+        while True:
+            try:
+                print(">> %s [ HTTP服务器: 主进程等待客户端请求...... ]" % datetime.datetime.now())
+                newSocket, destAddr = self.serSocket.accept()
+                print(">> %s [ HTTP服务器: 收到客户端%s请求，创建客户端服务子进程. ]" % (datetime.datetime.now(), str(destAddr)))
+                client_process = Process(target=self.clientHandler, args=(newSocket, destAddr))
+                print(">> %s [ HTTP服务器: 主进程启动客户端处理子进程%s ]" % (datetime.datetime.now(), str(destAddr)))
+                client_process.start()
+                print(">> %s [ HTTP服务器: 主进程关闭客户端套接字%s ]" % (datetime.datetime.now(), str(destAddr)))
+                newSocket.close()
+            except Exception as er:
+                print(">> %s [ HTTP服务器: 服务器出错 ：%s ]" % (datetime.datetime.now(), er))
+                self.serSocket.close()
+                print(">> %s [ HTTP服务器: 重启TCP服务器...... ]" % datetime.datetime.now())
+                self.start()
+                # finally:
+                #     # 当为所有的客户端服务完之后再进行关闭，表示不再接收新的客户端的链接
+                #     self.serSocket.close()
+
 
 def main():
     http_server = HTTPServer()
-    localAddr = ('', 8899)
+    localAddr = ("", 8899)
     http_server.bind(localAddr)
     http_server.start()
 

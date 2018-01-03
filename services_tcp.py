@@ -69,17 +69,15 @@ def main():
             newSocket, destAddr = serSocket.accept()
             print('>> %s [ TCP服务器: 收到客户端%s请求，创建客户端服务子进程. ]' % (datetime.datetime.now(), str(destAddr)))
             client = Process(target=dealClient, args=(newSocket, destAddr))
+            print('>> %s [ TCP服务器: 主进程启动客户端处理子进程%s ]' % (datetime.datetime.now(), str(destAddr)))
             client.start()
-            print('>> %s [ TCP服务器: 关闭客户端%s ]' % (datetime.datetime.now(), str(destAddr)))
+            print('>> %s [ TCP服务器: 主进程关闭客户端套接字%s ]' % (datetime.datetime.now(), str(destAddr)))
             newSocket.close()  # 因为已经向子进程中copy了一份（引用），并且父进程中这个套接字也没有用处了，所以关闭
         except Exception as er:
             print('>> %s [ TCP服务器: 服务器出错 ：%s ]' % (datetime.datetime.now(), er))
             serSocket.close()
             print('>> %s [ TCP服务器: 重启TCP服务器...... ]' % datetime.datetime.now())
             main()
-        finally:
-            # 当为所有的客户端服务完之后再进行关闭，表示不再接收新的客户端的链接
-            serSocket.close()
 
 
 if __name__ == '__main__':
