@@ -111,9 +111,6 @@ class HTTPServer(object):
                 self.serSocket.close()
                 print(">> %s [ HTTP服务器: 重启TCP服务器...... ]" % datetime.datetime.now())
                 self.start()
-                # finally:
-                #     # 当为所有的客户端服务完之后再进行关闭，表示不再接收新的客户端的链接
-                #     self.serSocket.close()
 
 
 def main():
