@@ -7,8 +7,8 @@
 """
 
 import datetime
-from socket import *
-from multiprocessing import *
+import socket
+import multiprocessing
 import services_online
 import services_similarity4tfidf as tfidfss
 import services_ner as ner
@@ -57,8 +57,8 @@ def dealClient(newSocket, destAddr):
 
 
 def main():
-    serSocket = socket(AF_INET, SOCK_STREAM)
-    serSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    serSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     localAddr = ('', 7788)
     serSocket.bind(localAddr)
     serSocket.listen(5)
@@ -68,7 +68,7 @@ def main():
             print('>> %s [ TCP服务器: 主进程等待客户端请求...... ]' % datetime.datetime.now())
             newSocket, destAddr = serSocket.accept()
             print('>> %s [ TCP服务器: 收到客户端%s请求，创建客户端服务子进程. ]' % (datetime.datetime.now(), str(destAddr)))
-            client = Process(target=dealClient, args=(newSocket, destAddr))
+            client = multiprocessing.Process(target=dealClient, args=(newSocket, destAddr))
             print('>> %s [ TCP服务器: 主进程启动客户端处理子进程%s ]' % (datetime.datetime.now(), str(destAddr)))
             client.start()
             print('>> %s [ TCP服务器: 主进程关闭客户端套接字%s ]' % (datetime.datetime.now(), str(destAddr)))
