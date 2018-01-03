@@ -32,31 +32,46 @@ def usage():
 servicesDicts = {"base": services_online.main, "sim": tfidfss.tfidfSimilartyProcess, "ner": ner}
 
 
+def getResposeInfos(recvContent, destAddr):
+    responseMsg = ""
+    # responseMsg = str(datetime.datetime.now())
+    if len(recvContent) > 0:
+        print(">> %s 服务子进程: 开始客户端%s 数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
+        responseMsg = services_online.main(recvContent)
+    print(">> %s 服务子进程: 客户端%s 请求数据处理完成!!!" % (datetime.datetime.now(), str(destAddr)))
+    print(">> %s 服务子进程: 服务端响应数据 :\n%s" % (datetime.datetime.now(), responseMsg))
+    return responseMsg
+
+
 # 处理客户端的请求并为其服务
 def dealClient(newSocket, destAddr):
     print(">> %s 服务子进程: 客户端%s 服务子进程开启!!!" % (datetime.datetime.now(), str(destAddr)))
+    # 1.获取客户端请求数据
     recvContent = ""
-    while True:
-        recvData = newSocket.recv(1024)
-        if 0 == (1024 - len(recvData)):
-            print(">> %s 服务子进程: 接收客户端%s 请求数据......" % (datetime.datetime.now(), str(destAddr)))
-            recvContent += recvData.decode("utf-8")
-        elif (1024 - len(recvData)) > 0:
-            print(">> %s 服务子进程: 接收客户端%s 请求数据......" % (datetime.datetime.now(), str(destAddr)))
-            recvContent += recvData.decode("utf-8")
-            print(">> %s 服务子进程: 客户端%s 请求数据接收完成." % (datetime.datetime.now(), str(destAddr)))
-            print(">> %s 服务子进程: 客户端%s 请求数据内容 :\n%s" % (datetime.datetime.now(), str(destAddr), recvContent))
-            responseMsg = recvContent
-            # if len(recvContent) > 0:
-            #     print(">> %s 服务子进程: 开始客户端%s 数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
-            #     responseMsg = services_online.main(recvContent)
-            print(">> %s 服务子进程: 服务端响应数据 :\n%s" % (datetime.datetime.now(), responseMsg))
-            newSocket.send(responseMsg.encode("utf-8"))
-            print(">> %s 服务子进程: 客户端%s 请求数据处理完成!!!" % (datetime.datetime.now(), str(destAddr)))
-            break
+    newSocket.settimeout(0.5)
+    try:
+        while True:
+            recvData = newSocket.recv(1024)
+            if 0 == (1024 - len(recvData)):
+                print(">> %s 服务子进程: 接收客户端%s 请求数据......" % (datetime.datetime.now(), str(destAddr)))
+                recvContent += recvData.decode("utf-8")
+            elif (1024 - len(recvData)) > 0:
+                print(">> %s 服务子进程: 接收客户端%s 请求数据......" % (datetime.datetime.now(), str(destAddr)))
+                recvContent += recvData.decode("utf-8")
+                print(">> %s 服务子进程: 客户端%s 请求数据接收完成." % (datetime.datetime.now(), str(destAddr)))
+                print(">> %s 服务子进程: 客户端%s 请求数据内容 :\n%s" % (datetime.datetime.now(), str(destAddr), recvContent))
+                break
+    except socket.timeout as e:
+        print(e)
+    finally:
+        # 2.生成响应数据
+        response = getResposeInfos(recvContent, destAddr)
+        # 3.向客户端返回响应数据
+        newSocket.send(response.encode("utf-8"))
 
-    print(">> %s 服务子进程: 关闭客户端%s" % (datetime.datetime.now(), str(destAddr)))
-    newSocket.close()
+        # 4.关闭客户端连接
+        print(">> %s 服务子进程: 关闭客户端%s" % (datetime.datetime.now(), str(destAddr)))
+        newSocket.close()
 
 
 def main():
