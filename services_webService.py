@@ -10,11 +10,12 @@ from multiprocessing import Process
 import time
 import socket
 import datetime
+import json
 
 
 def show_ctime():
     """测试"""
-    return time.ctime()
+    return json.dumps({"Default Response": {"current time": str(time.ctime())}})
 
 
 ACTION_DICTS = {"/": show_ctime, 1: "", 2: ""}
@@ -28,29 +29,42 @@ class HTTPServer(object):
         """构造函数"""
         self.serSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.response_headers = None
+        self.response_header = None
         self.response_body = None
 
     def bind(self, addr):
         if isinstance(addr, tuple):
             self.serSocket.bind(addr)
 
-    def getResponseHeaders(self, status):
-        self.response_headers = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "text/html; charset=UTF-8")
+    def getResponseHeader(self, status):
+        self.response_header = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "text/html; charset=UTF-8")
+
+    def getResponseBody(self, action, request_data):
+        print("action :", action)
+        print("request_data :", request_data)
+        self.response_body = action()
 
     def getResposeInfos(self, request_data, destAddr):
         # 2.1 解析客户端请求数据
-        request_start_line = ""
+        request_start_line = []
+        request_params = []
+        request_body = ""
+        request_resource = ""
         print(">> %s 客户端服务子进程: 完成客户端%s 请求数据接收." % (datetime.datetime.now(), str(destAddr)))
         if len(request_data) > 0:
             print(">> %s 客户端服务子进程: 开始客户端%s 数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
             request_lines = request_data.splitlines()
-            request_start_line = request_lines[0]
+            request_start_line.extend(request_lines[0].split())
+            request_body = request_lines[-1]
+            m, s, p = request_start_line  # m=Http请求方法, s=请求资源标识, p=Http协议
             print("<<<<<<<<<<" * 20)
+            request_resource = s.split("?")[0]
+            if 2 == len(s.split("?")):
+                request_params.extend(s.split("?")[-1].split("&"))
             print("request_lines len :", len(request_lines))
             print("request data :")
-            for line in request_lines:
-                print(line)
+            for i, line in enumerate(request_lines):
+                print(i, line)
             print("<<<<<<<<<<" * 20)
         else:
             print(">> %s 客户端服务子进程: 客户端%s 请求数据长度异常. len=%d" %
@@ -58,21 +72,21 @@ class HTTPServer(object):
 
         # 2.2 生成响应数据
         response = "缺省响应信息"
-        actKey = request_start_line.split()[1]
-        action = ACTION_DICTS.get(actKey, None)
+        action = ACTION_DICTS.get(request_resource, show_ctime)
         if action is not None:
-            self.response_body = action()
+            self.getResponseBody(action, (request_params, request_body))
         if self.response_body is not None:
-            self.getResponseHeaders(2)
-        if self.response_headers and self.response_body:
-            response = self.response_headers + "\r\n" + self.response_body
+            self.getResponseHeader(2)
+        if self.response_header and self.response_body:
+            response = self.response_header + "\r\n" + self.response_body
+            print(response)
 
         print()
         print(">>>>>>>>>>" * 20)
         print("响应数据 :")
         print(response)
         print(">>>>>>>>>>" * 20)
-        return response
+        return response.encode("utf-8")
 
     def clientHandler(self, client_socket, destAddr):
         """处理客户端请求"""
@@ -96,7 +110,7 @@ class HTTPServer(object):
             # 2.生成响应数据
             response = self.getResposeInfos(request_data, destAddr)
             # 3.向客户端返回响应数据
-            client_socket.send(response.encode("utf-8"))
+            client_socket.send(response)
 
             # 4.关闭客户端连接
             client_socket.close()
