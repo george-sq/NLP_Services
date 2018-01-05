@@ -73,8 +73,10 @@ class HTTPServer(object):
         if len(request_data) > 0:
             request_lines = request_data.splitlines()
             logger.info("[ 服务子进程 ] 客户端%s 请求数据内容:" % str(destAddr))
+            logger.info("[ 服务子进程 ] %s" % (">>>>>>>>>>" * 10))
             for i, line in enumerate(request_lines):
-                logger.info("[ 服务子进程 ] Line#%d %s" % (i, line))
+                logger.info("[ 服务子进程 ] #L%d %s" % (i + 1, line))
+            logger.info("[ 服务子进程 ] %s" % (">>>>>>>>>>" * 10))
             logger.info("[ 服务子进程 ] 开始 客户端%s 数据处理服务......" % str(destAddr))
             request_start_line.extend(request_lines[0].split())
             request_body = request_lines[-1]
@@ -106,8 +108,10 @@ class HTTPServer(object):
             response = self.response_header + "\r\n" + self.response_body
 
         logger.info("[ 服务子进程 ] 服务器响应数据:")
+        logger.info("[ 服务子进程 ] %s" % ("<<<<<<<<<<" * 10))
         for i, line in enumerate(response.splitlines()):
-            logger.info("[ 服务子进程 ] Line#%d %s" % (i, line))
+            logger.info("[ 服务子进程 ] #L%d %s" % (i + 1, line))
+        logger.info("[ 服务子进程 ] %s" % ("<<<<<<<<<<" * 10))
         return response.encode("utf-8")
 
     def clientHandler(self, client_socket, destAddr):
