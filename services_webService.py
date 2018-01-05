@@ -9,17 +9,37 @@
 from multiprocessing import Process
 import time
 import socket
-import datetime
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+
+# 创建一个handler，用于写入日志文件
+logfile = './Logs/log_webServices.log'
+fileLogger = logging.FileHandler(filename=logfile, encoding="utf-8")
+fileLogger.setLevel(logging.DEBUG)
+
+# 再创建一个handler，用于输出到控制台
+stdoutLogger = logging.StreamHandler()
+stdoutLogger.setLevel(logging.INFO)  # 输出到console的log等级的开关
+
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s | %(levelname)s | %(filename)s(line:%(lineno)s) | %(message)s",
+                    datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
 
 
 def show_ctime():
-    """测试"""
-    return json.dumps({"Default Response": {"current time": str(time.ctime())}})
+    """测试0"""
+    return json.dumps({"NO_ACTION Response": {"404": str(time.ctime())}})
 
 
-ACTION_DICTS = {"/": show_ctime, 1: "", 2: ""}
-STATUS_Dicts = {2: "HTTP/1.1 200 OK\r\n", 4: "HTTP/1.1 404 NO ACTION\r\n"}
+def tst_sucessResponse():
+    """测试1"""
+    return json.dumps({"Sucess Response": {"200": str(time.ctime())}})
+
+
+ACTION_DICTS = {"/": tst_sucessResponse, 1: "", 2: ""}
+STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
 
 
 class HTTPServer(object):
@@ -40,8 +60,7 @@ class HTTPServer(object):
         self.response_header = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "text/html; charset=UTF-8")
 
     def getResponseBody(self, action, request_data):
-        print("action :", action)
-        print("request_data :", request_data)
+        len(request_data)
         self.response_body = action()
 
     def getResposeInfos(self, request_data, destAddr):
@@ -50,92 +69,98 @@ class HTTPServer(object):
         request_params = []
         request_body = ""
         request_resource = ""
-        print(">> %s 客户端服务子进程: 完成客户端%s 请求数据接收." % (datetime.datetime.now(), str(destAddr)))
+        logger.info("[ 服务子进程 ] 完成 客户端%s 请求数据接收" % str(destAddr))
         if len(request_data) > 0:
-            print(">> %s 客户端服务子进程: 开始客户端%s 数据处理服务......" % (datetime.datetime.now(), str(destAddr)))
             request_lines = request_data.splitlines()
+            logger.info("[ 服务子进程 ] 客户端%s 请求数据内容:" % str(destAddr))
+            for i, line in enumerate(request_lines):
+                logger.info("[ 服务子进程 ] Line#%d %s" % (i, line))
+            logger.info("[ 服务子进程 ] 开始 客户端%s 数据处理服务......" % str(destAddr))
             request_start_line.extend(request_lines[0].split())
             request_body = request_lines[-1]
             m, s, p = request_start_line  # m=Http请求方法, s=请求资源标识, p=Http协议
-            print("<<<<<<<<<<" * 20)
             request_resource = s.split("?")[0]
             if 2 == len(s.split("?")):
                 request_params.extend(s.split("?")[-1].split("&"))
-            print("request_lines len :", len(request_lines))
-            print("request data :")
-            for i, line in enumerate(request_lines):
-                print(i, line)
-            print("<<<<<<<<<<" * 20)
         else:
-            print(">> %s 客户端服务子进程: 客户端%s 请求数据长度异常. len=%d" %
-                  (datetime.datetime.now(), str(destAddr), len(request_data)))
+            logger.info("[ 服务子进程 ] 客户端%s 请求数据长度异常. len=%d" % (str(destAddr), len(request_data)))
 
         # 2.2 生成响应数据
-        response = "缺省响应信息"
-        action = ACTION_DICTS.get(request_resource, show_ctime)
-        if action is not None:
-            self.getResponseBody(action, (request_params, request_body))
-        if self.response_body is not None:
-            self.getResponseHeader(2)
-        if self.response_header and self.response_body:
-            response = self.response_header + "\r\n" + self.response_body
-            print(response)
+        response = "Default Response"
+        action = ACTION_DICTS.get(request_resource, None)
 
-        print()
-        print(">>>>>>>>>>" * 20)
-        print("响应数据 :")
-        print(response)
-        print(">>>>>>>>>>" * 20)
+        if action is not None:  # 校验资源请求的有效性
+            self.getResponseBody(action, (request_params, request_body))
+        else:
+            self.getResponseBody(show_ctime, (request_params, request_body))
+
+        if action is None:  # 选择合适的响应头
+            self.getResponseHeader(404)
+        else:
+            if self.response_body is not None:
+                self.getResponseHeader(200)
+
+        print("self.response_header :\n%s" % self.response_header)
+        print("self.response_body :\n%s" % self.response_body)
+        if self.response_header and self.response_body:  # 拼接完整的响应内容
+            response = self.response_header + "\r\n" + self.response_body
+
+        logger.info("[ 服务子进程 ] 服务器响应数据:")
+        for i, line in enumerate(response.splitlines()):
+            logger.info("[ 服务子进程 ] Line#%d %s" % (i, line))
         return response.encode("utf-8")
 
     def clientHandler(self, client_socket, destAddr):
         """处理客户端请求"""
 
         # 1.获取客户端请求数据
-        print(">> %s 客户端服务子进程: 开启客户端%s 服务子进程!!!" % (datetime.datetime.now(), str(destAddr)))
+        logger.info("[ 服务子进程 ] 开启 客户端%s 服务子进程" % str(destAddr))
         request_data = ""
+        response = "Default Response".encode("utf-8")
         client_socket.settimeout(0.5)
         try:
             while True:
                 recvData = client_socket.recv(2048)
-                print(">> %s 客户端服务子进程: 接收客户端%s 请求数据......" % (datetime.datetime.now(), str(destAddr)))
+                logger.info("[ 服务子进程 ] 接收 客户端%s 请求数据......" % str(destAddr))
                 if 2048 == len(recvData):
                     request_data += recvData.decode("utf-8")
                 elif 0 < (2048 - len(recvData)):
                     request_data += recvData.decode("utf-8")
                     break
-        except socket.timeout as e:
-            print(e)
-        finally:
+
             # 2.生成响应数据
             response = self.getResposeInfos(request_data, destAddr)
+        except socket.timeout:
+            pass
+        finally:
             # 3.向客户端返回响应数据
             client_socket.send(response)
 
             # 4.关闭客户端连接
+            logger.info("[ 服务子进程 ] 关闭 客户端%s 连接" % str(destAddr))
             client_socket.close()
 
     def start(self):
         self.serSocket.listen(128)
-        print(">> %s [ HTTP服务器: 启动成功!!! ]" % datetime.datetime.now())
+        logger.info("[ HTTP服务器 ] 服务器启动成功")
         while True:
             try:
-                print(">> %s [ HTTP服务器: 主进程等待客户端请求...... ]" % datetime.datetime.now())
+                logger.info("[ HTTP服务器 ] 等待客户端请求......")
                 newSocket, destAddr = self.serSocket.accept()
-                print(">> %s [ HTTP服务器: 收到客户端%s请求，创建客户端服务子进程. ]" % (datetime.datetime.now(), str(destAddr)))
+                logger.info("[ HTTP服务器 ] 收到客户端%s请求，创建客户端服务子进程" % str(destAddr))
                 client_process = Process(target=self.clientHandler, args=(newSocket, destAddr))
-                print(">> %s [ HTTP服务器: 主进程启动客户端处理子进程%s ]" % (datetime.datetime.now(), str(destAddr)))
+                logger.info("[ HTTP服务器 ] 启动客户端处理子进程%s" % str(destAddr))
                 client_process.start()
-                print(">> %s [ HTTP服务器: 主进程关闭客户端套接字%s ]" % (datetime.datetime.now(), str(destAddr)))
                 newSocket.close()
             except Exception as er:
-                print(">> %s [ HTTP服务器: 服务器出错 ：%s ]" % (datetime.datetime.now(), er))
+                logger.info("[ HTTP服务器 ] HTTP服务器出错 : %s" % er)
                 self.serSocket.close()
-                print(">> %s [ HTTP服务器: 重启TCP服务器...... ]" % datetime.datetime.now())
+                logger.info("[ HTTP服务器 ] 重启 HTTP服务器......")
                 self.start()
 
 
 def main():
+    logger.info("[ HTTP服务器 ] 服务器初始化")
     http_server = HTTPServer()
     localAddr = ("", 8899)
     http_server.bind(localAddr)
