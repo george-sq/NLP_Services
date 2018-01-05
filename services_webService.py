@@ -24,7 +24,7 @@ stdoutLogger = logging.StreamHandler()
 stdoutLogger.setLevel(logging.INFO)  # 输出到console的log等级的开关
 
 logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s | %(levelname)s | %(filename)s(line:%(lineno)s) | %(message)s",
+                    format="%(asctime)s | %(levelname)s | %(message)s",
                     datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
 
 
@@ -83,7 +83,7 @@ class HTTPServer(object):
             if 2 == len(s.split("?")):
                 request_params.extend(s.split("?")[-1].split("&"))
         else:
-            logger.info("[ 服务子进程 ] 客户端%s 请求数据长度异常. len=%d" % (str(destAddr), len(request_data)))
+            logger.warning("[ 服务子进程 ] 客户端%s 请求数据长度异常. len=%d" % (str(destAddr), len(request_data)))
 
         # 2.2 生成响应数据
         response = "Default Response"
@@ -100,8 +100,8 @@ class HTTPServer(object):
             if self.response_body is not None:
                 self.getResponseHeader(200)
 
-        print("self.response_header :\n%s" % self.response_header)
-        print("self.response_body :\n%s" % self.response_body)
+        # print("self.response_header :\n%s" % self.response_header)
+        # print("self.response_body :\n%s" % self.response_body)
         if self.response_header and self.response_body:  # 拼接完整的响应内容
             response = self.response_header + "\r\n" + self.response_body
 
@@ -153,9 +153,9 @@ class HTTPServer(object):
                 client_process.start()
                 newSocket.close()
             except Exception as er:
-                logger.info("[ HTTP服务器 ] HTTP服务器出错 : %s" % er)
+                logger.error("[ HTTP服务器 ] HTTP服务器出错 : %s" % er)
                 self.serSocket.close()
-                logger.info("[ HTTP服务器 ] 重启 HTTP服务器......")
+                logger.warning("[ HTTP服务器 ] 重启 HTTP服务器......")
                 self.start()
 
 
