@@ -33,117 +33,97 @@ def splitTxt(docs=None):
     return dataSets
 
 
-def getRawCorpus():
+def getRawCorpus(sql=""):
     # 初始化Mysql数据库连接
     mysqls = dbs.MysqlServer()
-    # mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
 
     # 获取原始语料库数据
-    result_query = mysqls.executeSql("SELECT * FROM tb_ajinfo ORDER BY tId")
-    txts = []
-    txtIds = []
-    for record in result_query[1:]:
-        txtIds.append(str(record[0]))
-        txts.append(record[1])
-    logger.info("获得案件记录数据,记录总数 %s records" % len(txts))
+    if len(sql) > 0:
+        result_query = mysqls.executeSql(sql)
+        txts = []
+        txtIds = []
+        for record in result_query[1:]:
+            txtIds.append(str(record[0]))
+            txts.append(record[1])
+        logger.info("获得案件记录数据,记录总数 %s records" % len(txts))
 
-    # 分词处理
-    dataSets = splitTxt(txts)
+        # 分词处理
+        dataSets = splitTxt(txts)
 
-    # 原始文本集
-    raw = Bunch(txtIds=txtIds, rawCorpus=dataSets)
+        # 原始文本集
+        raw = Bunch(txtIds=txtIds, rawCorpus=dataSets)
 
-    # 数据标准化
-    structDataHandler = structdata.BaseStructData()
-    dicts4corpus = structDataHandler.buildGensimDict(dataSets)
+        # 数据标准化
+        structDataHandler = structdata.BaseStructData()
+        dicts4corpus = structDataHandler.buildGensimDict(dataSets)
 
-    # 标准化语料库
-    corpus = structDataHandler.buildGensimCorpusByCorporaDicts(dataSets, dicts4corpus)
+        # 标准化语料库
+        corpus = structDataHandler.buildGensimCorpusByCorporaDicts(dataSets, dicts4corpus)
 
-    # 统计TFIDF数据
-    statDataHandler = structdata.StatisticalData()
-    model_tfidf = statDataHandler.buildGensimTFIDF(initCorpus=corpus)
+        # 统计TFIDF数据
+        statDataHandler = structdata.StatisticalData()
+        model_tfidf = statDataHandler.buildGensimTFIDF(initCorpus=corpus)
 
-    return raw, corpus, dicts4corpus, model_tfidf
+        return raw, corpus, dicts4corpus, model_tfidf
 
 
-def buildTfidfModel():
+def buildTfidfModel(sql="", path="", mname=""):
     # 预处理
-    raw, corpus, dicts, tfidfModel = getRawCorpus()
-    tfidfVecs = tfidfModel[corpus]
-    num_features = len(dicts)
-    fileHandler = fs.FileServer()
-    fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="dict_anjian.dict", dicts=dicts)
-    fileHandler.saveGensimTfidfModel(path="./Out/Models/", fileName="model_TfidfModel_anjian.mdl", tfidf=tfidfModel)
-    fileHandler.saveGensimCourpus2MM(path="./Out/Corpus/", fileName="corpus_anjian.mm", inCorpus=corpus)
-    fileHandler.savePickledObjFile(path="./Out/", fileName="raw_anjian.dat", writeContentObj=raw)
+    if len(sql) > 0:
+        raw, corpus, dicts, tfidfModel = getRawCorpus(sql=sql)
+        tfidfVecs = tfidfModel[corpus]
+        num_features = len(dicts)
+        fileHandler = fs.FileServer()
 
-    # tfidf相似性
-    indexTfidf = gensim.similarities.SparseMatrixSimilarity(tfidfVecs, num_features=num_features)
-    fileHandler.saveIndex4tfidfSimilarity(path="./Out/Indexs/", fileName="index_TfidfModel_anjian.idx",
-                                          index=indexTfidf)
-    similarityModel = Bunch(txtIds=raw.txtIds, dicts=dicts, tfidfModel=tfidfModel, indexTfidf=indexTfidf)
-    fileHandler.savePickledObjFile(path="./Out/", fileName="model_tfidfSimilarity_anjian.pickle",
-                                   writeContentObj=similarityModel)
+        # tfidf相似性
+        indexTfidf = gensim.similarities.SparseMatrixSimilarity(tfidfVecs, num_features=num_features)
+        similarityModel = Bunch(txtIds=raw.txtIds, dicts=dicts, tfidfModel=tfidfModel, indexTfidf=indexTfidf)
+
+        if len(path) > 0 and len(mname) > 0:
+            fileHandler.savePickledObjFile(path=path, fileName=mname, writeContentObj=similarityModel)
 
 
-def tfidfSimilartyProcess(queryTxt):
-    # 加载数据
-    fileHandler = fs.FileServer()
-    similarityModel = fileHandler.loadPickledObjFile(path="./Out/", fileName="model_tfidfSimilarity_anjian.pickle")
-    txtIds = similarityModel.txtIds
-    dicts = similarityModel.dicts
-    tfidfModel = similarityModel.tfidfModel
-    indexTfidf = similarityModel.indexTfidf
+def tfidfSimilartyProcess(queryTxt, sql="", path="", mname=""):
+    if len(path) > 0 and len(mname) > 0:
+        # 加载数据
+        fileHandler = fs.FileServer()
+        similarityModel = fileHandler.loadPickledObjFile(path=path, fileName=mname)
+        txtIds = similarityModel.txtIds
+        dicts = similarityModel.dicts
+        tfidfModel = similarityModel.tfidfModel
+        indexTfidf = similarityModel.indexTfidf
 
-    # 数字向量化
-    bow_query = dicts.doc2bow(list(jieba.cut(queryTxt)))
-    tfidf_query = tfidfModel[bow_query]
+        # 数字向量化
+        bow_query = dicts.doc2bow(list(jieba.cut(queryTxt)))
+        tfidf_query = tfidfModel[bow_query]
 
-    # tfidf相似性
-    sim_tfidf_query = indexTfidf[tfidf_query]
-    results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
-    results = [(txtIds[index], freq) for index, freq in results]
+        # tfidf相似性
+        sim_tfidf_query = indexTfidf[tfidf_query]
+        results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
+        results = [(txtIds[index], freq) for index, freq in results]
 
-    print("query tfidf相似性：")
-    print(results)
-    for r in results:
-        q = dbs.MysqlServer().executeSql("select * from tb_tinfo WHERE tid=%s" % r[0])
-        print(q[1:][0][:2])
+        print("query tfidf相似性：")
+        print(results)
+        if len(sql) > 0:
+            for r in results:
+                q = dbs.MysqlServer().executeSql(sql % r[0])
+                print(q[1:][0][:2])
 
-    return results
+        return results
 
 
 def main():
+    queryTxt = "微信上买手机，转账被骗3100 现在此地，请妥处 嫌疑人微信号qq421149709"
+
     # 生成数据
-    # buildTfidfModel()
+    sql = "SELECT * FROM tb_ajinfo ORDER BY tId"
+    path = "./Out/"
+    mname = "model_tfidfSimilarity_anjian.pickle"
+    buildTfidfModel(sql=sql, path=path, mname=mname)
 
-    # 加载数据
-    fileHandler = fs.FileServer()
-    similarityModel = fileHandler.loadPickledObjFile(path="./Out/", fileName="model_tfidfSimilarity_anjian.pickle")
-    txtIds = similarityModel.txtIds
-    dicts = similarityModel.dicts
-    tfidfModel = similarityModel.tfidfModel
-    indexTfidf = similarityModel.indexTfidf
-
-    queryTxt = "微信上买手机，转账被骗3100 现在此地，请妥处 嫌疑人微信号qq421149709 "
-    bow_query = dicts.doc2bow(list(jieba.cut(queryTxt)))
-
-    # 数字向量化
-    tfidf_query = tfidfModel[bow_query]
-
-    # tfidf相似性
-    sim_tfidf_query = indexTfidf[tfidf_query]
-    results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
-    # results = results[:5]
-    # print(results)
-
-    results = [(txtIds[index], freq) for index, freq in results]
-    print("query tfidf相似性：")
-    print(results)
-    for r in results:
-        q = dbs.MysqlServer().executeSql("select * from tb_ajinfo WHERE tid=%s" % r[0])
-        print(q[1:][0][:2])
+    # 相似度分析
+    sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
+    tfidfSimilartyProcess(queryTxt, sql=sql, path=path, mname=mname)
 
 
 if __name__ == '__main__':
