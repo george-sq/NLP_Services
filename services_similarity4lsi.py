@@ -51,7 +51,7 @@ def main():
     print("query lsi相似性：")
     print(results)
     for r in results:
-        q = dbs.MysqlServer().executeSql("select * from tb_tinfo WHERE tid=%s" % r[0])
+        q = dbs.MysqlServer().executeSql("select * from tb_ajinfo WHERE tid=%s" % r[0])
         print(q[1:][0][:2])
 
 
