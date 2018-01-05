@@ -58,7 +58,7 @@ def getAnjianSimilarity(request_data):
         path = "./Out/"
         mname = "model_tfidfSimilarity_anjian.pickle"
         sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
-        result = sim.tfidfSimilartyProcess(jsonData["txt"], sql=sql, path=path, mname=mname)
+        result = sim.tfidfSimilartyProcess(jsonData.get("txt", "").upper(), sql=sql, path=path, mname=mname)
 
     return json.dumps({"Status": 200, "txtIds": result})
 
@@ -78,9 +78,9 @@ def getAtmSimilarity(request_data):
 
         # 相似度分析
         path = "./Out/"
-        mname = "model_tfidfSimilarity_anjian.pickle"
-        sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
-        result = sim.tfidfSimilartyProcess(jsonData["atm"], sql=sql, path=path, mname=mname)
+        mname = "model_tfidfSimilarity_atm.pickle"
+        sql = "SELECT * FROM tb_atminfos WHERE id=%s"
+        result = sim.tfidfSimilartyProcess(jsonData.get("atm", "").upper(), sql=sql, path=path, mname=mname)
 
     return json.dumps({"Status": 200, "atmIds": result})
 
