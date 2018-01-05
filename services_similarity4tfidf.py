@@ -39,7 +39,7 @@ def getRawCorpus():
     # mysqls.setConnect(user="pamo", passwd="pamo", db="textcorpus")
 
     # 获取原始语料库数据
-    result_query = mysqls.executeSql("SELECT * FROM tb_tinfo ORDER BY tId")
+    result_query = mysqls.executeSql("SELECT * FROM tb_ajinfo ORDER BY tId")
     txts = []
     txtIds = []
     for record in result_query[1:]:
@@ -142,7 +142,7 @@ def main():
     print("query tfidf相似性：")
     print(results)
     for r in results:
-        q = dbs.MysqlServer().executeSql("select * from tb_tinfo WHERE tid=%s" % r[0])
+        q = dbs.MysqlServer().executeSql("select * from tb_ajinfo WHERE tid=%s" % r[0])
         print(q[1:][0][:2])
 
 
