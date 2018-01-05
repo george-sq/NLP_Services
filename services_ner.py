@@ -122,7 +122,7 @@ def fullMatch(record):
     # 未标注内容的分词处理
     step9 = getNamedEntity(step8)
 
-    # for c in step8:
+    # for c in step9:
     #     print(c)
 
     return tid, step9

@@ -99,7 +99,7 @@ def tfidfSimilartyProcess(queryTxt, sql="", path="", mname=""):
 
         # tfidf相似性
         sim_tfidf_query = indexTfidf[tfidf_query]
-        results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:5]
+        results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:10]
         results = [(txtIds[index], freq) for index, freq in results]
 
         print("query tfidf相似性：")
@@ -108,7 +108,8 @@ def tfidfSimilartyProcess(queryTxt, sql="", path="", mname=""):
             for r in results:
                 q = dbs.MysqlServer().executeSql(sql % r[0])
                 print(q[1:][0][:2])
-
+        results = [int(item[0]) for item in results]
+        print(results)
         return results
 
 

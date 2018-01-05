@@ -10,6 +10,7 @@ from multiprocessing import Process
 import time
 import socket
 import json
+import services_similarity4tfidf as sim
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,17 +29,63 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
 
 
-def show_ctime():
+def show_ctime(request_data):
     """测试0"""
+    type(request_data)
     return json.dumps({"NO_ACTION Response": {"404": str(time.ctime())}})
 
 
-def tst_sucessResponse():
+def tst_sucessResponse(request_data):
     """测试1"""
+    type(request_data)
     return json.dumps({"Sucess Response": {"200": str(time.ctime())}})
 
 
-ACTION_DICTS = {"/": tst_sucessResponse, 1: "", 2: ""}
+def getAnjianSimilarity(request_data):
+    """案件相似度"""
+    request_params, request_body = request_data
+    # print("request_params :", request_params)
+    # print("request_params type:", type(request_params))
+    # print("request_body :", request_body)
+    # print("request_body type:", type(request_body))
+    result = ""
+    if isinstance(request_body, str) and len(request_body) > 0:
+        jsonData = json.loads(request_body)
+        jsonData = dict(jsonData)
+        # print("jsonData", jsonData)
+
+        # 相似度分析
+        path = "./Out/"
+        mname = "model_tfidfSimilarity_anjian.pickle"
+        sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
+        result = sim.tfidfSimilartyProcess(jsonData["txt"], sql=sql, path=path, mname=mname)
+
+    return json.dumps({"Status": 200, "txtIds": result})
+
+
+def getAtmSimilarity(request_data):
+    """atm相似度"""
+    request_params, request_body = request_data
+    # print("request_params :", request_params)
+    # print("request_params type:", type(request_params))
+    # print("request_body :", request_body)
+    # print("request_body type:", type(request_body))
+    result = ""
+    if isinstance(request_body, str) and len(request_body) > 0:
+        jsonData = json.loads(request_body)
+        jsonData = dict(jsonData)
+        # print("jsonData", jsonData)
+
+        # 相似度分析
+        path = "./Out/"
+        mname = "model_tfidfSimilarity_anjian.pickle"
+        sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
+        result = sim.tfidfSimilartyProcess(jsonData["atm"], sql=sql, path=path, mname=mname)
+
+    return json.dumps({"Status": 200, "atmIds": result})
+
+
+ACTION_DICTS = {"/": tst_sucessResponse, "/ajSim": getAnjianSimilarity, "/atmSim": getAtmSimilarity}
 STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
 
 
@@ -60,8 +107,7 @@ class HTTPServer(object):
         self.response_header = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "text/html; charset=UTF-8")
 
     def getResponseBody(self, action, request_data):
-        len(request_data)
-        self.response_body = action()
+        self.response_body = action(request_data)
 
     def getResposeInfos(self, request_data, destAddr):
         # 2.1 解析客户端请求数据
