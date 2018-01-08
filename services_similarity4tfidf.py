@@ -17,6 +17,7 @@ import services_textProcess as tp
 import services_fileIO as fs
 import multiprocessing
 from sklearn.datasets.base import Bunch
+import services_ner as ner
 import jieba
 
 jieba.setLogLevel(log_level=logging.INFO)
@@ -103,29 +104,37 @@ def tfidfSimilartyProcess(queryTxt, sql="", path="", mname=""):
         results = [(txtIds[index], freq) for index, freq in results]
 
         print("query tfidf相似性：")
-        print(results)
+        # print(results)
+        sim_results = []
         if len(sql) > 0:
             for r in results:
                 q = dbs.MysqlServer().executeSql(sql % r[0])
                 print(q[1:][0][:2])
-        results = [int(item[0]) for item in results]
-        print(results)
-        return results
+                sim_results.append(q[1:][0][:2])
+        # results = [int(item[0]) for item in results]
+        # print(results)
+        return sim_results
 
 
 def main():
     queryTxt = "微信上买手机，转账被骗3100 现在此地，请妥处 嫌疑人微信号qq421149709"
 
     # 生成数据
-    sql = "SELECT * FROM tb_ajinfo ORDER BY tId"
+    # sql = "SELECT * FROM tb_ajinfo ORDER BY tId"
     path = "./Out/"
     mname = "model_tfidfSimilarity_anjian.pickle"
-    buildTfidfModel(sql=sql, path=path, mname=mname)
+    # buildTfidfModel(sql=sql, path=path, mname=mname)
 
     # 相似度分析
     sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
-    tfidfSimilartyProcess(queryTxt, sql=sql, path=path, mname=mname)
+    res_sim = tfidfSimilartyProcess(queryTxt, sql=sql, path=path, mname=mname)
+    results = []
+    for tid, txt in res_sim:
+        index, content = ner.fullMatch((tid, txt))
+        content = "\t".join([" | ".join(wp) for wp in content])
+        results.append((index, content))
 
+    print()
 
 if __name__ == '__main__':
     # 创建一个handler，用于写入日志文件
