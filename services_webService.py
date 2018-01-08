@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s | %(levelname)s | %(message)s",
                     datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
 
-ACTION_DICTS = {"/": actions.tst_sucessResponse, "/ajSim": actions.getAnjianSimilarity,
+ACTION_DICTS = {"/": actions.show_ctime, "/ajSim": actions.getAnjianSimilarity,
                 "/atmSim": actions.getAtmSimilarity}
 STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
 
@@ -90,8 +90,6 @@ class HTTPServer(object):
             if self.response_body is not None:
                 self.getResponseHeader(200)
 
-        # print("self.response_header :\n%s" % self.response_header)
-        # print("self.response_body :\n%s" % self.response_body)
         if self.response_header and self.response_body:  # 拼接完整的响应内容
             response = self.response_header + "\r\n" + self.response_body
 
