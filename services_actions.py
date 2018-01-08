@@ -9,55 +9,43 @@
 import json
 import time
 import services_similarity4tfidf as sim
+import services_database as dbs
 import logging
 
 logger = logging.getLogger(__name__)
 
-# 创建一个handler，用于写入日志文件
-logfile = './Logs/log_actionServices.log'
-fileLogger = logging.FileHandler(filename=logfile, encoding="utf-8")
-fileLogger.setLevel(logging.DEBUG)
 
-# 再创建一个handler，用于输出到控制台
-stdoutLogger = logging.StreamHandler()
-stdoutLogger.setLevel(logging.INFO)  # 输出到console的log等级的开关
-
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s | %(levelname)s | %(message)s",
-                    datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
+def useMysql(sql):
+    retVal = []
+    if len(sql) > 0:
+        q = dbs.MysqlServer().executeSql(sql)
+        retVal.extend(q[1:])
+    return retVal
 
 
 def show_ctime(request_data):
     """测试0"""
     type(request_data)
-    return json.dumps({"NO_ACTION Response": {"404": str(time.ctime())}})
-
-
-def tst_sucessResponse(request_data):
-    """测试1"""
-    type(request_data)
-    return json.dumps({"Sucess Response": {"200": str(time.ctime())}})
+    return json.dumps({"NO_ACTION Response": {"404": str(time.ctime())}}, ensure_ascii=False)
 
 
 def getAnjianSimilarity(request_data):
     """案件相似度"""
     request_params, request_json = request_data
-    # print("request_params :", request_params)
-    # print("request_params type:", type(request_params))
-    # print("request_body :", request_body)
-    # print("request_body type:", type(request_body))
     result = ""
     if isinstance(request_json, str) and len(request_json) > 0:
-        jsonData = json.loads(request_json)
-        jsonData = dict(jsonData)
-        # print("jsonData", jsonData)
-
+        jsonData = dict(json.loads(request_json))
         # 相似度分析
         path = "./Out/"
         mname = "model_tfidfSimilarity_anjian.pickle"
+        logger.info("[ 服务子进程 ] 客户端请求的JSON数据 : %s" % str(jsonData))
+        sim_result = sim.getTfidfSimilarty(jsonData.get("txt", "").upper(), path=path, mname=mname)
+        logger.info("[ 服务子进程 ] TFIDF相似性分析结果 : 相似案件集合 > %s" % sim_result)
         sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
-        sim_result = sim.tfidfSimilartyProcess(jsonData.get("txt", "").upper(), sql=sql, path=path, mname=mname)
-        result = json.dumps({"Status": 200, "atm": dict(sim_result)}, ensure_ascii=False)
+        qr = [dbs.MysqlServer().executeSql(sql % s)[-1][:2] for s in sim_result]
+        for index, record in enumerate(qr):
+            logger.info("[ 服务子进程 ] #L%d tid=%s txt=%s" % (index + 1, record[0], record[1]))
+        result = json.dumps({"Status": 200, "aj": dict(qr)}, ensure_ascii=False)
 
     return result
 
@@ -65,21 +53,20 @@ def getAnjianSimilarity(request_data):
 def getAtmSimilarity(request_data):
     """atm相似度"""
     request_params, request_json = request_data
-    # print("request_params :", request_params)
-    # print("request_params type:", type(request_params))
-    # print("request_body :", request_body)
-    # print("request_body type:", type(request_body))
     result = ""
     if isinstance(request_json, str) and len(request_json) > 0:
-        jsonData = json.loads(request_json)
-        jsonData = dict(jsonData)
-
+        jsonData = dict(json.loads(request_json))
         # 相似度分析
         path = "./Out/"
         mname = "model_tfidfSimilarity_atm.pickle"
+        logger.info("[ 服务子进程 ] 客户端请求的JSON数据 : %s" % str(jsonData))
+        sim_result = sim.getTfidfSimilarty(jsonData.get("atm", "").upper(), path=path, mname=mname)
+        logger.info("[ 服务子进程 ] TFIDF相似性分析结果 : 相似ATM集合 > %s" % sim_result)
         sql = "SELECT * FROM tb_atminfos WHERE id=%s"
-        sim_result = sim.tfidfSimilartyProcess(jsonData.get("atm", "").upper(), sql=sql, path=path, mname=mname)
-        result = json.dumps({"Status": 200, "atm": dict(sim_result)}, ensure_ascii=False)
+        qr = [dbs.MysqlServer().executeSql(sql % s)[-1][:2] for s in sim_result]
+        for index, record in enumerate(qr):
+            logger.info("[ 服务子进程 ] #L%d id=%s atm=%s" % (index + 1, record[0], record[1]))
+        result = json.dumps({"Status": 200, "atm": dict(qr)}, ensure_ascii=False)
 
     return result
 

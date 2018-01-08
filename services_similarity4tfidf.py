@@ -84,7 +84,7 @@ def buildTfidfModel(sql="", path="", mname=""):
             fileHandler.savePickledObjFile(path=path, fileName=mname, writeContentObj=similarityModel)
 
 
-def tfidfSimilartyProcess(queryTxt, sql="", path="", mname=""):
+def getTfidfSimilarty(queryTxt, path="", mname=""):
     if len(path) > 0 and len(mname) > 0:
         # 加载数据
         fileHandler = fs.FileServer()
@@ -102,17 +102,7 @@ def tfidfSimilartyProcess(queryTxt, sql="", path="", mname=""):
         sim_tfidf_query = indexTfidf[tfidf_query]
         results = sorted(enumerate(sim_tfidf_query), key=lambda item: -item[1])[:10]
         results = [(txtIds[index], freq) for index, freq in results]
-
-        print("query tfidf相似性：")
-        # print(results)
-        sim_results = []
-        if len(sql) > 0:
-            for r in results:
-                q = dbs.MysqlServer().executeSql(sql % r[0])
-                print(q[1:][0][:2])
-                sim_results.append(q[1:][0][:2])
-        # results = [int(item[0]) for item in results]
-        # print(results)
+        sim_results = [int(item[0]) for item in results]
         return sim_results
 
 
@@ -126,15 +116,23 @@ def main():
     # buildTfidfModel(sql=sql, path=path, mname=mname)
 
     # 相似度分析
-    sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
-    res_sim = tfidfSimilartyProcess(queryTxt, sql=sql, path=path, mname=mname)
+    res_sim = getTfidfSimilarty(queryTxt, path=path, mname=mname)
     results = []
-    for tid, txt in res_sim:
-        index, content = ner.fullMatch((tid, txt))
+    retVal = []
+    if len(res_sim) > 0:
+        sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
+        print(sql)
+        qr = [dbs.MysqlServer().executeSql(sql % s)[-1][:2] for s in res_sim]
+        retVal.extend(qr)
+        print(dict(qr))
+        for r in qr:
+            print(r)
+    for lnum, record in enumerate(retVal):
+        index, content = ner.fullMatch((record[0], record[1]))
         content = "\t".join([" | ".join(wp) for wp in content])
         results.append((index, content))
+        print(lnum + 1, content)
 
-    print()
 
 if __name__ == '__main__':
     # 创建一个handler，用于写入日志文件
