@@ -7,10 +7,8 @@
 """
 
 from multiprocessing import Process
-import time
+import services_actions as actions
 import socket
-import json
-import services_similarity4tfidf as sim
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,64 +26,8 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s | %(levelname)s | %(message)s",
                     datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
 
-
-def show_ctime(request_data):
-    """测试0"""
-    type(request_data)
-    return json.dumps({"NO_ACTION Response": {"404": str(time.ctime())}})
-
-
-def tst_sucessResponse(request_data):
-    """测试1"""
-    type(request_data)
-    return json.dumps({"Sucess Response": {"200": str(time.ctime())}})
-
-
-def getAnjianSimilarity(request_data):
-    """案件相似度"""
-    request_params, request_body = request_data
-    # print("request_params :", request_params)
-    # print("request_params type:", type(request_params))
-    # print("request_body :", request_body)
-    # print("request_body type:", type(request_body))
-    result = ""
-    if isinstance(request_body, str) and len(request_body) > 0:
-        jsonData = json.loads(request_body)
-        jsonData = dict(jsonData)
-        # print("jsonData", jsonData)
-
-        # 相似度分析
-        path = "./Out/"
-        mname = "model_tfidfSimilarity_anjian.pickle"
-        sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
-        result = sim.tfidfSimilartyProcess(jsonData.get("txt", "").upper(), sql=sql, path=path, mname=mname)
-
-    return json.dumps({"Status": 200, "txtIds": result})
-
-
-def getAtmSimilarity(request_data):
-    """atm相似度"""
-    request_params, request_body = request_data
-    # print("request_params :", request_params)
-    # print("request_params type:", type(request_params))
-    # print("request_body :", request_body)
-    # print("request_body type:", type(request_body))
-    result = ""
-    if isinstance(request_body, str) and len(request_body) > 0:
-        jsonData = json.loads(request_body)
-        jsonData = dict(jsonData)
-        # print("jsonData", jsonData)
-
-        # 相似度分析
-        path = "./Out/"
-        mname = "model_tfidfSimilarity_atm.pickle"
-        sql = "SELECT * FROM tb_atminfos WHERE id=%s"
-        result = sim.tfidfSimilartyProcess(jsonData.get("atm", "").upper(), sql=sql, path=path, mname=mname)
-
-    return json.dumps({"Status": 200, "atmIds": result})
-
-
-ACTION_DICTS = {"/": tst_sucessResponse, "/ajSim": getAnjianSimilarity, "/atmSim": getAtmSimilarity}
+ACTION_DICTS = {"/": actions.tst_sucessResponse, "/ajSim": actions.getAnjianSimilarity,
+                "/atmSim": actions.getAtmSimilarity}
 STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
 
 
@@ -104,7 +46,7 @@ class HTTPServer(object):
             self.serSocket.bind(addr)
 
     def getResponseHeader(self, status):
-        self.response_header = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "text/html; charset=UTF-8")
+        self.response_header = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "application/json; charset=UTF-8")
 
     def getResponseBody(self, action, request_data):
         self.response_body = action(request_data)
@@ -113,7 +55,7 @@ class HTTPServer(object):
         # 2.1 解析客户端请求数据
         request_start_line = []
         request_params = []
-        request_body = ""
+        request_json = ""
         request_resource = ""
         logger.info("[ 服务子进程 ] 完成 客户端%s 请求数据接收" % str(destAddr))
         if len(request_data) > 0:
@@ -125,7 +67,7 @@ class HTTPServer(object):
             logger.info("[ 服务子进程 ] %s" % (">>>>>>>>>>" * 10))
             logger.info("[ 服务子进程 ] 开始 客户端%s 数据处理服务......" % str(destAddr))
             request_start_line.extend(request_lines[0].split())
-            request_body = request_lines[-1]
+            request_json = request_lines[-1]
             m, s, p = request_start_line  # m=Http请求方法, s=请求资源标识, p=Http协议
             request_resource = s.split("?")[0]
             if 2 == len(s.split("?")):
@@ -138,9 +80,9 @@ class HTTPServer(object):
         action = ACTION_DICTS.get(request_resource, None)
 
         if action is not None:  # 校验资源请求的有效性
-            self.getResponseBody(action, (request_params, request_body))
+            self.getResponseBody(action, (request_params, request_json))
         else:
-            self.getResponseBody(show_ctime, (request_params, request_body))
+            self.getResponseBody(actions.show_ctime, (request_params, request_json))
 
         if action is None:  # 选择合适的响应头
             self.getResponseHeader(404)
