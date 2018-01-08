@@ -39,9 +39,10 @@ def getAnjianSimilarity(request_data):
         path = "./Out/"
         mname = "model_tfidfSimilarity_anjian.pickle"
         logger.info("[ 服务子进程 ] 客户端请求的JSON数据 : %s" % str(jsonData))
-        sim_result = sim.getTfidfSimilarty(jsonData.get("txt", "").upper(), path=path, mname=mname)
+        sim_result = sim.getTfidfSimilarty(jsonData.get("aj", "").upper(), path=path, mname=mname)
         logger.info("[ 服务子进程 ] TFIDF相似性分析结果 : 相似案件集合 > %s" % sim_result)
         sql = "SELECT * FROM tb_ajinfo WHERE tid=%s"
+        logger.info("[ 服务子进程 ] 执行SQL : %s" % sql)
         qr = [dbs.MysqlServer().executeSql(sql % s)[-1][:2] for s in sim_result]
         for index, record in enumerate(qr):
             logger.info("[ 服务子进程 ] #L%d tid=%s txt=%s" % (index + 1, record[0], record[1]))
@@ -63,6 +64,7 @@ def getAtmSimilarity(request_data):
         sim_result = sim.getTfidfSimilarty(jsonData.get("atm", "").upper(), path=path, mname=mname)
         logger.info("[ 服务子进程 ] TFIDF相似性分析结果 : 相似ATM集合 > %s" % sim_result)
         sql = "SELECT * FROM tb_atminfos WHERE id=%s"
+        logger.info("[ 服务子进程 ] 执行SQL : %s" % sql)
         qr = [dbs.MysqlServer().executeSql(sql % s)[-1][:2] for s in sim_result]
         for index, record in enumerate(qr):
             logger.info("[ 服务子进程 ] #L%d id=%s atm=%s" % (index + 1, record[0], record[1]))
