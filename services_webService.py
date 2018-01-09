@@ -26,8 +26,10 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s | %(levelname)s | %(message)s",
                     datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
 
+# 功能字典
 ACTION_DICTS = {"/": actions.show_ctime, "/ajSim": actions.getAnjianSimilarity,
                 "/atmSim": actions.getAtmSimilarity}
+# 响应状态字典
 STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
 
 
