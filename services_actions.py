@@ -26,7 +26,7 @@ def useMysql(sql):
 def show_ctime(request_data):
     """测试0"""
     type(request_data)
-    return json.dumps({"NO_ACTION Response": {"404": str(time.ctime())}}, ensure_ascii=False)
+    return json.dumps({"Root Response": {"404": str(time.ctime())}}, ensure_ascii=False)
 
 
 def getAnjianSimilarity(request_data):
