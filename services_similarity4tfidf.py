@@ -34,9 +34,13 @@ def splitTxt(docs=None):
     return dataSets
 
 
-def getRawCorpus(sql=""):
+def getRawCorpus(sql="", **kwargs):
     # 初始化Mysql数据库连接
     mysqls = dbs.MysqlServer()
+    dbconfig = kwargs.get("dbconfig", None)
+    if dbconfig is not None and isinstance(dbconfig, dict):
+        mysqls.setConnect(host=dbconfig.get("host"), port=dbconfig.get("port"), user=dbconfig.get("user"),
+                          passwd=dbconfig.get("passwd"), db=dbconfig.get("db"))
 
     # 获取原始语料库数据
     if len(sql) > 0:
@@ -68,10 +72,10 @@ def getRawCorpus(sql=""):
         return raw, corpus, dicts4corpus, model_tfidf
 
 
-def buildTfidfModel(sql="", path="", mname=""):
+def buildTfidfModel(sql="", path="", mname="", **kwargs):
     # 预处理
     if len(sql) > 0:
-        raw, corpus, dicts, tfidfModel = getRawCorpus(sql=sql)
+        raw, corpus, dicts, tfidfModel = getRawCorpus(sql=sql, dbconfig=kwargs.get("dbconfig"))
         tfidfVecs = tfidfModel[corpus]
         num_features = len(dicts)
         fileHandler = fs.FileServer()
