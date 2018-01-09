@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.DEBUG,
 # 功能字典
 ACTION_DICTS = {"/": actions.show_ctime, "/ajSim": actions.getAnjianSimilarity,
                 "/atmSim": actions.getAtmSimilarity}
-# 响应状态字典
+# HTTP响应状态字典
 STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
 
 
@@ -84,7 +84,7 @@ class HTTPServer(object):
         if action is not None:  # 校验资源请求的有效性
             self.getResponseBody(action, (request_params, request_json))
         else:
-            self.getResponseBody(actions.show_ctime, (request_params, request_json))
+            self.getResponseBody(actions.show_ctime, (request_params, -1))
 
         if action is None:  # 选择合适的响应头
             self.getResponseHeader(404)

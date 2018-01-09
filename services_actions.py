@@ -14,6 +14,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# 功能执行的返回状态代码字典
+RESULT_CODES = {"f": 0, "s": 1}
+
 
 def useMysql(sql):
     retVal = []
@@ -25,14 +28,21 @@ def useMysql(sql):
 
 def show_ctime(request_data):
     """测试0"""
-    type(request_data)
-    return json.dumps({"Root Response": {"404": str(time.ctime())}}, ensure_ascii=False)
+    request_params, request_json = request_data
+    result = {"Root Response": {"RESULT_CODES": 0, "RESULT": None}}
+    rsp = result.get("Root Response")
+    rsp["RESULT"] = str(time.ctime())
+    if -1 != request_json:
+        rsp["RESULT_CODES"] = RESULT_CODES["s"]
+    result = json.dumps(result, ensure_ascii=False)
+
+    return result
 
 
 def getAnjianSimilarity(request_data):
     """案件相似度"""
     request_params, request_json = request_data
-    result = ""
+    result = {"Action Response": {"RESULT_CODES": 0, "RESULT": None}}
     if isinstance(request_json, str) and len(request_json) > 0:
         jsonData = dict(json.loads(request_json))
         # 相似度分析
@@ -46,7 +56,11 @@ def getAnjianSimilarity(request_data):
         qr = [dbs.MysqlServer().executeSql(sql % s)[-1][:2] for s in sim_result]
         for index, record in enumerate(qr):
             logger.info("[ 服务子进程 ] #L%d tid=%s txt=%s" % (index + 1, record[0], record[1]))
-        result = json.dumps({"Status": 200, "aj": dict(qr)}, ensure_ascii=False)
+        rsp = result.get("Action Response")
+        if len(qr) > 0:
+            rsp["RESULT_CODES"] = RESULT_CODES["s"]
+            rsp["RESULT"] = dict(qr)
+        result = json.dumps(result, ensure_ascii=False)
 
     return result
 
@@ -54,7 +68,7 @@ def getAnjianSimilarity(request_data):
 def getAtmSimilarity(request_data):
     """atm相似度"""
     request_params, request_json = request_data
-    result = ""
+    result = {"Action Response": {"RESULT_CODES": 0, "RESULT": None}}
     if isinstance(request_json, str) and len(request_json) > 0:
         jsonData = dict(json.loads(request_json))
         # 相似度分析
@@ -68,7 +82,11 @@ def getAtmSimilarity(request_data):
         qr = [dbs.MysqlServer().executeSql(sql % s)[-1][:2] for s in sim_result]
         for index, record in enumerate(qr):
             logger.info("[ 服务子进程 ] #L%d id=%s atm=%s" % (index + 1, record[0], record[1]))
-        result = json.dumps({"Status": 200, "atm": dict(qr)}, ensure_ascii=False)
+        rsp = result.get("Action Response")
+        if len(qr) > 0:
+            rsp["RESULT_CODES"] = RESULT_CODES["s"]
+            rsp["RESULT"] = dict(qr)
+        result = json.dumps(result, ensure_ascii=False)
 
     return result
 
