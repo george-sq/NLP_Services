@@ -77,9 +77,14 @@ def getAtmSimilarity(request_data):
         logger.info("[ 服务子进程 ] 客户端请求的JSON数据 : %s" % str(jsonData))
         sim_result = sim.getTfidfSimilarty(jsonData.get("atm", "").upper(), path=path, mname=mname)
         logger.info("[ 服务子进程 ] TFIDF相似性分析结果 : 相似ATM集合 > %s" % sim_result)
-        sql = "SELECT * FROM tb_atminfos WHERE id=%s"
+        # sql = "SELECT * FROM tb_atminfos WHERE id=%s"
+        sql = "SELECT * FROM tbl_analysis_atmposinfo WHERE id=%s"
+        dbconfig = {"host": "10.0.0.233", "user": "root", "passwd": "root", "db": "analysis"}
+        dbHandler = dbs.MysqlServer()
+        dbHandler.setConnect(host=dbconfig.get("host"), port=dbconfig.get("port"), user=dbconfig.get("user"),
+                             passwd=dbconfig.get("passwd"), db=dbconfig.get("db"))
         logger.info("[ 服务子进程 ] 执行SQL : %s" % sql)
-        qr = [dbs.MysqlServer().executeSql(sql % s)[-1][:2] for s in sim_result]
+        qr = [dbHandler.executeSql(sql % s)[-1][:2] for s in sim_result]
         for index, record in enumerate(qr):
             logger.info("[ 服务子进程 ] #L%d id=%s atm=%s" % (index + 1, record[0], record[1]))
         rsp = result.get("Action Response")
