@@ -44,13 +44,26 @@ class HTTPServer(object):
         self.response_body = None
 
     def bind(self, addr):
+        """
+        :param addr:
+        :return:
+        """
         if isinstance(addr, tuple):
             self.serSocket.bind(addr)
 
     def getResponseHeader(self, status):
+        """
+        :param status:
+        :return:
+        """
         self.response_header = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "application/json; charset=UTF-8")
 
     def getResponseBody(self, action, request_data):
+        """
+        :param action:
+        :param request_data:
+        :return:
+        """
         self.response_body = action(request_data)
 
     def getResposeInfos(self, request_data, destAddr):
