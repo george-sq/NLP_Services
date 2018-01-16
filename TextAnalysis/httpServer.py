@@ -10,11 +10,14 @@ from multiprocessing import Process
 # import services_actions as actions
 import socket
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
+url_regexp = re.compile(r"(?<=/)(\S*)(?=\s)")
+
 # 创建一个handler，用于写入日志文件
-logfile = './Logs/log_textAnalysis.log'
+logfile = "/home/pamo/Codes/NLP_PAMO/Logs/log_textAnalysis.log"
 fileLogger = logging.FileHandler(filename=logfile, encoding="utf-8")
 fileLogger.setLevel(logging.DEBUG)
 
@@ -42,6 +45,7 @@ class HTTPServer(object):
         self.serSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.response_header = None
         self.response_body = None
+        self.env = []
 
     def bind(self, addr):
         """
@@ -120,13 +124,14 @@ class HTTPServer(object):
         :param reqData:
         :return:
         """
-        retVal = []
         requestLines = reqData.splitlines()
-        for l in requestLines:
-            print(l)
         startLine = requestLines[0]
+        self.env.append(("url", url_regexp.match(startLine)))
+        for line in requestLines[1:]:
+            k, v = line.split(": ")
+            self.env.append((k, v))
 
-        return retVal
+        return self.env
 
     def clientHandler(self, client_socket, destAddr):
         """ 处理客户端请求
