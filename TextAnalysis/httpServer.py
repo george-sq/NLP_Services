@@ -7,14 +7,13 @@
 """
 
 from multiprocessing import Process
-# import services_actions as actions
 import socket
 import logging
 import re
 
 logger = logging.getLogger(__name__)
 
-url_regexp = re.compile(r"(?<=/)(\S*)(?=\s)")
+url_regexp = re.compile(r"(?:[/])(\S*)(?=\s)", re.IGNORECASE)
 
 # 创建一个handler，用于写入日志文件
 logfile = "/home/pamo/Codes/NLP_PAMO/Logs/log_textAnalysis.log"
@@ -125,11 +124,16 @@ class HTTPServer(object):
         :return:
         """
         requestLines = reqData.splitlines()
+        for l in requestLines:
+            print(l)
         startLine = requestLines[0]
-        self.env.append(("url", url_regexp.match(startLine)))
+        url = str(url_regexp.search(startLine).group())
+        self.env.append(("url", url))
+        self.env.append(("body", requestLines[-1]))
         for line in requestLines[1:]:
-            k, v = line.split(": ")
-            self.env.append((k, v))
+            if len(line) > 0:
+                k, v = line.split(": ")
+                self.env.append((k, v))
 
         return self.env
 
