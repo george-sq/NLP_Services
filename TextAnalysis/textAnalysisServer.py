@@ -29,8 +29,8 @@ class Application(object):
     def __call__(self, *args, **kwargs):
         request_data = args[0]
         getResponseHeader = args[1]
-        print(request_data)
-        print(getResponseHeader)
+        # print(request_data)
+        # print(getResponseHeader)
         getResponseHeader(200)
         return show_ctime()
 

@@ -1,4 +1,4 @@
-#!/
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
     @File   : httpServer.py
@@ -6,19 +6,21 @@
     @Time   : 2018/1/16 13:49
     @Todo   : 
 """
-
-from . import textAnalysisServer as tas
-from multiprocessing import Process
-import socket
+import json
 import logging
+import pprint
 import re
+import socket
+from multiprocessing import Process
+
+import textAnalysisServer as tas
 
 logger = logging.getLogger(__name__)
 
 url_regexp = re.compile(r"(?:[/])(\S*)(?=\s)", re.IGNORECASE)
 
 # 创建一个handler，用于写入日志文件
-logfile = "/home/pamo/Codes/NLP_PAMO/Logs/log_textAnalysis.log"
+logfile = "/home/pamo/Codes/Logs/log_textAnalysis.log"
 fileLogger = logging.FileHandler(filename=logfile, encoding="utf-8")
 fileLogger.setLevel(logging.DEBUG)
 
@@ -29,10 +31,6 @@ stdoutLogger.setLevel(logging.DEBUG)  # 输出到console的log等级的开关
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s | %(levelname)s | %(message)s",
                     datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
-
-# 功能字典
-# ACTION_DICTS = {"/": actions.show_ctime, "/ajSim": actions.getAnjianSimilarity,
-#                 "/atmSim": actions.getAtmSimilarity}
 
 
 class HTTPServer(object):
@@ -133,7 +131,7 @@ class HTTPServer(object):
         url = str(url_regexp.search(startLine).group())
         request_dict.setdefault("url", url)
         request_dict.setdefault("body", requestLines[-1])
-        for line in requestLines[1:]:
+        for line in requestLines[1:-1]:
             if len(line) > 0:
                 k, v = line.split(": ")
                 request_dict.setdefault(k, v)
@@ -166,12 +164,15 @@ class HTTPServer(object):
             logger.info("[ 服务子进程 ] 完成 客户端%s 数据接收" % str(destAddr))
             logger.info("[ 服务子进程 ] 解析 客户端%s 请求数据......" % str(destAddr))
             self.parseData(request_data)
+            logger.info("[ 服务子进程 ] 完成 客户端%s 请求数据解析 : %s" % (str(destAddr), str(self.request_data)))
             logger.info("[ 服务子进程 ] 生成 服务器 响应数据......")
             if self.request_data is not None:
                 self.response_body = tas.app(self.request_data, self.getResponseHeader)
             # 3.生成响应数据
             self.response_data = self.response_header
             self.response_data += self.response_body
+            logger.info("[ 服务子进程 ] 返回 服务器 响应数据 : %s" % self.response_data)
+            pprint.pprint(self.response_data)
             # 4.向客户端返回响应数据
             client_socket.send(self.response_data.encode("utf-8"))
 
