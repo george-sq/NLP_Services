@@ -6,16 +6,36 @@
     @Todo   : 
 """
 
+import time
+import json
+
+RESULT_CODES = {"f": 0, "s": 1}
+
+
+def show_ctime():
+    """测试0"""
+    result = {"Root Response": {"RESULT_CODES": 1, "RESULT": None}}
+    rsp = result.get("Root Response")
+    rsp["RESULT"] = str(time.ctime())
+    result = json.dumps(result, ensure_ascii=False)
+
+    return result
+
 
 class Application(object):
     def __init__(self):
         pass
 
     def __call__(self, *args, **kwargs):
-        pass
+        request_data = args[0]
+        getResponseHeader = args[1]
+        print(request_data)
+        print(getResponseHeader)
+        getResponseHeader(200)
+        return show_ctime()
 
 
-action_dict = {"/": ""}
+action_dict = {"/": show_ctime}
 app = Application()
 
 
