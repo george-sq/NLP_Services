@@ -245,6 +245,9 @@ class TxtInfos(object):
         self.dbs = UseMysql()
         self.localDict = corpora.Dictionary.load('./Out/Dicts/pamo_dicts.dict')
         self.localCorpus = corpora.MmCorpus('./Out/Corpus/pamo_gaCorpus.mm')
+        # storeData(path="./Out/StatFiles/", fileName="statFreqData.txt", lines=freqFile)
+        # storeData(path="./Out/Dicts/", fileName="corpusDicts.dict", dicts=dicts)
+        # storeData(path="./Out/Corpus/", fileName="corpus.mm", inCorpus=corpus)
         self.tfidfModel = models.TfidfModel(self.localCorpus)
 
     @staticmethod
@@ -382,7 +385,8 @@ def doTxtCate(tObj):
         :return:
     """
     # 加载预处理数据
-    modelVecs = tObj.loadDatFile('./Out/Dats/pamo_nlp_DataVectorSpaces.dat')
+    # modelVecs = tObj.loadDatFile('./Out/Dats/pamo_nlp_DataVectorSpaces.dat')
+    modelVecs = tObj.loadDatFile('./Out/bayesModel.pickle')
     stopWords = list(corpora.Dictionary.load('./Out/Dicts/stopWords_ALL.dict').token2id)
 
     # 从tb_tinfo获取文本内容

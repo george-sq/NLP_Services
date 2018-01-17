@@ -1,3 +1,4 @@
+#!/
 # -*- coding: utf-8 -*-
 """
     @File   : httpServer.py
@@ -7,6 +8,7 @@
 """
 
 from multiprocessing import Process
+from . import textAnalysisServer as tas
 import socket
 import logging
 import re
@@ -31,8 +33,6 @@ logging.basicConfig(level=logging.DEBUG,
 # 功能字典
 # ACTION_DICTS = {"/": actions.show_ctime, "/ajSim": actions.getAnjianSimilarity,
 #                 "/atmSim": actions.getAtmSimilarity}
-# HTTP响应状态字典
-STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
 
 
 class HTTPServer(object):
@@ -42,9 +42,10 @@ class HTTPServer(object):
         """构造函数"""
         self.serSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.request_data = None
         self.response_header = None
         self.response_body = None
-        self.env = []
+        self.response_data = None
 
     def bind(self, addr):
         """
@@ -54,20 +55,24 @@ class HTTPServer(object):
         if isinstance(addr, tuple):
             self.serSocket.bind(addr)
 
-    def getResponseHeader(self, status):
+    def getResponseHeader(self, status, headerInfos):
         """
         :param status:
+        :param headerInfos:
         :return:
         """
-        self.response_header = STATUS_Dicts[status] + "%s: %s\r\n" % ("Content-Type", "application/json; charset=UTF-8")
+        # HTTP响应状态字典
+        STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
+        self.response_header = STATUS_Dicts[status]
+        self.response_header += "%s: %s\r\n\r\n" % ("Content-Type", "application/json; charset=UTF-8")
 
-    def getResponseBody(self, action, request_data):
-        """
-        :param action:
-        :param request_data:
-        :return:
-        """
-        self.response_body = action(request_data)
+    # def getResponseBody(self, action, request_data):
+    #     """
+    #     :param action:
+    #     :param request_data:
+    #     :return:
+    #     """
+    #     self.response_body = action(request_data)
 
     def getResposeInfos(self, request_data, destAddr):
         # 2.1 解析客户端请求数据
@@ -123,19 +128,18 @@ class HTTPServer(object):
         :param reqData:
         :return:
         """
+        request_dict = {}
         requestLines = reqData.splitlines()
-        for l in requestLines:
-            print(l)
         startLine = requestLines[0]
         url = str(url_regexp.search(startLine).group())
-        self.env.append(("url", url))
-        self.env.append(("body", requestLines[-1]))
+        request_dict.setdefault("url", url)
+        request_dict.setdefault("body", requestLines[-1])
         for line in requestLines[1:]:
             if len(line) > 0:
                 k, v = line.split(": ")
-                self.env.append((k, v))
+                request_dict.setdefault(k, v)
 
-        return self.env
+        self.request_data = request_dict
 
     def clientHandler(self, client_socket, destAddr):
         """ 处理客户端请求
@@ -145,7 +149,6 @@ class HTTPServer(object):
         """
         logger.info("[ 服务子进程 ] 开启 客户端%s 服务子进程" % str(destAddr))
         request_data = ""
-        response = "Default Response".encode("utf-8")
         client_socket.settimeout(0.5)  # 防止请求数据长度为2048造成卡死
         try:
             while True:  # 1.获取客户端请求数据
@@ -157,15 +160,21 @@ class HTTPServer(object):
                     request_data += recvData.decode("utf-8")
                     break
 
-            # 解析请求数据
-            env = self.parseData(request_data)
-            # 2.生成响应数据
-            response = self.getResposeInfos(request_data, destAddr)
         except socket.timeout:
             pass
         finally:
+            # 解析请求数据
+            logger.info("[ 服务子进程 ] 完成 客户端%s 数据接收" % str(destAddr))
+            logger.info("[ 服务子进程 ] 解析 客户端%s 请求数据......" % str(destAddr))
+            self.parseData(request_data)
+            logger.info("[ 服务子进程 ] 生成 服务器 响应数据......")
+            if self.request_data is not None:
+                self.response_body = tas.app(self.request_data, self.getResponseHeader)
+            # 2.生成响应数据
+            self.response_data = self.response_header
+            self.response_data += self.response_body
             # 3.向客户端返回响应数据
-            client_socket.send(response)
+            client_socket.send(self.response_data.encode("utf-8"))
 
             # 4.关闭客户端连接
             logger.info("[ 服务子进程 ] 关闭 客户端%s 连接" % str(destAddr))
