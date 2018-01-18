@@ -99,7 +99,11 @@ class Application(object):
 
 
 defaultRespone = ShowTime()
-action_dicts = {"/": defaultRespone, "/db": db, "/test": act.Test()}
+action_dicts = {
+    "/": defaultRespone,
+    "/db": db,
+    "/test": act.Test()
+}
 app = Application(action_dicts)
 
 

@@ -11,8 +11,7 @@ import logging
 import re
 import socket
 from multiprocessing import Process
-
-import textAnalysisServer as tas
+from textAnalysisServer import app
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ url_regexp = re.compile(r"(?:[/])(\S*)(?=\s)", re.IGNORECASE)
 class HTTPServer(object):
     """"""
 
-    def __init__(self):
+    def __init__(self, application=None):
         """构造函数"""
         self.serSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -43,6 +42,7 @@ class HTTPServer(object):
         self.response_header = None
         self.response_body = None
         self.response_data = None
+        self.app = application
 
     def bind(self, addr):
         """
@@ -113,7 +113,7 @@ class HTTPServer(object):
                 logger.info("完成 客户端%s 请求数据解析 : %s" % (str(destAddr), repr(self.request_data)))
             if self.request_data is not None:
                 logger.info("生成 服务器 响应数据...")
-                self.response_body = tas.app(self.request_data, self.getResponseHeader)
+                self.response_body = self.app(self.request_data, self.getResponseHeader)
                 # 3.生成响应数据
                 if self.response_header is not None:
                     self.response_data = self.response_header
@@ -153,7 +153,7 @@ class HTTPServer(object):
 
 def main():
     logger.info("[ HTTP服务器 ] 服务器初始化")
-    http_server = HTTPServer()
+    http_server = HTTPServer(app)
     localAddr = ("", 8899)
     http_server.bind(localAddr)
     http_server.start()
