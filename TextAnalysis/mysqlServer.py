@@ -29,8 +29,15 @@ class MysqlServer(object):
         # 创建连接
         if self.host and self.user and self.passwd and self.db:
             logger.info("Connect mysql database [%s] : %s:%s User=%s" % (self.db, self.host, self.port, self.user))
-            return pymysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.passwd,
-                                   db=self.db, charset=self.charset)
+            try:
+                con = pymysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.passwd,
+                                      db=self.db, charset=self.charset)
+                return con
+            except Exception as e:
+                logger.error("Can not connect mysql database [%s] : %s:%s User=%s" %
+                             (self.db, self.host, self.port, self.user))
+                logger.error("Connect mysql database Error : %s" % e)
+                pass
         else:
             logger.error("Can not connect mysql database [%s] : %s:%s User=%s" %
                          (self.db, self.host, self.port, self.user))
@@ -92,3 +99,27 @@ class MysqlServer(object):
         else:
             logger.error("Can not connect mysql database [%s] : %s:%s User=%s" %
                          (self.db, self.host, self.port, self.user))
+
+
+class Application(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        if len(args) > 0:
+            logger.info("App方法获得的参数 : %s" % args)
+        mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+        sql = "SELECT * FROM tb_ajinfo ORDER BY tid LIMIT 10"
+        retVal = mysql.executeSql(sql=sql)
+        return str(retVal[0])
+
+
+app = Application()
+
+
+def main():
+    pass
+
+
+if __name__ == '__main__':
+    main()
