@@ -22,6 +22,18 @@ def show_ctime():
     return result
 
 
+def buildResponseHeader(status, headerInfos=("Content-Type", "application/json; charset=UTF-8")):
+    """ 构造HTTP响应报文的头部信息
+    :param status:
+    :param headerInfos:
+    :return:
+    """
+    # HTTP响应状态字典
+    STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n"}
+    response_header = STATUS_Dicts[status]
+    response_header += "%s: %s\r\n\r\n" % headerInfos
+
+
 class Application(object):
     def __init__(self):
         pass
@@ -40,7 +52,11 @@ app = Application()
 
 
 def main():
-    pass
+    request_data = {'url': '/', 'body': '', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Encoding': 'gzip, deflate', 'Accept-Language': 'zh-CN,zh;q=0.9'}
+    rsp_body = app(request_data, buildResponseHeader)
 
 
 if __name__ == '__main__':
