@@ -6,9 +6,8 @@
     @Time   : 2018/1/16 13:49
     @Todo   : 
 """
-import json
+
 import logging
-import pprint
 import re
 import socket
 from multiprocessing import Process
@@ -64,63 +63,6 @@ class HTTPServer(object):
         self.response_header = STATUS_Dicts[status]
         self.response_header += "%s: %s\r\n\r\n" % headerInfos
 
-    # def getResponseBody(self, action, request_data):
-    #     """
-    #     :param action:
-    #     :param request_data:
-    #     :return:
-    #     """
-    #     self.response_body = action(request_data)
-
-    # def getResposeInfos(self, request_data, destAddr):
-    #     # 2.1 解析客户端请求数据
-    #     request_start_line = []
-    #     request_params = []
-    #     request_json = ""
-    #     request_resource = ""
-    #     logger.info("[ 服务子进程 ] 完成 客户端%s 请求数据接收" % str(destAddr))
-    #     if len(request_data) > 0:
-    #         request_lines = request_data.splitlines()
-    #         logger.info("[ 服务子进程 ] 客户端%s 请求数据内容:" % str(destAddr))
-    #         logger.info("[ 服务子进程 ] %s" % (">>>>>>>>>>" * 10))
-    #         for i, line in enumerate(request_lines):
-    #             logger.info("[ 服务子进程 ] #L%d %s" % (i + 1, line))
-    #         logger.info("[ 服务子进程 ] %s" % (">>>>>>>>>>" * 10))
-    #         logger.info("[ 服务子进程 ] 开始 客户端%s 数据处理服务......" % str(destAddr))
-    #         request_start_line.extend(request_lines[0].split())
-    #         request_json = request_lines[-1]
-    #         m, s, p = request_start_line  # m=Http请求方法, s=请求资源标识, p=Http协议
-    #         request_resource = s.split("?")[0]
-    #         if 2 == len(s.split("?")):
-    #             request_params.extend(s.split("?")[-1].split("&"))
-    #     else:
-    #         logger.warning("[ 服务子进程 ] 客户端%s 请求数据长度异常. len=%d" % (str(destAddr), len(request_data)))
-    #
-    #     # 2.2 生成响应数据
-    #     response = "Default Response"
-    #     action = ACTION_DICTS.get(request_resource, None)
-    #
-    #     if action is not None:  # 校验资源请求的有效性
-    #         self.getResponseBody(action, (request_params, request_json))
-    #     else:
-    #         self.getResponseBody(actions.show_ctime, (request_params, -1))
-    #
-    #     if action is None:  # 选择合适的响应头
-    #         self.getResponseHeader(404)
-    #     else:
-    #         if self.response_body is not None:
-    #             self.getResponseHeader(200)
-    #
-    #     if self.response_header and self.response_body:  # 拼接完整的响应内容
-    #         response = self.response_header + "\r\n" + self.response_body
-    #
-    #     logger.info("[ 服务子进程 ] 服务器响应数据:")
-    #     logger.info("[ 服务子进程 ] %s" % ("<<<<<<<<<<" * 10))
-    #     for i, line in enumerate(response.splitlines()):
-    #         logger.info("[ 服务子进程 ] #L%d %s" % (i + 1, line))
-    #     logger.info("[ 服务子进程 ] %s" % ("<<<<<<<<<<" * 10))
-    #     return response.encode("utf-8")
-
     def parseData(self, reqData):
         """ 解析http request data
         :param reqData:
@@ -164,15 +106,14 @@ class HTTPServer(object):
             logger.info("[ 服务子进程 ] 完成 客户端%s 数据接收" % str(destAddr))
             logger.info("[ 服务子进程 ] 解析 客户端%s 请求数据......" % str(destAddr))
             self.parseData(request_data)
-            logger.info("[ 服务子进程 ] 完成 客户端%s 请求数据解析 : %s" % (str(destAddr), str(self.request_data)))
+            logger.info(eval(repr("[ 服务子进程 ] 完成 客户端%s 请求数据解析 : %s" % (str(destAddr), str(self.request_data)))))
             logger.info("[ 服务子进程 ] 生成 服务器 响应数据......")
             if self.request_data is not None:
                 self.response_body = tas.app(self.request_data, self.getResponseHeader)
             # 3.生成响应数据
             self.response_data = self.response_header
             self.response_data += self.response_body
-            logger.info("[ 服务子进程 ] 返回 服务器 响应数据 : %s" % self.response_data)
-            pprint.pprint(self.response_data)
+            logger.info(r"[ 服务子进程 ] 返回 服务器 响应数据 : %s" % self.response_data)
             # 4.向客户端返回响应数据
             client_socket.send(self.response_data.encode("utf-8"))
 
