@@ -53,7 +53,7 @@ class HTTPServer(object):
             self.serSocket.bind(addr)
 
     def getResponseHeader(self, status, headerInfos=("Content-Type", "application/json; charset=UTF-8")):
-        """
+        """ 构造HTTP响应报文的头部信息
         :param status:
         :param headerInfos:
         :return:
