@@ -74,7 +74,8 @@ class HTTPServer(object):
         startLine = requestLines[0]
         url = str(url_regexp.search(startLine).group())
         request_dict.setdefault("url", url)
-        request_dict.setdefault("body", requestLines[-1])
+        if len(requestLines[-1]) > 0:
+            request_dict.setdefault("body", requestLines[-1])
         for line in requestLines[1:-1]:
             if len(line) > 0:
                 k, v = line.split(": ")
