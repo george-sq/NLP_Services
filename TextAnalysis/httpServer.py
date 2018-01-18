@@ -16,8 +16,6 @@ import textAnalysisServer as tas
 
 logger = logging.getLogger(__name__)
 
-url_regexp = re.compile(r"(?:[/])(\S*)(?=\s)", re.IGNORECASE)
-
 # 创建一个handler，用于写入日志文件
 logfile = "/home/pamo/Codes/Logs/log_textAnalysis.log"
 fileLogger = logging.FileHandler(filename=logfile, encoding="utf-8")
@@ -30,6 +28,8 @@ stdoutLogger.setLevel(logging.DEBUG)  # 输出到console的log等级的开关
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s | %(levelname)s | %(message)s",
                     datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
+
+url_regexp = re.compile(r"(?:[/])(\S*)(?=\s)", re.IGNORECASE)
 
 
 class HTTPServer(object):
@@ -104,18 +104,21 @@ class HTTPServer(object):
         finally:
             # 2.解析请求数据
             logger.info("[ 服务子进程 ] 完成 客户端%s 数据接收" % str(destAddr))
-            logger.info("[ 服务子进程 ] 解析 客户端%s 请求数据......" % str(destAddr))
-            self.parseData(request_data)
-            logger.info(eval(repr("[ 服务子进程 ] 完成 客户端%s 请求数据解析 : %s" % (str(destAddr), str(self.request_data)))))
-            logger.info("[ 服务子进程 ] 生成 服务器 响应数据......")
+            if len(request_data) > 0:
+                logger.info("[ 服务子进程 ] 解析 客户端%s 请求数据......" % str(destAddr))
+                self.parseData(request_data)
+                logger.info("[ 服务子进程 ] 完成 客户端%s 请求数据解析 : %s" % (str(destAddr), repr(str(self.request_data))))
             if self.request_data is not None:
+                logger.info("[ 服务子进程 ] 生成 服务器 响应数据......")
                 self.response_body = tas.app(self.request_data, self.getResponseHeader)
-            # 3.生成响应数据
-            self.response_data = self.response_header
-            self.response_data += self.response_body
-            logger.info(r"[ 服务子进程 ] 返回 服务器 响应数据 : %s" % self.response_data)
-            # 4.向客户端返回响应数据
-            client_socket.send(self.response_data.encode("utf-8"))
+                # 3.生成响应数据
+                self.response_data = self.response_header
+                self.response_data += self.response_body
+                logger.info("[ 服务子进程 ] 返回 服务器 响应数据 : %s" % repr(self.response_data))
+                # 4.向客户端返回响应数据
+                client_socket.send(self.response_data.encode("utf-8"))
+            else:
+                logger.warning("[ 服务子进程 ] 警告 客户端%s 请求报文为空" % str(destAddr))
 
             # 5.关闭客户端连接
             logger.info("[ 服务子进程 ] 关闭 客户端%s 连接" % str(destAddr))
