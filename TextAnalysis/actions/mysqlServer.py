@@ -73,15 +73,15 @@ class MysqlServer(object):
             try:
                 if sql and params:
                     logger.info("Execute SQL : %s" % sql)
-                    logger.info("SQL Params : %s ......" % params[:10])
+                    logger.info("SQL Params : %s ......" % repr(params)[:100])
                     results.append(cursor.executemany(sql, params))
                     results.append(cursor.fetchall())
-                    logger.info("Fetch All : have %s records" % results[0])
+                    logger.info("Rows affected: have %s records" % results[0])
                 elif sql and params is None:  # 批量操作
                     logger.info("Execute SQL : %s" % sql)
                     results.append(cursor.execute(sql))
                     results.extend(cursor.fetchall())
-                    logger.info("Fetch All : have %s records" % results[0])
+                    logger.info("Rows affected: have %s records" % results[0])
                 else:
                     logger.error("输入参数错误！！！")
                     raise ValueError

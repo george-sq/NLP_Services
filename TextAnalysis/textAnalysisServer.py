@@ -6,25 +6,16 @@
     @Todo   : 
 """
 
-import time
 import json
-import mysqlServer as db
-import actionTest as act
 import logging
+import time
+
+import actionTest as act
+from actions import mysqlServer as db
 
 logger = logging.getLogger(__name__)
 
 RESULT_CODES = {"f": 0, "s": 1}
-
-
-# def show_ctime():
-#     """测试0"""
-#     result = {"Root Response": {"RESULT_CODES": 1, "RESULT": None}}
-#     rsp = result.get("Root Response")
-#     rsp["RESULT"] = str(time.ctime())
-#     result = json.dumps(result, ensure_ascii=False)
-#
-#     return result
 
 
 class ShowTime(object):
