@@ -50,7 +50,12 @@ regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "
               "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp, "date": date_regExp}
 
 
-def getNamedEntity(inList, regExpK=None):
+def getKeyWords(inList, regExpK=None):
+    """
+    :param inList: [[txt],]
+    :param regExpK: 正则表达式规则字典集合的关键字索引
+    :return:
+    """
     retVal = []
     regExp = regExpSets.get(regExpK, None)
     for i in range(len(inList)):
@@ -93,37 +98,41 @@ def getNamedEntity(inList, regExpK=None):
 
 
 def fullMatch(record):
+    """
+    :param record: [tid, txt]
+    :return:
+    """
     tid = record[0]
     # print(tid)
     inStr = record[1]
     # print(inStr)
 
     # url处理
-    step1 = getNamedEntity([[inStr]], regExpK="url")
+    step1 = getKeyWords([[inStr]], regExpK="url")
 
     # email处理
-    step2 = getNamedEntity(step1, regExpK="email")
+    step2 = getKeyWords(step1, regExpK="email")
 
     # money处理
-    step3 = getNamedEntity(step2, regExpK="money")
+    step3 = getKeyWords(step2, regExpK="money")
 
     # idcard处理
-    step4 = getNamedEntity(step3, regExpK="idcard")
+    step4 = getKeyWords(step3, regExpK="idcard")
 
     # bankcard处理
-    step5 = getNamedEntity(step4, regExpK="bkcard")
+    step5 = getKeyWords(step4, regExpK="bkcard")
 
     # phone处理
-    step6 = getNamedEntity(step5, regExpK="phnum")
+    step6 = getKeyWords(step5, regExpK="phnum")
 
     # time处理
-    step7 = getNamedEntity(step6, regExpK="time")
+    step7 = getKeyWords(step6, regExpK="time")
 
     # date处理
-    step8 = getNamedEntity(step7, regExpK="date")
+    step8 = getKeyWords(step7, regExpK="date")
 
     # 未标注内容的分词处理
-    step9 = getNamedEntity(step8)
+    step9 = getKeyWords(step8)
 
     # for c in step9:
     #     print(c)
