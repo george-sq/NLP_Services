@@ -54,7 +54,7 @@ def getKeyWords(inList, regExpK=None):
     """
     :param inList: [[txt],]
     :param regExpK: 正则表达式规则字典集合的关键字索引
-    :return:
+    :return: [[keyWord, label],]
     """
     retVal = []
     regExp = regExpSets.get(regExpK, None)
