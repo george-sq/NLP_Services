@@ -75,7 +75,7 @@ def getKeyWords(inList, regExpK=None):
                                 pre = post[:idx].strip()
                                 if len(pre) > 0:
                                     results.append([pre])
-                                results.append([res, regExpK])
+                                results.append((res, regExpK))
                                 idx += len(res)
                                 post = post[idx:].strip()
                         endPart = post.strip()
@@ -83,7 +83,7 @@ def getKeyWords(inList, regExpK=None):
                             results.append([endPart])
                 else:
                     # 分词处理
-                    rPos = [[item, pos] for item, pos in posseg.lcut(content) if len(item.strip()) > 0]
+                    rPos = [(item, pos) for item, pos in posseg.lcut(content) if len(item.strip()) > 0]
                     results.extend(rPos)
             else:
                 logger.warning("处理内容的长度错误 len = 0")
@@ -100,7 +100,7 @@ def getKeyWords(inList, regExpK=None):
 def fullMatch(record):
     """
     :param record: [tid, txt]
-    :return:
+    :return: (tid, [(item, label),])
     """
     tid = record[0]
     # print(tid)
