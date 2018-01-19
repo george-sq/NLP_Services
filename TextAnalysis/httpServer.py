@@ -52,7 +52,7 @@ class HTTPServer(object):
         if isinstance(addr, tuple):
             self.serSocket.bind(addr)
 
-    def getResponseHeader(self, status, headerInfos=("Content-Type", "application/json; charset=UTF-8")):
+    def getResponseHeader(self, status=None, headerInfos=("Content-Type", "application/json; charset=UTF-8")):
         """ 构造HTTP响应报文的头部信息
         :param status:
         :param headerInfos:
@@ -61,9 +61,13 @@ class HTTPServer(object):
         # HTTP响应状态字典
         STATUS_Dicts = {200: "HTTP/1.1 200 OK\r\n", 404: "HTTP/1.1 404 NO_ACTION\r\n",
                         500: "HTTP/1.1 500 Server_Error\r\n"}
-        logger.info("生成HTTP响应报文的Header信息...")
-        self.response_header = STATUS_Dicts[status]
-        self.response_header += "%s: %s\r\n\r\n" % headerInfos
+        if status is not None:
+            logger.info("生成HTTP响应报文的Header信息...")
+            self.response_header = STATUS_Dicts[status]
+            self.response_header += "%s: %s\r\n\r\n" % headerInfos
+            logger.info("生成HTTP响应报文的Header信息 : %s" % repr(self.response_header))
+        else:
+            logger.info("缺少构造HTTP响应报文的状态码 : status=%s" % status)
 
     def parseData(self, reqData):
         """ 解析http request data
@@ -89,7 +93,7 @@ class HTTPServer(object):
         :param destAddr:
         """
         logger.info("开启 客户端%s 服务子进程" % str(destAddr))
-        request_data = ""
+        request = ""
         client_socket.settimeout(0.5)  # 防止请求数据长度为2048造成卡死
         try:
             # 1.获取客户端请求数据
@@ -97,9 +101,9 @@ class HTTPServer(object):
                 recvData = client_socket.recv(2048)
                 logger.info("接收 客户端%s 请求数据..." % str(destAddr))
                 if 2048 == len(recvData):
-                    request_data += recvData.decode("utf-8")
+                    request += recvData.decode("utf-8")
                 elif 0 < (2048 - len(recvData)):
-                    request_data += recvData.decode("utf-8")
+                    request += recvData.decode("utf-8")
                     break
 
         except socket.timeout:
@@ -107,9 +111,9 @@ class HTTPServer(object):
         finally:
             # 2.解析请求数据
             logger.info("完成 客户端%s 数据接收" % str(destAddr))
-            if len(request_data) > 0:
+            if len(request) > 0:
                 logger.info("解析 客户端%s 请求数据..." % str(destAddr))
-                self.parseData(request_data)
+                self.parseData(request)
                 logger.info("完成 客户端%s 请求数据解析 : %s" % (str(destAddr), repr(self.request_data)))
             if self.request_data is not None:
                 logger.info("生成 服务器 响应数据...")
@@ -122,10 +126,12 @@ class HTTPServer(object):
                     self.getResponseHeader(500)
                     self.response_data = self.response_header
                 # 4.向客户端返回响应数据
-                logger.info("返回 服务器 响应数据 : %s" % repr(self.response_data))
+                logger.info("返回 服务器 响应数据 : %s" %
+                            repr([line for line in self.response_data.splitlines() if 0 < len(line)]))
+
                 client_socket.send(self.response_data.encode("utf-8"))
             else:
-                logger.warning("警告 客户端%s 请求报文为空" % str(destAddr))
+                logger.warning("客户端%s 请求报文为空" % str(destAddr))
 
             # 5.关闭客户端连接
             logger.info("关闭 客户端%s 连接" % str(destAddr))
@@ -137,7 +143,7 @@ class HTTPServer(object):
         logger.info("[ HTTP服务器 ] 服务器启动成功")
         while True:
             try:
-                logger.info("[ HTTP服务器 ] 等待客户端请求...")
+                logger.info("[ HTTP服务器 ] 等待新客户端请求...")
                 newSocket, destAddr = self.serSocket.accept()
                 logger.info("[ HTTP服务器 ] 收到客户端%s请求，创建客户端服务子进程" % str(destAddr))
                 client_process = Process(target=self.clientHandler, args=(newSocket, destAddr))
