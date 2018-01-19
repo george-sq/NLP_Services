@@ -100,7 +100,7 @@ def getKeyWords(inList, regExpK=None):
 def fullMatch(record):
     """
     :param record: [tid, txt]
-    :return:
+    :return: (tid, [(item, label),])
     """
     tid = record[0]
     # print(tid)
