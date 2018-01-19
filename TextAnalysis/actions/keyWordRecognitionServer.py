@@ -52,7 +52,7 @@ regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "
 
 def getKeyWords(inList, regExpK=None):
     """
-    :param inList:
+    :param inList: [[txt],]
     :param regExpK: 正则表达式规则字典集合的关键字索引
     :return:
     """
