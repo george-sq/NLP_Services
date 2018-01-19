@@ -37,7 +37,7 @@ class ShowTime(object):
     @staticmethod
     def app(*args):
         """测试0"""
-        logger.info("App方法获得的参数 : %s" % args)
+        logger.warning("App方法获得的参数 : args=%s" % args)
         result = {"Root Response": {"RESULT_CODES": 1, "RESULT": None}}
         rsp = result.get("Root Response")
         rsp["RESULT"] = str(time.ctime())
@@ -88,7 +88,7 @@ class Application(object):
                     mdl = self.action_modules.get("/")
                     getResponseHeader(404)
                 # 生成功能响应
-                logger.info("获取请求功能响应...")
+                logger.info("生成HTTP响应报文的Body信息...")
                 result = mdl.app(request_data.get("body", None))
                 logger.info("生成HTTP响应报文的Body信息 : %s" % result)
                 return result

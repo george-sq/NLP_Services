@@ -107,7 +107,7 @@ class Application(object):
 
     def __call__(self, *args, **kwargs):
         if len(args) > 0:
-            logger.info("App方法获得的参数 : %s" % args)
+            logger.warning("App方法获得的参数 : args=%s" % args)
         mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
         sql = "SELECT * FROM tb_ajinfo ORDER BY tid LIMIT 10"
         retVal = mysql.executeSql(sql=sql)
