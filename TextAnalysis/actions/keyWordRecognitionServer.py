@@ -8,11 +8,12 @@
 
 import logging
 import re
-from jieba import posseg
 import jieba
 
-jieba.setLogLevel(logging.INFO)
+# jieba.setLogLevel(logging.INFO)
+jieba.set_dictionary("../../Dicts/dict_jieba_check.txt")
 jieba.enable_parallel(4)
+from jieba import posseg
 logger = logging.getLogger(__name__)
 
 url_regExp = re.compile(r"((?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-zA-Z0-9+&@#/%=~_|$?!:,.-]*"
