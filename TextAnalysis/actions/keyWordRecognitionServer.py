@@ -146,6 +146,7 @@ def fullMatch(record):
     # 未标注内容的分词处理
     step9 = getKeyWords(step8)
 
+    # 修改时间词汇标记
     for i in range(len(step9)):
         print(step9[i])
         if "t" == step9[i][-1] or "tg" == step9[i][-1]:
