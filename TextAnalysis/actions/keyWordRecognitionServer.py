@@ -10,10 +10,11 @@ import logging
 import re
 import jieba
 
-# jieba.setLogLevel(logging.INFO)
+jieba.setLogLevel(logging.INFO)
 jieba.set_dictionary("../../Dicts/dict_jieba_check.txt")
 jieba.enable_parallel(4)
 from jieba import posseg
+
 logger = logging.getLogger(__name__)
 
 url_regExp = re.compile(r"((?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-zA-Z0-9+&@#/%=~_|$?!:,.-]*"
@@ -28,7 +29,7 @@ idcard_regExp = re.compile(r"(?<!\d)((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]
                            r"[1-9]\d{5}\d{2}(?:(?:0[1-9])|(?:10|11|12))(?:(?:[0-2][1-9])|10|20|30|31)\d{2}[0-9Xx])"
                            r"(?!\d)")
 
-phoneNumber_regExp = re.compile(r"((?<!\d)(?:\(?\+?(?:[0-9]{1,4} ?)?(?:\)|\) |-| - )*)(?:[1-9]\d{7,10})(?!\d))")
+phoneNumber_regExp = re.compile(r"(?<!\d)(?:([(+（]{0,2})?(?: ?[0-9]{2,4} ?)(?:[)-）] ?)?)?(?:1[3-9]\d{9})(?!\d)")
 
 bankCard_regExp = re.compile(r"((?<![0-9_+=-])(?:[\d]{6})(?:[\d]{6,12})[\d ]?(?!\d))")
 
@@ -59,8 +60,10 @@ date_regExp = re.compile(r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:
                          r"(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[月/.-])"
                          r"(?:(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)")
 
-regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "idcard": idcard_regExp,
-              "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp, "date": date_regExp}
+num_regExp = re.compile(r"(?<!\d)(?:\d|一|二|两|三|四|五|六|七|八|九|十|百|千|万|百万|千万|亿|兆)+(?!\d)")
+
+regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "num": num_regExp, "date": date_regExp,
+              "idcard": idcard_regExp, "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp}
 
 
 def getKeyWords(inList, regExpK=None):
@@ -135,26 +138,29 @@ def fullMatch(record):
     # bankcard处理
     step5 = getKeyWords(step4, regExpK="bkcard")
 
-    # phone处理
-    step6 = getKeyWords(step5, regExpK="phnum")
+    # date处理
+    step6 = getKeyWords(step5, regExpK="date")
 
     # time处理
     step7 = getKeyWords(step6, regExpK="time")
 
-    # date处理
-    step8 = getKeyWords(step7, regExpK="date")
+    # phone处理
+    step8 = getKeyWords(step7, regExpK="phnum")
+
+    # num处理
+    step9 = getKeyWords(step8, regExpK="num")
 
     # 未标注内容的分词处理
-    step9 = getKeyWords(step8)
+    step10 = getKeyWords(step9)
 
     # 修改时间词汇标记
-    for i in range(len(step9)):
-        print(step9[i])
-        if "t" == step9[i][-1] or "tg" == step9[i][-1]:
-            step9[i][-1] = "time"
-            print()
+    for i in range(len(step10)):
+        # print(step9[i])
+        if "t" == step10[i][-1] or "tg" == step10[i][-1]:
+            step10[i][-1] = "time"
+            # print()
 
-    return tid, step9
+    return tid, step10
 
 
 def main():
