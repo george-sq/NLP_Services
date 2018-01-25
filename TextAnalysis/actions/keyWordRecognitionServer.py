@@ -12,6 +12,12 @@ import jieba
 
 jieba.setLogLevel(logging.INFO)
 jieba.set_dictionary("../../Dicts/dict_jieba_check.txt")
+with open("../../Dicts/newWords.txt", "r", encoding="utf-8") as nw:
+    newWords = nw.readlines()
+    for line in newWords:
+        w, t = line.split(" ")
+        jieba.add_word(word=w, tag=t.strip())
+        print("%s(%s) Freq : %s" % (w, t.strip(), str(jieba.suggest_freq("茶坞"))))
 jieba.enable_parallel(4)
 from jieba import posseg
 
@@ -99,7 +105,7 @@ def getKeyWords(inList, regExpK=None):
                             results.append([endPart])
                 else:
                     # 分词处理
-                    rPos = [[item, pos] for item, pos in posseg.lcut(content) if len(item.strip()) > 0]
+                    rPos = [[item, pos] for item, pos in posseg.lcut(content, HMM=False) if len(item.strip()) > 0]
                     results.extend(rPos)
             else:
                 logger.warning("处理内容的长度错误 len = 0")
@@ -148,17 +154,15 @@ def fullMatch(record):
     step8 = getKeyWords(step7, regExpK="phnum")
 
     # num处理
-    step9 = getKeyWords(step8, regExpK="num")
+    # step9 = getKeyWords(step8, regExpK="num")
 
     # 未标注内容的分词处理
-    step10 = getKeyWords(step9)
+    step10 = getKeyWords(step8)
 
     # 修改时间词汇标记
-    for i in range(len(step10)):
-        # print(step9[i])
-        if "t" == step10[i][-1] or "tg" == step10[i][-1]:
-            step10[i][-1] = "time"
-            # print()
+    # for i in range(len(step10)):
+    #     if "t" == step10[i][-1] or "tg" == step10[i][-1]:
+    #         step10[i][-1] = "time"
 
     return tid, step10
 
