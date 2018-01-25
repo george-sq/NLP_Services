@@ -7,6 +7,8 @@
 """
 
 import logging
+
+logger = logging.getLogger(__name__)
 import re
 import jieba
 
@@ -17,11 +19,9 @@ with open("../../Dicts/newWords.txt", "r", encoding="utf-8") as nw:
     for line in newWords:
         w, t = line.split(" ")
         jieba.add_word(word=w, tag=t.strip())
-        print("%s(%s) Freq : %s" % (w, t.strip(), str(jieba.suggest_freq("茶坞"))))
+        logger.info("Add Word=%s(%s) Freq : %s" % (w, t.strip(), str(jieba.suggest_freq("茶坞"))))
 jieba.enable_parallel(4)
 from jieba import posseg
-
-logger = logging.getLogger(__name__)
 
 url_regExp = re.compile(r"((?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-zA-Z0-9+&@#/%=~_|$?!:,.-]*"
                         r"[a-zA-Z0-9+&@#/%=~_|$])")
@@ -62,9 +62,9 @@ time_regExp = re.compile(r"(?:(?:上午|中午|下午|凌晨|早上|晚上|午�
 date_regExp = re.compile(r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])"
                          r"(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)"
                          r"(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)"
-                         r"(?:(?:19|20)[0-9]{2})(?!\d)[ 年/.-])(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ 月/.-])(?:(?<!\d)"
-                         r"(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[月/.-])"
-                         r"(?:(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)")
+                         r"(?:(?:19|20)[0-9]{2})(?!\d)[ 年/.-])(?:(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ 月/.-])"
+                         r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?))?|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)"
+                         r"[ 月/.-])(?:(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)")
 
 num_regExp = re.compile(r"(?<!\d)(?:\d|一|二|两|三|四|五|六|七|八|九|十|百|千|万|百万|千万|亿|兆)+(?!\d)")
 
@@ -160,9 +160,13 @@ def fullMatch(record):
     step10 = getKeyWords(step8)
 
     # 修改时间词汇标记
-    # for i in range(len(step10)):
-    #     if "t" == step10[i][-1] or "tg" == step10[i][-1]:
-    #         step10[i][-1] = "time"
+    for i in range(len(step10)):
+        if "t" == step10[i][-1] or "tg" == step10[i][-1]:
+            step10[i][-1] = "time"
+        elif "eng" == step10[i][-1]:
+            if step10[i][0].isdigit():
+                step10[i][-1] = "m"
+            pass
 
     return tid, step10
 
