@@ -26,9 +26,9 @@ from jieba import posseg
 url_regExp = re.compile(r"((?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-zA-Z0-9+&@#/%=~_|$?!:,.-]*"
                         r"[a-zA-Z0-9+&@#/%=~_|$])")
 
-money_regExp = re.compile(r"((?:(?:\d|one|two|three|four|five|six|seven|eight|nine|ten|一|二|两|三|四|五|六|七|八|九|十|零"
-                          r"|兆|亿|万|千|百|拾|玖|捌|柒|陆|伍|肆|叁|贰|壹)+)(?:\s*(?:hundred|thousand|Million|Billion)?\s*)"
-                          r"(?:元|人民币|rmb|美元|美金|dollars?|韩元|日元|欧元|英镑))",
+money_regExp = re.compile(r"((?:(?:\d(?:\.[0-9]+多?)?|one|two|three|four|five|six|seven|eight|nine|ten|一|二|两|三|四|五|六|"
+                          r"七|八|九|十|零|兆|亿|万|千|百|拾|玖|捌|柒|陆|伍|肆|叁|贰|壹)+)(?:[多余])?(?:\s*(?:hundred|thousand|Million|"
+                          r"Billion)?\s*)(?:元|人民币|rmb|美元|美金|dollars?|韩元|日元|欧元|英镑))",
                           re.IGNORECASE)
 
 idcard_regExp = re.compile(r"(?<!\d)((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]\d[0-3]\d)(?:\d{3})[\dxX])|"
