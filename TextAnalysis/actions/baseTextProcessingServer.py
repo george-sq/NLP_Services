@@ -29,9 +29,12 @@ def main():
     #     txts = [w for w in txt.replace("\n", "").replace("\u3000", "")]
     #     for i in range(len(txts)):
     #         # print(txts[i])
-    #         al = ["①", "②", "③", "④", "⑤", "⑥", "⑴", "⑵", "⑶", "⑷", "⑸", "⑹", "⑺"]
-    #         if txts[i] not in al and txts[i].isdigit():
-    #             txts[i] = str(int(txts[i]))
+    #         # al = ["①", "②", "③", "④", "⑤", "⑥", "⑴", "⑵", "⑶", "⑷", "⑸", "⑹", "⑺"]
+    #         # if txts[i] not in al and txts[i].isdigit():
+    #         #     txts[i] = str(int(txts[i]))
+    #         if "·" == txts[i] and txts[i - 1].isdigit() and txts[i + 1].isdigit():
+    #             txts[i] = "."
+    #         pass
     #     t = "".join(txts)
     #     corpus.append([t, tid])
     #     print(tid)
