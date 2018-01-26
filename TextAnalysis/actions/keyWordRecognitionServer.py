@@ -20,7 +20,7 @@ with open("../../Dicts/newWords.txt", "r", encoding="utf-8") as nw:
         w, t = line.split(" ")
         jieba.add_word(word=w, tag=t.strip())
         logger.info("Add Word=%s(%s) Freq : %s" % (w, t.strip(), str(jieba.suggest_freq("茶坞"))))
-jieba.enable_parallel(4)
+# jieba.enable_parallel(4)
 from jieba import posseg
 
 url_regExp = re.compile(r"((?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-zA-Z0-9+&@#/%=~_|$?!:,.-]*"
