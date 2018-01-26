@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def main():
+def buildTxtCateCorpus():
     # 数据库连接
     mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
     # 查询结果
@@ -29,13 +29,6 @@ def main():
     retVal = pool.map(kws.fullMatch, params)
     pool.close()
     pool.join()
-
-    # for tid, l, txt in queryResult:
-    #     retVal.append(kws.fullMatch([tid, txt]))
-
-    # print(type(retVal))
-    # print(len(retVal))
-    # 原始文本分类语料库
     raw_root = "../../Out/文本分类语料库/"
     print(raw_root)
     for i in retVal:
@@ -46,6 +39,13 @@ def main():
             else:
                 print(a)
         print("##########" * 15)
+    pass
+
+
+def main():
+    buildTxtCateCorpus()
+
+    pass
 
 
 if __name__ == '__main__':
