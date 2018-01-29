@@ -18,7 +18,7 @@ def buildTxtCateCorpus():
     # 数据库连接
     mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
     # 查询结果
-    sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 5"
+    sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 100"
     # sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId"
     queryResult = mysql.executeSql(sql=sql)
 
