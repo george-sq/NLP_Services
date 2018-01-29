@@ -31,6 +31,8 @@ def buildTxtCateCorpus():
     pool.join()
     raw_root = "../../Out/文本分类语料库/"
     print(raw_root)
+    csv_header = ["word", "pos", "ner"]
+    csv_data = []
     for i in retVal:
         for a in i:
             if isinstance(a, list):
