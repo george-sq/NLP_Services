@@ -73,21 +73,22 @@ regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "
               "idcard": idcard_regExp, "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp}
 
 
-def getKeyWords(inList, regExpK=None):
+def getKeyWords(inList, regExpK=None, pos=False):
     """
     :param inList: [[txt],]
     :param regExpK: 正则表达式规则字典集合的关键字索引
+    :param pos: 是否进行词性标注
     :return: [[keyWord, label],]
     """
     retVal = []
     regExp = regExpSets.get(regExpK, None)
-    for i in range(len(inList)):
+    for i in range(len(inList)):  # 遍历输入List
         sub = inList[i]
         results = []
-        if 1 == len(sub):
+        if 1 == len(sub):  # 判断是否需要进行处理, 逻辑表达式结果为True则表示需要处理
             content = sub[0].strip()
-            if 0 != len(content):
-                if isinstance(regExp, type(re.compile(""))):
+            if 0 != len(content):  # 判断内容是否为空格符、占位符或回车换行符
+                if isinstance(regExp, type(re.compile(""))):  # 判断是否需要正则匹配，True为进行正则匹配切分，False为进行Jieba切分
                     resultSet = regExp.findall(content)
                     # 根据正则表达式的匹配结果处理输入inStr
                     if len(resultSet) > 0:
@@ -98,7 +99,10 @@ def getKeyWords(inList, regExpK=None):
                                 pre = post[:idx].strip()
                                 if len(pre) > 0:
                                     results.append([pre])
-                                results.append([res, regExpK])
+                                if pos:
+                                    results.append([res, regExpK])
+                                else:
+                                    results.append([res, "pos"])  # 不需要词性标注时，用“pos”占位
                                 idx += len(res)
                                 post = post[idx:].strip()
                         endPart = post.strip()
@@ -106,23 +110,30 @@ def getKeyWords(inList, regExpK=None):
                             results.append([endPart])
                 else:
                     # 分词处理
-                    rPos = [[item, pos] for item, pos in posseg.lcut(content, HMM=False) if len(item.strip()) > 0]
-                    results.extend(rPos)
+                    if pos:
+                        results.extend([[item, pos] for item, pos in posseg.lcut(content)])
+                    else:
+                        results.extend([[item, "pos"] for item in jieba.lcut(content)])  # 不需要词性标注时，用“pos”占位
             else:
-                logger.warning("处理内容的长度错误 len = 0")
-                print("处理内容的长度错误 len = 0")
-                print("sub : %s" % sub)
-        if len(results) > 0:
+                if pos:
+                    results.append([sub[0], "x"])
+                else:
+                    results.append([sub[0], "pos"])  # 不需要词性标注时，用“pos”占位
+                    # logger.warning("处理内容的长度错误 len = 0")
+                    # print("处理内容的长度错误 len = 0")
+                    # print("sub : %s" % sub)
+        if len(results) > 0:  # result > 0 表示有切分结果
             retVal.extend(results)
-        elif len(sub[0].strip()) > 0:
+        elif sub:  # 遍历项不为空  # len(sub[0].strip()) > 0:
             retVal.append(sub)
 
     return retVal
 
 
-def fullMatch(record):
+def fullMatch(record, pos=False):
     """
     :param record: [tid, txt]
+    :param pos: 是否进行词性标注
     :return: (tid, [(item, label),])
     """
     tid = record[0]
@@ -131,45 +142,48 @@ def fullMatch(record):
     # print(inStr)
 
     # url处理
-    step1 = getKeyWords([[inStr]], regExpK="url")
+    step1 = getKeyWords([[inStr]], regExpK="url", pos=pos)
 
     # email处理
-    step2 = getKeyWords(step1, regExpK="email")
+    step2 = getKeyWords(step1, regExpK="email", pos=pos)
 
     # money处理
-    step3 = getKeyWords(step2, regExpK="money")
+    step3 = getKeyWords(step2, regExpK="money", pos=pos)
 
     # idcard处理
-    step4 = getKeyWords(step3, regExpK="idcard")
+    step4 = getKeyWords(step3, regExpK="idcard", pos=pos)
 
     # bankcard处理
-    step5 = getKeyWords(step4, regExpK="bkcard")
+    step5 = getKeyWords(step4, regExpK="bkcard", pos=pos)
 
     # date处理
-    step6 = getKeyWords(step5, regExpK="date")
+    step6 = getKeyWords(step5, regExpK="date", pos=pos)
 
     # time处理
-    step7 = getKeyWords(step6, regExpK="time")
+    step7 = getKeyWords(step6, regExpK="time", pos=pos)
 
     # phone处理
-    step8 = getKeyWords(step7, regExpK="phnum")
+    step8 = getKeyWords(step7, regExpK="phnum", pos=pos)
 
     # IpAddress处理
-    step9 = getKeyWords(step8, regExpK="ip")
+    step9 = getKeyWords(step8, regExpK="ip", pos=pos)
 
     # 未标注内容的分词处理
-    step10 = getKeyWords(step9)
+    step10 = getKeyWords(step9, pos=pos)
 
     # 修改时间词汇标记
-    for i in range(len(step10)):
-        if "t" == step10[i][-1] or "tg" == step10[i][-1]:
-            step10[i][-1] = "time"
-        elif "eng" == step10[i][-1]:
-            if step10[i][0].isdigit():
-                step10[i][-1] = "m"
-            pass
+    if pos:
+        for i in range(len(step10)):
+            if "t" == step10[i][-1] or "tg" == step10[i][-1]:
+                step10[i][-1] = "time"
+            elif "eng" == step10[i][-1]:
+                if step10[i][0].isdigit():
+                    step10[i][-1] = "m"
+        retVal = step10
+    else:
+        retVal = [item[0] for item in step10]
 
-    return tid, step10
+    return tid, retVal
 
 
 def main():
@@ -209,6 +223,7 @@ def main():
             日月光华bbs.fudan.edu.cn.HTTP[FROM:10.64.11.20]
             """
     result = fullMatch((0, txt))
+    # result = fullMatch((0, txt), pos=True)
     for s in result[1]:
         print(s)
 

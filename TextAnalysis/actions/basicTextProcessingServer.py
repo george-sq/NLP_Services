@@ -8,13 +8,63 @@
 
 from mysqlServer import MysqlServer
 import keyWordRecognitionServer as kws
+import re
 import multiprocessing
+import jieba
+from jieba import posseg
 import logging
 
 logger = logging.getLogger(__name__)
-import jieba
-from jieba import posseg
 
+url_regExp = re.compile(r"(?:(?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-z0-9+&@#/%=~_|$?!:,.-]*[a-z0-9+&@#/%=~_|$])|"
+                        r"(?:[a-z0-9+&@#/%=~_|$?!:,.-]+(?:\.[a-z]+))", re.IGNORECASE)
+
+money_regExp = re.compile(r"((?:(?:\d(?:\.[0-9]+多?)?|one|two|three|four|five|six|seven|eight|nine|ten|一|二|两|三|四|五|六|"
+                          r"七|八|九|十|零|兆|亿|万|千|百|拾|玖|捌|柒|陆|伍|肆|叁|贰|壹)+)(?:[多余])?(?:\s*(?:hundred|thousand|Million|"
+                          r"Billion)?\s*)(?:元|人民币|rmb|美元|美金|dollars?|韩元|日元|欧元|英镑))",
+                          re.IGNORECASE)
+
+idcard_regExp = re.compile(r"(?<!\d)((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]\d[0-3]\d)(?:\d{3})[\dxX])|"
+                           r"[1-9]\d{5}\d{2}(?:(?:0[1-9])|(?:10|11|12))(?:(?:[0-2][1-9])|10|20|30|31)\d{2}[0-9Xx])"
+                           r"(?!\d)")
+
+phoneNumber_regExp = re.compile(r"(?<!\d)(?:([(+（]{0,2})?(?: ?[0-9]{2,4} ?)(?:[)-）] ?)?)?(?:1[3-9]\d{9})(?!\d)")
+
+bankCard_regExp = re.compile(r"((?<![0-9_+=-])(?:[\d]{6})(?:[\d]{6,12})[\d ]?(?!\d))")
+
+email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
+                          r"(?:(?:[a-z0-9]+|\[)+(?:\.(?!\.+)))+(?:(?:[a-z0-9]+|\])+)?)", re.IGNORECASE)
+
+time_regExp = re.compile(r"(?:(?:上午|中午|下午|凌晨|早上|晚上|午夜|半夜)?(?:(?:(?:[0-1]\d|2[0-3]|(?<!\d)\d(?!\d))(?:点钟?|时))"
+                         r"(?:(?:过?(?:(?:(?<!\d)\d(?!\d))|(?:(?<!\d)[0-5]\d(?!\d)))分)(?:过?(?:(?:(?<!\d)\d(?:\.\d+)?"
+                         r"(?!\d))|(?:(?<!\d)[0-5]\d(?:\.\d+)?(?!\d)))秒)?|(?:一刻钟|一刻|半|多))?|"
+                         r"(?:(?:(?:[零一二两三四五六七八九十]|(?:十|一十)[一二三四五六七八九]|二十[一二三四])(?:点钟?|时))"
+                         r"(?:(?:(?:过?(?:(?:(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)(?![一二两三四五六七八九十])?)"
+                         r"|(?:(?<![一二两三四五六七八九十])零?[一二两三四五六七八九](?![一二两三四五六七八九十])))分)(?:过?"
+                         r"(?:(?:(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)(?![一二两三四五六七八九十])?)|"
+                         r"(?:(?<![一二两三四五六七八九十])零?[一二两三四五六七八九](?![一二两三四五六七八九])))秒)?)|"
+                         r"(?:过?(?:一刻钟|一刻|半|多)|(?:过?(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)"
+                         r"(?![一二两三四五六七八九十])?)|(?:(?<![一二两三四五六七八九十])过[一二两三四五六七八九]"
+                         r"(?![一二两三四五六七八九]))))?)))|(?:(?<!\d)(?:[0-2]?[0-9][：:]+[0-5]?[0-9])[:：]?"
+                         r"(?:[0-5]?[0-9]\.?[0-9]+)?(?:\s*(?:am|pm))?)|"
+                         r"(?:(?:(?:一刻|半刻|半|零|一|二|两|三|四|五|六|七|八|九|十|百|千|万|百万|千万|亿|兆|\d)+"
+                         r"(?:多个|多|个)?\s*(?:世纪|年|月|季度|日子|日|天|小时|分钟|秒钟|秒|毫秒|钟))|(?:[0-9]+\s*"
+                         r"(?:years|year|months|month|days|day|hours|hour|hr\.|Minutes|Minute|second|secs\.|sec\.|"
+                         r"Millisecond|msec\.|msel|ms)+))", re.IGNORECASE)
+
+date_regExp = re.compile(r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])"
+                         r"(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)"
+                         r"(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)"
+                         r"(?:(?:19|20)[0-9]{2})(?!\d)[ 年/.-])(?:(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ 月/.-])"
+                         r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?))?|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)"
+                         r"月)(?:(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)")
+
+ip_regExp = re.compile(r"(?<!\d)(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|"
+                       r"(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|"
+                       r"(?:[1-9]\d)|(?:\d))(?!\d)")
+
+regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "ip": ip_regExp, "date": date_regExp,
+              "idcard": idcard_regExp, "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp}
 
 def buildTaggedTxtCorpus():
     # 数据库连接
@@ -71,6 +121,110 @@ class BasicTextProcessing(object):
             self.__jieba = jieba
             self.__posseg = posseg
 
+    def __cut(self, contents, regExpK=None, pos=False):
+        """
+        :param contents: [[txt],]
+        :param regExpK: 正则表达式规则字典集合的关键字索引
+        :param pos: 是否进行词性标注
+        :return: [[keyWord, label],]
+        """
+        retVal = []
+        regExp = regExpSets.get(regExpK, None)
+        for i in range(len(contents)):  # 遍历输入List
+            sub = contents[i]
+            results = []
+            if 1 == len(sub):  # 判断是否需要进行处理, 逻辑表达式结果为True则表示需要处理
+                content = sub[0].strip()
+                if 0 != len(content):  # 判断内容是否为空格符、占位符或回车换行符
+                    if isinstance(regExp, type(re.compile(""))):  # 判断是否需要正则匹配，True为进行正则匹配切分，False为进行Jieba切分
+                        resultSet = regExp.findall(content)
+                        # 根据正则表达式的匹配结果处理输入inStr
+                        if len(resultSet) > 0:
+                            post = content
+                            for res in resultSet:
+                                idx = post.find(res)
+                                if idx is not None:
+                                    pre = post[:idx].strip()
+                                    if len(pre) > 0:
+                                        results.append([pre])
+                                    if pos:
+                                        results.append([res, regExpK])
+                                    else:
+                                        results.append([res, "pos"])  # 不需要词性标注时，用“pos”占位
+                                    idx += len(res)
+                                    post = post[idx:].strip()
+                            endPart = post.strip()
+                            if len(endPart) > 0:
+                                results.append([endPart])
+                    else:
+                        # 分词处理
+                        if pos:
+                            results.extend([[item, pos] for item, pos in self.__posseg.lcut(content)])
+                        else:
+                            results.extend([[item, "pos"] for item in self.__jieba.lcut(content)])  # 不需要词性标注时，用“pos”占位
+                else:
+                    if pos:
+                        results.append([sub[0], "x"])
+                    else:
+                        results.append([sub[0], "pos"])  # 不需要词性标注时，用“pos”占位
+            if len(results) > 0:  # result > 0 表示有切分结果
+                retVal.extend(results)
+            elif sub:  # 遍历项不为空
+                retVal.append(sub)
+
+        return retVal
+
+    def __cut1(self, content, pos=False):
+        """
+        :param content: [txt]
+        :param pos: 是否进行词性标注
+        :return: [(item, label?),]
+        """
+
+        # url处理
+        step1 = self.__cut([[content]], regExpK="url", pos=pos)
+
+        # email处理
+        step2 = self.__cut(step1, regExpK="email", pos=pos)
+
+        # money处理
+        step3 = self.__cut(step2, regExpK="money", pos=pos)
+
+        # idcard处理
+        step4 = self.__cut(step3, regExpK="idcard", pos=pos)
+
+        # bankcard处理
+        step5 = self.__cut(step4, regExpK="bkcard", pos=pos)
+
+        # date处理
+        step6 = self.__cut(step5, regExpK="date", pos=pos)
+
+        # time处理
+        step7 = self.__cut(step6, regExpK="time", pos=pos)
+
+        # phone处理
+        step8 = self.__cut(step7, regExpK="phnum", pos=pos)
+
+        # IpAddress处理
+        step9 = self.__cut(step8, regExpK="ip", pos=pos)
+
+        # 未标注内容的分词处理
+        step10 = self.__cut(step9, pos=pos)
+
+        # 修改时间词汇标记
+        if pos:
+            for i in range(len(step10)):
+                if "t" == step10[i][-1] or "tg" == step10[i][-1]:
+                    step10[i][-1] = "time"
+                elif "eng" == step10[i][-1]:
+                    if step10[i][0].isdigit():
+                        step10[i][-1] = "m"
+            retVal = step10
+        else:
+            retVal = [item[0] for item in step10]
+
+        return retVal
+
     def doWordSplit(self, content="", contents=()):
         retVal = []
         if content:
@@ -83,15 +237,21 @@ class BasicTextProcessing(object):
         return retVal
 
     def batchWordSplit(self, contentList):
-        retVal = []
         if contentList:
-            pool = multiprocessing.Pool(multiprocessing.cpu_count())
-            retVal = pool.map(self.__jieba.lcut, contentList)
-            pool.close()
-            pool.join()
+            jieba.enable_parallel()
+            contents = "\n".join(contentList)
+            words = self.__jieba.cut(contents)
+            retVal = []
+            for word in words:
+                print(word)
+                if "\n" == word and word:
+                    yield retVal
+                    retVal = []
+                else:
+                    retVal.append(word)
+            jieba.disable_parallel()
         else:
             logger.warning("None content for splitting word")
-        return retVal
 
 
 def main():
@@ -102,7 +262,8 @@ def main():
     # sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 100"
     sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId LIMIT 10"
     queryResult = mysql.executeSql(sql=sql)
-    queryResult = [(record[0], record[2], record[3].replace(" ", "")) for record in queryResult[1:]]
+    queryResult = [(record[0], record[2], record[3].replace("\r\n", "").replace("\n", ""))
+                   for record in queryResult[1:]]
     ids = [r[0] for r in queryResult]
     labels = [r[1] for r in queryResult]
     txts = [r[2] for r in queryResult]
@@ -120,10 +281,16 @@ def main():
     print("*********" * 15)
     for l in r:
         print(l)
-        # r = btp.batchWordSplit(contentList=txts)
-        # print("*********" * 15)
-        # for l in r:
-        #     print(l)
+    r = btp.batchWordSplit(contentList=txts)
+    print(type(r))
+    # if isinstance(r, Generator):
+    #     r.__iter__
+    #     pass
+    for i in r:
+        print(i)
+    print("*********" * 15)
+    for l in r:
+        print(l)
 
 
 if __name__ == '__main__':
