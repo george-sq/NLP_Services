@@ -225,10 +225,51 @@ class BasicTextProcessing(object):
 
         return retVal
 
-    def doWordSplit(self, content="", contents=()):
+    def doWordSplit(self, content="", contents=(), pos=False):
         retVal = []
         if content:
-            retVal = self.__jieba.lcut(content)
+            # retVal = self.__jieba.lcut(content)
+            # url处理
+            step1 = self.__cut([[content]], regExpK="url", pos=pos)
+
+            # email处理
+            step2 = self.__cut(step1, regExpK="email", pos=pos)
+
+            # money处理
+            step3 = self.__cut(step2, regExpK="money", pos=pos)
+
+            # idcard处理
+            step4 = self.__cut(step3, regExpK="idcard", pos=pos)
+
+            # bankcard处理
+            step5 = self.__cut(step4, regExpK="bkcard", pos=pos)
+
+            # date处理
+            step6 = self.__cut(step5, regExpK="date", pos=pos)
+
+            # time处理
+            step7 = self.__cut(step6, regExpK="time", pos=pos)
+
+            # phone处理
+            step8 = self.__cut(step7, regExpK="phnum", pos=pos)
+
+            # IpAddress处理
+            step9 = self.__cut(step8, regExpK="ip", pos=pos)
+
+            # 未标注内容的分词处理
+            step10 = self.__cut(step9, pos=pos)
+
+            # 修改时间词汇标记
+            if pos:
+                for i in range(len(step10)):
+                    if "t" == step10[i][-1] or "tg" == step10[i][-1]:
+                        step10[i][-1] = "time"
+                    elif "eng" == step10[i][-1]:
+                        if step10[i][0].isdigit():
+                            step10[i][-1] = "m"
+                retVal = step10
+            else:
+                retVal = [item[0] for item in step10]
         elif contents:
             for li in contents:
                 retVal.append(self.__jieba.lcut(li))
@@ -281,16 +322,11 @@ def main():
     print("*********" * 15)
     for l in r:
         print(l)
-    r = btp.batchWordSplit(contentList=txts)
-    print(type(r))
-    # if isinstance(r, Generator):
-    #     r.__iter__
-    #     pass
-    for i in r:
-        print(i)
-    print("*********" * 15)
-    for l in r:
-        print(l)
+        # r = btp.batchWordSplit(contentList=txts)
+        # print(type(r))
+        # print("*********" * 15)
+        # for l in r:
+        #     print(l)
 
 
 if __name__ == '__main__':
