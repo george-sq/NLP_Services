@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def buildTxtCateCorpus():
+def buildTaggedTxtCorpus():
     # 数据库连接
     mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
     # 查询结果
@@ -44,8 +44,12 @@ def buildTxtCateCorpus():
     pass
 
 
+def doWordSplit():
+    pass
+
+
 def main():
-    buildTxtCateCorpus()
+    # buildTaggedTxtCorpus()
 
     pass
 
