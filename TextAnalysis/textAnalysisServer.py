@@ -11,7 +11,7 @@ import logging
 import time
 
 import actionTest as act
-from actions import mysqlServer as db
+from services import mysqlServer as db
 
 logger = logging.getLogger(__name__)
 
