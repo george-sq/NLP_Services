@@ -10,7 +10,7 @@ import json
 import logging
 import time
 
-import actionTest as act
+from actions import actionTest as act
 from services import mysqlServer as db
 
 logger = logging.getLogger(__name__)
