@@ -262,13 +262,46 @@ class BasicTextProcessing(object):
             yield r
 
 
+def tst(btp, txts):
+    btp.doWordSplit(content=txts[0])
+    print("*********" * 15)
+    for l in btp.results:
+        print(l)
+    btp.doWordSplit(contents=txts)
+    print()
+    print("*********" * 15)
+    for l in btp.results:
+        print(l)
+    r = btp.batchWordSplit(contentList=txts)
+    print()
+    print("*********" * 15)
+    for l in list(r):
+        print(l)
+
+    btp.doWordSplit(content=txts[0], pos=True)
+    print()
+    print(">>>>>>>>>" * 15)
+    for l in btp.results:
+        print(l)
+    btp.doWordSplit(contents=txts, pos=True)
+    print()
+    print(">>>>>>>>>" * 15)
+    for l in btp.results:
+        print(l)
+    r = btp.batchWordSplit(contentList=txts, pos=True)
+    print()
+    print(">>>>>>>>>" * 15)
+    for l in list(r):
+        print(l)
+
+
 def main():
     # 数据库连接
     mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
 
     # 查询结果
     # sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 100"
-    sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId LIMIT 10"
+    sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId LIMIT 3"
     queryResult = mysql.executeSql(sql=sql)
     queryResult = [(record[0], record[2], record[3].replace("\r\n", "").replace("\n", ""))
                    for record in queryResult[1:]]
@@ -281,26 +314,8 @@ def main():
     newWords = "../../Dicts/newWords.txt"
 
     # 功能类测试
-    # mtst()
     btp = BasicTextProcessing(dict=userDict, words=newWords)
-    r = btp.doWordSplit(content=txts[0])
-    print("*********" * 15)
-    # for l in r:
-    #     print(l)
-    r = btp.doWordSplit(contents=txts)
-    print("*********" * 15)
-    # for l in r:
-    #     print(l)
-    r = btp.batchWordSplit(contentList=txts)
-    print("*********" * 15)
-    for l in list(r):
-        print(l)
-
-        # r = btp.batchWordSplit_jieba(contentList=txts)
-        # print(type(r))
-        # print("*********" * 15)
-        # for l in list(r):
-        #     print(l)
+    tst(btp, txts)
 
 
 if __name__ == '__main__':
