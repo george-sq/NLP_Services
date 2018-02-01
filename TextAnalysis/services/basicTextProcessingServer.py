@@ -6,13 +6,13 @@
     @Todo   : 
 """
 
-from mysqlServer import MysqlServer
-import keyWordRecognitionServer as kws
-import re
+from bases.mysqlServer import MysqlServer
 import multiprocessing
+import re
 import jieba
 from jieba import posseg
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -65,36 +65,6 @@ ip_regExp = re.compile(r"(?<!\d)(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|(?:\d))\.
 
 regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "ip": ip_regExp, "date": date_regExp,
               "idcard": idcard_regExp, "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp}
-
-
-def buildTaggedTxtCorpus():
-    # 数据库连接
-    mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
-    # 查询结果
-    sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 100"
-    # sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId"
-    queryResult = mysql.executeSql(sql=sql)
-
-    # 切分标注
-    queryResult = [(record[0], record[2], record[3].replace(" ", "")) for record in queryResult[1:]]
-    pool = multiprocessing.Pool(4)
-    params = [[tid, txt] for tid, l, txt in queryResult]
-    retVal = pool.map(kws.fullMatch, params)
-    pool.close()
-    pool.join()
-    raw_root = "../../Out/文本分类语料库/"
-    print(raw_root)
-    csv_header = ["word", "pos", "ner"]
-    csv_data = []
-    for i in retVal:
-        for a in i:
-            if isinstance(a, list):
-                for s in a:
-                    print(s)
-            else:
-                print(a)
-        print("##########" * 15)
-    pass
 
 
 def __cut(contents, regExpK=None, pos=False):
@@ -203,7 +173,37 @@ def __match(content, pos=False):
     return retVal
 
 
-m = __match
+match = __match
+
+
+def buildTaggedTxtCorpus():
+    # 数据库连接
+    mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+    # 查询结果
+    sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 100"
+    # sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId"
+    queryResult = mysql.executeSql(sql=sql)
+
+    # 切分标注
+    queryResult = [(record[0], record[2], record[3].replace(" ", "")) for record in queryResult[1:]]
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    params = [[tid, txt] for tid, l, txt in queryResult]
+    retVal = pool.map(match, params)
+    pool.close()
+    pool.join()
+    raw_root = "../../Out/文本分类语料库/"
+    print(raw_root)
+    csv_header = ["word", "pos", "ner"]
+    csv_data = []
+    for i in retVal:
+        for a in i:
+            if isinstance(a, list):
+                for s in a:
+                    print(s)
+            else:
+                print(a)
+        print("##########" * 15)
+    pass
 
 
 class BasicTextProcessing(object):
@@ -238,10 +238,10 @@ class BasicTextProcessing(object):
         """
         retVal = []
         if content:
-            retVal.append(m(content, pos=pos))
+            retVal.append(match(content, pos=pos))
         elif contents:
             for li in contents:
-                retVal.append(m(li, pos=pos))
+                retVal.append(match(li, pos=pos))
         else:
             logger.warning("None content for splitting word")
         self.results = retVal
@@ -253,7 +253,7 @@ class BasicTextProcessing(object):
         if contentList:
             pool = multiprocessing.Pool(multiprocessing.cpu_count())
             params = [(li, pos) for li in contentList]
-            retVal = pool.starmap(m, params)
+            retVal = pool.starmap(match, params)
             pool.close()
             pool.join()
         else:
@@ -262,7 +262,7 @@ class BasicTextProcessing(object):
             yield r
 
 
-def tst(btp, txts):
+def tst(btp, txts):  # 功能测试
     btp.doWordSplit(content=txts[0])
     print("*********" * 15)
     for l in btp.results:
