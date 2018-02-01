@@ -66,6 +66,7 @@ ip_regExp = re.compile(r"(?<!\d)(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|(?:\d))\.
 regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "ip": ip_regExp, "date": date_regExp,
               "idcard": idcard_regExp, "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp}
 
+
 def buildTaggedTxtCorpus():
     # 数据库连接
     mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
@@ -96,8 +97,118 @@ def buildTaggedTxtCorpus():
     pass
 
 
+def __cut(contents, regExpK=None, pos=False):
+    """ 切分识别结果
+    :param contents: [[txt],]
+    :param regExpK: 正则表达式规则字典集合的关键字索引
+    :param pos: 是否进行词性标注
+    :return: [[word, label],]
+    """
+    retVal = []
+    regExp = regExpSets.get(regExpK, None)
+    for i in range(len(contents)):  # 遍历输入List
+        sub = contents[i]
+        results = []
+        if 1 == len(sub):  # 判断是否需要进行处理, 逻辑表达式结果为True则表示需要处理
+            content = sub[0].strip()
+            if 0 != len(content):  # 判断内容是否为空格符、占位符或回车换行符
+                if isinstance(regExp, type(re.compile(""))):  # 判断是否需要正则匹配，True为进行正则匹配切分，False为进行Jieba切分
+                    resultSet = regExp.findall(content)
+                    # 根据正则表达式的匹配结果处理输入inStr
+                    if len(resultSet) > 0:
+                        post = content
+                        for res in resultSet:
+                            idx = post.find(res)
+                            if idx is not None:
+                                pre = post[:idx].strip()
+                                if len(pre) > 0:
+                                    results.append([pre])
+                                if pos:
+                                    results.append([res, regExpK])
+                                else:
+                                    results.append([res, "pos"])  # 不需要词性标注时，用“pos”占位
+                                idx += len(res)
+                                post = post[idx:].strip()
+                        endPart = post.strip()
+                        if len(endPart) > 0:
+                            results.append([endPart])
+                else:
+                    # 分词处理
+                    if pos:
+                        results.extend([[item, pos] for item, pos in posseg.lcut(content)])
+                    else:
+                        results.extend([[item, "pos"] for item in jieba.lcut(content)])  # 不需要词性标注时，用“pos”占位
+            else:
+                if pos:
+                    results.append([sub[0], "x"])
+                else:
+                    results.append([sub[0], "pos"])  # 不需要词性标注时，用“pos”占位
+        if len(results) > 0:  # result > 0 表示有切分结果
+            retVal.extend(results)
+        elif sub:  # 遍历项不为空
+            retVal.append(sub)
+
+    return retVal
+
+
+def __match(content, pos=False):
+    """ 匹配识别
+    :param content: [txt]
+    :param pos: 是否进行词性标注
+    :return: [(item, label?),]
+    """
+
+    # url处理
+    step1 = __cut([[content]], regExpK="url", pos=pos)
+
+    # email处理
+    step2 = __cut(step1, regExpK="email", pos=pos)
+
+    # money处理
+    step3 = __cut(step2, regExpK="money", pos=pos)
+
+    # idcard处理
+    step4 = __cut(step3, regExpK="idcard", pos=pos)
+
+    # bankcard处理
+    step5 = __cut(step4, regExpK="bkcard", pos=pos)
+
+    # date处理
+    step6 = __cut(step5, regExpK="date", pos=pos)
+
+    # time处理
+    step7 = __cut(step6, regExpK="time", pos=pos)
+
+    # phone处理
+    step8 = __cut(step7, regExpK="phnum", pos=pos)
+
+    # IpAddress处理
+    step9 = __cut(step8, regExpK="ip", pos=pos)
+
+    # 未标注内容的分词处理
+    step10 = __cut(step9, pos=pos)
+
+    # 修改时间词汇标记
+    if pos:
+        for i in range(len(step10)):
+            if "t" == step10[i][-1] or "tg" == step10[i][-1]:
+                step10[i][-1] = "time"
+            elif "eng" == step10[i][-1]:
+                if step10[i][0].isdigit():
+                    step10[i][-1] = "m"
+        retVal = step10
+    else:
+        retVal = [item[0] for item in step10]
+
+    return retVal
+
+
+m = __match
+
+
 class BasicTextProcessing(object):
     def __init__(self, **kwargs):
+        self.results = None
         jieba.setLogLevel(logging.INFO)
         userDict = kwargs.get("dict", None)
         newWords = kwargs.get("words", None)
@@ -112,187 +223,43 @@ class BasicTextProcessing(object):
                         w, t = line.split()
                         jieba.add_word(word=w, tag=t.strip())
                         logger.info("Add word=%s(%s) freq : %s" % (w, t.strip(), str(jieba.suggest_freq(w))))
-                    logger.info("Add user new words finished.")
+                    logger.info("Add new custom words finished.")
 
         except Exception as e:
             logger.error("Error:%s" % e)
             logger.warning("Use custom dictionary failed, use default dictionary.")
-        finally:
-            self.__jieba = jieba
-            self.__posseg = posseg
-
-    def __cut(self, contents, regExpK=None, pos=False):
-        """
-        :param contents: [[txt],]
-        :param regExpK: 正则表达式规则字典集合的关键字索引
-        :param pos: 是否进行词性标注
-        :return: [[keyWord, label],]
-        """
-        retVal = []
-        regExp = regExpSets.get(regExpK, None)
-        for i in range(len(contents)):  # 遍历输入List
-            sub = contents[i]
-            results = []
-            if 1 == len(sub):  # 判断是否需要进行处理, 逻辑表达式结果为True则表示需要处理
-                content = sub[0].strip()
-                if 0 != len(content):  # 判断内容是否为空格符、占位符或回车换行符
-                    if isinstance(regExp, type(re.compile(""))):  # 判断是否需要正则匹配，True为进行正则匹配切分，False为进行Jieba切分
-                        resultSet = regExp.findall(content)
-                        # 根据正则表达式的匹配结果处理输入inStr
-                        if len(resultSet) > 0:
-                            post = content
-                            for res in resultSet:
-                                idx = post.find(res)
-                                if idx is not None:
-                                    pre = post[:idx].strip()
-                                    if len(pre) > 0:
-                                        results.append([pre])
-                                    if pos:
-                                        results.append([res, regExpK])
-                                    else:
-                                        results.append([res, "pos"])  # 不需要词性标注时，用“pos”占位
-                                    idx += len(res)
-                                    post = post[idx:].strip()
-                            endPart = post.strip()
-                            if len(endPart) > 0:
-                                results.append([endPart])
-                    else:
-                        # 分词处理
-                        if pos:
-                            results.extend([[item, pos] for item, pos in self.__posseg.lcut(content)])
-                        else:
-                            results.extend([[item, "pos"] for item in self.__jieba.lcut(content)])  # 不需要词性标注时，用“pos”占位
-                else:
-                    if pos:
-                        results.append([sub[0], "x"])
-                    else:
-                        results.append([sub[0], "pos"])  # 不需要词性标注时，用“pos”占位
-            if len(results) > 0:  # result > 0 表示有切分结果
-                retVal.extend(results)
-            elif sub:  # 遍历项不为空
-                retVal.append(sub)
-
-        return retVal
-
-    def __cut1(self, content, pos=False):
-        """
-        :param content: [txt]
-        :param pos: 是否进行词性标注
-        :return: [(item, label?),]
-        """
-
-        # url处理
-        step1 = self.__cut([[content]], regExpK="url", pos=pos)
-
-        # email处理
-        step2 = self.__cut(step1, regExpK="email", pos=pos)
-
-        # money处理
-        step3 = self.__cut(step2, regExpK="money", pos=pos)
-
-        # idcard处理
-        step4 = self.__cut(step3, regExpK="idcard", pos=pos)
-
-        # bankcard处理
-        step5 = self.__cut(step4, regExpK="bkcard", pos=pos)
-
-        # date处理
-        step6 = self.__cut(step5, regExpK="date", pos=pos)
-
-        # time处理
-        step7 = self.__cut(step6, regExpK="time", pos=pos)
-
-        # phone处理
-        step8 = self.__cut(step7, regExpK="phnum", pos=pos)
-
-        # IpAddress处理
-        step9 = self.__cut(step8, regExpK="ip", pos=pos)
-
-        # 未标注内容的分词处理
-        step10 = self.__cut(step9, pos=pos)
-
-        # 修改时间词汇标记
-        if pos:
-            for i in range(len(step10)):
-                if "t" == step10[i][-1] or "tg" == step10[i][-1]:
-                    step10[i][-1] = "time"
-                elif "eng" == step10[i][-1]:
-                    if step10[i][0].isdigit():
-                        step10[i][-1] = "m"
-            retVal = step10
-        else:
-            retVal = [item[0] for item in step10]
-
-        return retVal
 
     def doWordSplit(self, content="", contents=(), pos=False):
+        """
+        :param content: [txt]
+        :param contents: [txt,]
+        :param pos: 是否进行词性标注 True=标注
+        :return: [[(item, label?),],]
+        """
         retVal = []
         if content:
-            # retVal = self.__jieba.lcut(content)
-            # url处理
-            step1 = self.__cut([[content]], regExpK="url", pos=pos)
-
-            # email处理
-            step2 = self.__cut(step1, regExpK="email", pos=pos)
-
-            # money处理
-            step3 = self.__cut(step2, regExpK="money", pos=pos)
-
-            # idcard处理
-            step4 = self.__cut(step3, regExpK="idcard", pos=pos)
-
-            # bankcard处理
-            step5 = self.__cut(step4, regExpK="bkcard", pos=pos)
-
-            # date处理
-            step6 = self.__cut(step5, regExpK="date", pos=pos)
-
-            # time处理
-            step7 = self.__cut(step6, regExpK="time", pos=pos)
-
-            # phone处理
-            step8 = self.__cut(step7, regExpK="phnum", pos=pos)
-
-            # IpAddress处理
-            step9 = self.__cut(step8, regExpK="ip", pos=pos)
-
-            # 未标注内容的分词处理
-            step10 = self.__cut(step9, pos=pos)
-
-            # 修改时间词汇标记
-            if pos:
-                for i in range(len(step10)):
-                    if "t" == step10[i][-1] or "tg" == step10[i][-1]:
-                        step10[i][-1] = "time"
-                    elif "eng" == step10[i][-1]:
-                        if step10[i][0].isdigit():
-                            step10[i][-1] = "m"
-                retVal = step10
-            else:
-                retVal = [item[0] for item in step10]
+            retVal.append(m(content, pos=pos))
         elif contents:
             for li in contents:
-                retVal.append(self.__jieba.lcut(li))
+                retVal.append(m(li, pos=pos))
         else:
             logger.warning("None content for splitting word")
-        return retVal
+        self.results = retVal
+        return self
 
-    def batchWordSplit(self, contentList):
+    @staticmethod
+    def batchWordSplit(contentList, pos=False):
+        retVal = []
         if contentList:
-            jieba.enable_parallel()
-            contents = "\n".join(contentList)
-            words = self.__jieba.cut(contents)
-            retVal = []
-            for word in words:
-                print(word)
-                if "\n" == word and word:
-                    yield retVal
-                    retVal = []
-                else:
-                    retVal.append(word)
-            jieba.disable_parallel()
+            pool = multiprocessing.Pool(multiprocessing.cpu_count())
+            params = [(li, pos) for li in contentList]
+            retVal = pool.starmap(m, params)
+            pool.close()
+            pool.join()
         else:
             logger.warning("None content for splitting word")
+        for r in retVal:
+            yield r
 
 
 def main():
@@ -314,18 +281,25 @@ def main():
     newWords = "../../Dicts/newWords.txt"
 
     # 功能类测试
+    # mtst()
     btp = BasicTextProcessing(dict=userDict, words=newWords)
     r = btp.doWordSplit(content=txts[0])
     print("*********" * 15)
-    print(r)
+    # for l in r:
+    #     print(l)
     r = btp.doWordSplit(contents=txts)
     print("*********" * 15)
-    for l in r:
+    # for l in r:
+    #     print(l)
+    r = btp.batchWordSplit(contentList=txts)
+    print("*********" * 15)
+    for l in list(r):
         print(l)
-        # r = btp.batchWordSplit(contentList=txts)
+
+        # r = btp.batchWordSplit_jieba(contentList=txts)
         # print(type(r))
         # print("*********" * 15)
-        # for l in r:
+        # for l in list(r):
         #     print(l)
 
 
