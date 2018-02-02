@@ -6,6 +6,14 @@
     @Todo   : 
 """
 
+import warnings
+
+warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
+from gensim import corpora
+from gensim import models
+from sklearn.datasets.base import Bunch
+from sklearn.feature_extraction.text import TfidfVectorizer  # TF-IDF向量生成类
+from collections import defaultdict
 from bases.mysqlServer import MysqlServer
 import multiprocessing
 import re
@@ -13,58 +21,61 @@ import jieba
 from jieba import posseg
 import logging
 
-
 logger = logging.getLogger(__name__)
 
-url_regExp = re.compile(r"(?:(?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-z0-9+&@#/%=~_|$?!:,.-]*[a-z0-9+&@#/%=~_|$])|"
-                        r"(?:[a-z0-9+&@#/%=~_|$?!:,.-]+(?:\.[a-z]+))", re.IGNORECASE)
+__url_regExp = re.compile(
+    r"(?:(?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-z0-9+&@#/%=~_|$?!:,.-]*[a-z0-9+&@#/%=~_|$])|"
+    r"(?:[a-z0-9+&@#/%=~_|$?!:,.-]+(?:\.[a-z]+))", re.IGNORECASE)
 
-money_regExp = re.compile(r"((?:(?:\d(?:\.[0-9]+多?)?|one|two|three|four|five|six|seven|eight|nine|ten|一|二|两|三|四|五|六|"
-                          r"七|八|九|十|零|兆|亿|万|千|百|拾|玖|捌|柒|陆|伍|肆|叁|贰|壹)+)(?:[多余])?(?:\s*(?:hundred|thousand|Million|"
-                          r"Billion)?\s*)(?:元|人民币|rmb|美元|美金|dollars?|韩元|日元|欧元|英镑))",
-                          re.IGNORECASE)
+__money_regExp = re.compile(r"((?:(?:\d(?:\.[0-9]+多?)?|one|two|three|four|five|six|seven|eight|nine|ten|一|二|两|三|四|五|六|"
+                            r"七|八|九|十|零|兆|亿|万|千|百|拾|玖|捌|柒|陆|伍|肆|叁|贰|壹)+)(?:[多余])?(?:\s*(?:hundred|thousand|Million|"
+                            r"Billion)?\s*)(?:元|人民币|rmb|美元|美金|dollars?|韩元|日元|欧元|英镑))",
+                            re.IGNORECASE)
 
-idcard_regExp = re.compile(r"(?<!\d)((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]\d[0-3]\d)(?:\d{3})[\dxX])|"
-                           r"[1-9]\d{5}\d{2}(?:(?:0[1-9])|(?:10|11|12))(?:(?:[0-2][1-9])|10|20|30|31)\d{2}[0-9Xx])"
-                           r"(?!\d)")
+__idcard_regExp = re.compile(r"(?<!\d)((?:(?:[1-9]\d{5})(?:(?:18|19|2\d)\d{2}[0-1]\d[0-3]\d)(?:\d{3})[\dxX])|"
+                             r"[1-9]\d{5}\d{2}(?:(?:0[1-9])|(?:10|11|12))(?:(?:[0-2][1-9])|10|20|30|31)\d{2}[0-9Xx])"
+                             r"(?!\d)")
 
-phoneNumber_regExp = re.compile(r"(?<!\d)(?:([(+（]{0,2})?(?: ?[0-9]{2,4} ?)(?:[)-）] ?)?)?(?:1[3-9]\d{9})(?!\d)")
+__phoneNumber_regExp = re.compile(r"(?<!\d)(?:([(+（]{0,2})?(?: ?[0-9]{2,4} ?)(?:[)-）] ?)?)?(?:1[3-9]\d{9})(?!\d)")
 
-bankCard_regExp = re.compile(r"((?<![0-9_+=-])(?:[\d]{6})(?:[\d]{6,12})[\d ]?(?!\d))")
+__bankCard_regExp = re.compile(r"((?<![0-9_+=-])(?:[\d]{6})(?:[\d]{6,12})[\d ]?(?!\d))")
 
-email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
-                          r"(?:(?:[a-z0-9]+|\[)+(?:\.(?!\.+)))+(?:(?:[a-z0-9]+|\])+)?)", re.IGNORECASE)
+__email_regExp = re.compile(r"((?:(?:[a-z0-9+.']+)|(?:\"\w+\\ [a-z0-9']+\"))@"
+                            r"(?:(?:[a-z0-9]+|\[)+(?:\.(?!\.+)))+(?:(?:[a-z0-9]+|\])+)?)", re.IGNORECASE)
 
-time_regExp = re.compile(r"(?:(?:上午|中午|下午|凌晨|早上|晚上|午夜|半夜)?(?:(?:(?:[0-1]\d|2[0-3]|(?<!\d)\d(?!\d))(?:点钟?|时))"
-                         r"(?:(?:过?(?:(?:(?<!\d)\d(?!\d))|(?:(?<!\d)[0-5]\d(?!\d)))分)(?:过?(?:(?:(?<!\d)\d(?:\.\d+)?"
-                         r"(?!\d))|(?:(?<!\d)[0-5]\d(?:\.\d+)?(?!\d)))秒)?|(?:一刻钟|一刻|半|多))?|"
-                         r"(?:(?:(?:[零一二两三四五六七八九十]|(?:十|一十)[一二三四五六七八九]|二十[一二三四])(?:点钟?|时))"
-                         r"(?:(?:(?:过?(?:(?:(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)(?![一二两三四五六七八九十])?)"
-                         r"|(?:(?<![一二两三四五六七八九十])零?[一二两三四五六七八九](?![一二两三四五六七八九十])))分)(?:过?"
-                         r"(?:(?:(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)(?![一二两三四五六七八九十])?)|"
-                         r"(?:(?<![一二两三四五六七八九十])零?[一二两三四五六七八九](?![一二两三四五六七八九])))秒)?)|"
-                         r"(?:过?(?:一刻钟|一刻|半|多)|(?:过?(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)"
-                         r"(?![一二两三四五六七八九十])?)|(?:(?<![一二两三四五六七八九十])过[一二两三四五六七八九]"
-                         r"(?![一二两三四五六七八九]))))?)))|(?:(?<!\d)(?:[0-2]?[0-9][：:]+[0-5]?[0-9])[:：]?"
-                         r"(?:[0-5]?[0-9]\.?[0-9]+)?(?:\s*(?:am|pm))?)|"
-                         r"(?:(?:(?:一刻|半刻|半|零|一|二|两|三|四|五|六|七|八|九|十|百|千|万|百万|千万|亿|兆|\d)+"
-                         r"(?:多个|多|个)?\s*(?:世纪|年|月|季度|日子|日|天|小时|分钟|秒钟|秒|毫秒|钟))|(?:[0-9]+\s*"
-                         r"(?:years|year|months|month|days|day|hours|hour|hr\.|Minutes|Minute|second|secs\.|sec\.|"
-                         r"Millisecond|msec\.|msel|ms)+))", re.IGNORECASE)
+__time_regExp = re.compile(r"(?:(?:上午|中午|下午|凌晨|早上|晚上|午夜|半夜)?(?:(?:(?:[0-1]\d|2[0-3]|(?<!\d)\d(?!\d))(?:点钟?|时))"
+                           r"(?:(?:过?(?:(?:(?<!\d)\d(?!\d))|(?:(?<!\d)[0-5]\d(?!\d)))分)(?:过?(?:(?:(?<!\d)\d(?:\.\d+)?"
+                           r"(?!\d))|(?:(?<!\d)[0-5]\d(?:\.\d+)?(?!\d)))秒)?|(?:一刻钟|一刻|半|多))?|"
+                           r"(?:(?:(?:[零一二两三四五六七八九十]|(?:十|一十)[一二三四五六七八九]|二十[一二三四])(?:点钟?|时))"
+                           r"(?:(?:(?:过?(?:(?:(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)(?![一二两三四五六七八九十])?)"
+                           r"|(?:(?<![一二两三四五六七八九十])零?[一二两三四五六七八九](?![一二两三四五六七八九十])))分)(?:过?"
+                           r"(?:(?:(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)(?![一二两三四五六七八九十])?)|"
+                           r"(?:(?<![一二两三四五六七八九十])零?[一二两三四五六七八九](?![一二两三四五六七八九])))秒)?)|"
+                           r"(?:过?(?:一刻钟|一刻|半|多)|(?:过?(?:(?:十|一十|二十|三十|四十|五十)[一二三四五六七八九]?)"
+                           r"(?![一二两三四五六七八九十])?)|(?:(?<![一二两三四五六七八九十])过[一二两三四五六七八九]"
+                           r"(?![一二两三四五六七八九]))))?)))|(?:(?<!\d)(?:[0-2]?[0-9][：:]+[0-5]?[0-9])[:：]?"
+                           r"(?:[0-5]?[0-9]\.?[0-9]+)?(?:\s*(?:am|pm))?)|"
+                           r"(?:(?:(?:一刻|半刻|半|零|一|二|两|三|四|五|六|七|八|九|十|百|千|万|百万|千万|亿|兆|\d)+"
+                           r"(?:多个|多|个)?\s*(?:世纪|年|月|季度|日子|日|天|小时|分钟|秒钟|秒|毫秒|钟))|(?:[0-9]+\s*"
+                           r"(?:years|year|months|month|days|day|hours|hour|hr\.|Minutes|Minute|second|secs\.|sec\.|"
+                           r"Millisecond|msec\.|msel|ms)+))", re.IGNORECASE)
 
-date_regExp = re.compile(r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])"
-                         r"(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)"
-                         r"(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)"
-                         r"(?:(?:19|20)[0-9]{2})(?!\d)[ 年/.-])(?:(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ 月/.-])"
-                         r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?))?|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)"
-                         r"月)(?:(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)")
+__date_regExp = re.compile(
+    r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])"
+    r"(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)"
+    r"(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[ /.-])(?:(?<!\d)(?:19|20)[0-9]{2}(?!\d))|(?:(?<!\d)"
+    r"(?:(?:19|20)[0-9]{2})(?!\d)[ 年/.-])(?:(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)[ 月/.-])"
+    r"(?:(?<!\d)(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?))?|(?:(?<!\d)(?:1[012]|0?[1-9])(?!\d)"
+    r"月)(?:(?:3[01]|[12][0-9]|0?[1-9])(?!\d)[日|号]?)")
 
-ip_regExp = re.compile(r"(?<!\d)(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|"
-                       r"(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|"
-                       r"(?:[1-9]\d)|(?:\d))(?!\d)")
+__ip_regExp = re.compile(
+    r"(?<!\d)(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|"
+    r"(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|(?:[1-9]\d)|(?:\d))\.(?:(?:2[0-5]\d)|(?:1\d{2})|"
+    r"(?:[1-9]\d)|(?:\d))(?!\d)")
 
-regExpSets = {"url": url_regExp, "email": email_regExp, "money": money_regExp, "ip": ip_regExp, "date": date_regExp,
-              "idcard": idcard_regExp, "phnum": phoneNumber_regExp, "bkcard": bankCard_regExp, "time": time_regExp}
+__regExpSets = {"url": __url_regExp, "email": __email_regExp, "money": __money_regExp, "ip": __ip_regExp,
+                "date": __date_regExp, "idcard": __idcard_regExp, "phnum": __phoneNumber_regExp,
+                "bkcard": __bankCard_regExp, "time": __time_regExp}
 
 
 def __cut(contents, regExpK=None, pos=False):
@@ -75,7 +86,7 @@ def __cut(contents, regExpK=None, pos=False):
     :return: [[word, label],]
     """
     retVal = []
-    regExp = regExpSets.get(regExpK, None)
+    regExp = __regExpSets.get(regExpK, None)
     for i in range(len(contents)):  # 遍历输入List
         sub = contents[i]
         results = []
@@ -207,8 +218,14 @@ def buildTaggedTxtCorpus():
 
 
 class BasicTextProcessing(object):
+    """文本预处理类"""
+
     def __init__(self, **kwargs):
         self.results = None
+        self.dict_gensim = None
+        self.bow_bunch = None
+        self.bow_gensim = None
+        self.freqDictObj = defaultdict(int)
         jieba.setLogLevel(logging.INFO)
         userDict = kwargs.get("dict", None)
         newWords = kwargs.get("words", None)
@@ -234,7 +251,7 @@ class BasicTextProcessing(object):
         :param content: [txt]
         :param contents: [txt,]
         :param pos: 是否进行词性标注 True=标注
-        :return: [[(item, label?),],]
+        :return: self.results = [[(item, label?),],]
         """
         retVal = []
         if content:
@@ -245,7 +262,7 @@ class BasicTextProcessing(object):
         else:
             logger.warning("None content for splitting word")
         self.results = retVal
-        return self
+        return self.results
 
     @staticmethod
     def batchWordSplit(contentList, pos=False):
@@ -260,6 +277,129 @@ class BasicTextProcessing(object):
             logger.warning("None content for splitting word")
         for r in retVal:
             yield r
+
+    def buildWordFrequencyDict(self, dataSets):
+        """ 生成数据集中最小单元的频率字典
+            :param dataSets: 输入数据集 --> [[column0,column1,],]
+            :return: self.freqDictObj
+        """
+        for record in dataSets:
+            for column in record:
+                self.freqDictObj[column] += 1
+        return self.freqDictObj
+
+    def buildGensimDict(self, dataSets):
+        """ 生成数据集的字典
+            :param dataSets: 输入数据集 --> [[column0,column1,],]
+            :return: self.dict_gensim
+        """
+        self.dict_gensim = corpora.Dictionary(dataSets)
+        return self.dict_gensim
+
+    def buildBow2Bunch(self, wordSeqs=None):
+        """ 生成BOW的Bunch对象
+            :param wordSeqs: 词序列集合 --> [[column,],]
+            :return: self.bow_bunch
+        """
+        if wordSeqs is not None:
+            self.bow_bunch = Bunch(txtIds=[], classNames=[], labels=[], contents=[])
+            for record in wordSeqs:
+                if isinstance(record, list):
+                    self.bow_bunch.contents.append(" ".join(record))
+                else:
+                    logger.warning("wordSeqs 的内容结构错误！wordSeqs --> [[column,],]")
+        else:
+            logger.warning("wordSeqs is None！请输入正确的参数 wordSeqs --> [[column,],]")
+        return self.bow_bunch
+
+    def buildGensimCorpusByCorporaDicts(self, dataSets=None, dictObj=None):
+        """ 生成语料库文件
+            :param dataSets: 输入数据集 --> [[column0,column1,],]
+            :param dictObj: Gensim字典对象 --> corpora.Dictionary
+            :return: corpus --> [[(wordIndex,wordFreq),],]
+        """
+        corpus = None
+        if isinstance(dictObj, corpora.Dictionary):
+            corpus = [dictObj.doc2bow(record) for record in dataSets]
+        elif isinstance(self.dict_gensim, corpora.Dictionary):
+            corpus = [self.dict_gensim.doc2bow(record) for record in dataSets]
+        else:
+            logger.warning("非法的dictObj对象 (%s)，需要有效的 corpora.Dictionary对象！！！" % dictObj)
+        return corpus
+
+
+class TfidfVecSpace(object):
+    """TFIDF向量空间的生成类"""
+
+    def __init__(self):
+        self.TFIDF_Train_Vecs = None
+        self.TFIDF_Test_Vecs = None
+        self.TFIDF_Model = None
+        self.TFIDF_Vecs = None
+
+    def buildVecs4Train(self, bowObj=None, dictObj=None):
+        """ 生成训练集的TFIDF向量空间（Bunch对象）
+            :param bowObj: Bunch(txtIds=[], classNames=[], labels=[], contents=[[],])
+            :param dictObj: Gensim字典对象 --> corpora.Dictionary
+            :return: self.TFIDF_Train_Vecs
+        """
+        if isinstance(bowObj, Bunch):
+            self.TFIDF_Train_Vecs = Bunch(txtIds=[], classNames=[], labels=[], tdm=[], vocabulary=[])
+            self.TFIDF_Train_Vecs.txtIds.extend(bowObj.txtIds)
+            self.TFIDF_Train_Vecs.classNames.extend(bowObj.classNames)
+            self.TFIDF_Train_Vecs.labels.extend(bowObj.labels)
+            if isinstance(dictObj, corpora.Dictionary):
+                self.TFIDF_Train_Vecs.vocabulary = dictObj.token2id
+            vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
+                                         vocabulary=self.TFIDF_Train_Vecs.vocabulary)  # 将测试集文本映射到训练集词典中
+            self.TFIDF_Train_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
+        else:
+            logger.warning("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
+        return self.TFIDF_Train_Vecs
+
+    def buildVecs4Test(self, bowObj=None, trainTfidfObj=None):
+        """ 生成测试集的TFIDF向量空间（Bunch对象）
+            :param bowObj: Bunch(txtIds=[], classNames=[], labels=[], contents=[])
+            :param trainTfidfObj: Bunch(txtIds=[], classNames=[], labels=[], tdm=[], vocabulary=[])
+            :return: self.TFIDF_Test_Vecs
+        """
+        if isinstance(bowObj, Bunch):
+            if isinstance(trainTfidfObj, Bunch):
+                self.TFIDF_Test_Vecs = Bunch(txtIds=[], classNames=[], labels=[], tdm=[], vocabulary=[])
+                self.TFIDF_Test_Vecs.txtIds.extend(bowObj.txtIds)
+                self.TFIDF_Test_Vecs.classNames.extend(bowObj.classNames)
+                self.TFIDF_Test_Vecs.labels.extend(bowObj.labels)
+
+                self.TFIDF_Test_Vecs.vocabulary = trainTfidfObj.vocabulary
+                vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
+                                             vocabulary=trainTfidfObj.vocabulary)  # 将测试集文本映射到训练集词典中
+                self.TFIDF_Test_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
+        else:
+            logger.warning("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
+        return self.TFIDF_Test_Vecs
+
+    def buildVecsByGensim(self, **kwargs):
+        """ 生成数据集的TFIDF向量空间
+            :param kwargs: 初始化TFIDF向量工具模型的数据 initCorpus --> [[doc2bow的处理结果(wordIndex,wordFreq),],]
+            :param kwargs: record --> [] or corpus --> [[],]
+            :return: self
+        """
+        initCorpus = kwargs.get("initCorpus", None)
+        record = kwargs.get("record", None)
+        corpus = kwargs.get("corpus", None)
+        if initCorpus is not None:
+            self.TFIDF_Model = models.TfidfModel(initCorpus)
+            logger.info("Build TFIDF Model Successed")
+            if isinstance(record, list):
+                self.TFIDF_Vecs = self.TFIDF_Model[record]
+            elif isinstance(corpus, list):
+                self.TFIDF_Vecs = self.TFIDF_Model[corpus]
+            else:
+                logger.warning("Build TFIDF Vector Spaces Failed (record=%s, corpus=%s)" % (record, corpus))
+        else:
+            logger.warning("参数initCorpus 类型错误 (%s)！请输入正确的initCorpus参数。" % initCorpus)
+
+        return self
 
 
 def tst(btp, txts):  # 功能测试
