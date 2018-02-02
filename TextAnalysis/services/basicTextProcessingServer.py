@@ -184,9 +184,6 @@ def __match(content, pos=False):
     return retVal
 
 
-match = __match
-
-
 def buildTaggedTxtCorpus():
     # 数据库连接
     mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
@@ -199,7 +196,7 @@ def buildTaggedTxtCorpus():
     queryResult = [(record[0], record[2], record[3].replace(" ", "")) for record in queryResult[1:]]
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     params = [[tid, txt] for tid, l, txt in queryResult]
-    retVal = pool.map(match, params)
+    retVal = pool.map(__match, params)
     pool.close()
     pool.join()
     raw_root = "../../Out/文本分类语料库/"
@@ -255,10 +252,10 @@ class BasicTextProcessing(object):
         """
         retVal = []
         if content:
-            retVal.append(match(content, pos=pos))
+            retVal.append(__match(content, pos=pos))
         elif contents:
             for li in contents:
-                retVal.append(match(li, pos=pos))
+                retVal.append(__match(li, pos=pos))
         else:
             logger.warning("None content for splitting word")
         self.results = retVal
@@ -270,7 +267,7 @@ class BasicTextProcessing(object):
         if contentList:
             pool = multiprocessing.Pool(multiprocessing.cpu_count())
             params = [(li, pos) for li in contentList]
-            retVal = pool.starmap(match, params)
+            retVal = pool.starmap(__match, params)
             pool.close()
             pool.join()
         else:
