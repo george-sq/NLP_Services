@@ -8,7 +8,7 @@
 
 from bases.mysqlServer import MysqlServer
 from bases.fileServer import FileServer
-from basicTextProcessingServer import BasicTextProcessing
+from basicTextProcessingServer import BasicTextProcessing, TfidfVecSpace
 
 
 def getStopWords():
