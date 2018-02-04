@@ -6,11 +6,6 @@
     @Todo   : 
 """
 
-import warnings
-
-warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
-from gensim import corpora
-from gensim import models
 from sklearn.datasets.base import Bunch
 from sklearn.feature_extraction.text import TfidfVectorizer  # TF-IDF向量生成类
 from collections import defaultdict
@@ -20,6 +15,11 @@ import re
 import jieba
 from jieba import posseg
 import logging
+import warnings
+
+warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
+from gensim import corpora
+from gensim import models
 
 logger = logging.getLogger(__name__)
 
@@ -217,7 +217,7 @@ def buildTaggedTxtCorpus():
 class BasicTextProcessing(object):
     """文本预处理类"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs,):
         self.results = None
         self.dict_gensim = None
         self.bow_bunch = None

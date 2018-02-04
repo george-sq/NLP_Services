@@ -6,11 +6,11 @@
     @Todo   : 
 """
 
+import re
+import jieba
 import logging
 
 logger = logging.getLogger(__name__)
-import re
-import jieba
 
 jieba.setLogLevel(logging.INFO)
 jieba.set_dictionary("../../Dicts/dict_jieba_check.txt")
