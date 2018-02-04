@@ -61,8 +61,8 @@ def baseProcess():
     corpus = textHandler.buildGensimCorpusByCorporaDicts(dataSets, dicts4corpus)
 
     # 根据数字化语料库生成TFIDF向量空间
-    statDataHandler = structdata.StatisticalData()
-    tfidf4corpus = statDataHandler.buildGensimTFIDF(initCorpus=corpus, corpus=corpus)
+    statDataHandler = TfidfVecSpace()
+    tfidf4corpus = statDataHandler.buildVecsByGensim(initCorpus=corpus, corpus=corpus)
     tfidfModel = statDataHandler.TFIDF_Vecs
 
     return labels, corpus, dicts4corpus, tfidfModel, tfidf4corpus, freqData
