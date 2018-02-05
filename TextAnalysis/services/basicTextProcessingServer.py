@@ -367,18 +367,17 @@ class TfidfVecSpace(object):
             :param dictObj: Gensim字典对象 --> corpora.Dictionary
             :return: self.TFIDF_Train_Vecs
         """
-        if isinstance(bowObj, Bunch):
+        if isinstance(bowObj, Bunch) and isinstance(dictObj, corpora.Dictionary):
             self.TFIDF_Train_Vecs = Bunch(txtIds=[], classNames=[], labels=[], tdm=[], vocabulary=[])
             self.TFIDF_Train_Vecs.txtIds.extend(bowObj.txtIds)
             self.TFIDF_Train_Vecs.classNames.extend(bowObj.classNames)
             self.TFIDF_Train_Vecs.labels.extend(bowObj.labels)
-            if isinstance(dictObj, corpora.Dictionary):
-                self.TFIDF_Train_Vecs.vocabulary = dictObj.token2id
+            self.TFIDF_Train_Vecs.vocabulary = dictObj.token2id
             vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
                                          vocabulary=self.TFIDF_Train_Vecs.vocabulary)  # 将测试集文本映射到训练集词典中
             self.TFIDF_Train_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
         else:
-            logger.warning("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
+            logger.warning("Params type error! params need Bunch and corpora.Dictionary")
         return self.TFIDF_Train_Vecs
 
     def buildVecs4Test(self, bowObj=None, trainTfidfObj=None):
@@ -387,19 +386,18 @@ class TfidfVecSpace(object):
             :param trainTfidfObj: Bunch(txtIds=[], classNames=[], labels=[], tdm=[], vocabulary=[])
             :return: self.TFIDF_Test_Vecs
         """
-        if isinstance(bowObj, Bunch):
-            if isinstance(trainTfidfObj, Bunch):
-                self.TFIDF_Test_Vecs = Bunch(txtIds=[], classNames=[], labels=[], tdm=[], vocabulary=[])
-                self.TFIDF_Test_Vecs.txtIds.extend(bowObj.txtIds)
-                self.TFIDF_Test_Vecs.classNames.extend(bowObj.classNames)
-                self.TFIDF_Test_Vecs.labels.extend(bowObj.labels)
+        if isinstance(bowObj, Bunch) and isinstance(trainTfidfObj, Bunch):
+            self.TFIDF_Test_Vecs = Bunch(txtIds=[], classNames=[], labels=[], tdm=[], vocabulary=[])
+            self.TFIDF_Test_Vecs.txtIds.extend(bowObj.txtIds)
+            self.TFIDF_Test_Vecs.classNames.extend(bowObj.classNames)
+            self.TFIDF_Test_Vecs.labels.extend(bowObj.labels)
 
-                self.TFIDF_Test_Vecs.vocabulary = trainTfidfObj.vocabulary
-                vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
-                                             vocabulary=trainTfidfObj.vocabulary)  # 将测试集文本映射到训练集词典中
-                self.TFIDF_Test_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
+            self.TFIDF_Test_Vecs.vocabulary = trainTfidfObj.vocabulary
+            vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
+                                         vocabulary=trainTfidfObj.vocabulary)  # 将测试集文本映射到训练集词典中
+            self.TFIDF_Test_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
         else:
-            logger.warning("参数bowObj 类型错误 (%s)！请输入正确的bowObj参数。" % bowObj)
+            logger.warning("Params type error! params need Bunch")
         return self.TFIDF_Test_Vecs
 
     def buildVecsByGensim(self, **kwargs):
