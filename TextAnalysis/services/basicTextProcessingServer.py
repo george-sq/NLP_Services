@@ -323,9 +323,9 @@ class BasicTextProcessing(object):
                 if isinstance(record, list):
                     bow_bunch.contents.append(" ".join(record))
                 else:
-                    logger.error("wordSeqs's type error! wordSeqs should like [[column,],]")
+                    logger.error("Params type error! wordSeqs should like [[column,],]")
         else:
-            logger.error("wordSeqs is None! wordSeqs should like [[column,],]")
+            logger.error("Params type error! wordSeqs should like [[column,],]")
         if stored[0] and 2 == len(stored[1]):
             fileHandler = FileServer()
             fileHandler.savePickledObjFile(path=stored[1][0], fileName=stored[1][1], writeContentObj=bow_bunch)
@@ -344,7 +344,8 @@ class BasicTextProcessing(object):
         if dataSets is not None and isinstance(dictObj, corpora.Dictionary):
             corpus = [dictObj.doc2bow(record) for record in dataSets]
         else:
-            logger.error("wordSeqs's type error! (%s) should be object of corpora.Dictionary" % dictObj)
+            logger.error("Params type error! dataSets shouldn't be None and "
+                         "(%s) should be object of corpora.Dictionary" % dictObj)
         if stored[0] and stored[1] is not None:
             corpora.MmCorpus.serialize(fname=stored[1], corpus=corpus)
             logger.info("Store corpus(%s) finished" % stored[1])
@@ -423,33 +424,33 @@ class TfidfVecSpace(object):
         return self
 
 
-def tst(btp, txts):  # 功能测试
-    btp.doWordSplit(content=txts[0])
+def tst(cla, txts):  # 功能测试
+    cla.doWordSplit(content=txts[0])
     print("*********" * 15)
-    for l in btp.results:
+    for l in cla.retVal:
         print(l)
-    btp.doWordSplit(contents=txts)
+    cla.doWordSplit(contents=txts)
     print()
     print("*********" * 15)
-    for l in btp.results:
+    for l in cla.retVal:
         print(l)
-    r = btp.batchWordSplit(contentList=txts)
+    r = cla.batchWordSplit(contentList=txts)
     print()
     print("*********" * 15)
     for l in list(r):
         print(l)
 
-    btp.doWordSplit(content=txts[0], pos=True)
+    cla.doWordSplit(content=txts[0], pos=True)
     print()
     print(">>>>>>>>>" * 15)
-    for l in btp.results:
+    for l in cla.retVal:
         print(l)
-    btp.doWordSplit(contents=txts, pos=True)
+    cla.doWordSplit(contents=txts, pos=True)
     print()
     print(">>>>>>>>>" * 15)
-    for l in btp.results:
+    for l in cla.retVal:
         print(l)
-    r = btp.batchWordSplit(contentList=txts, pos=True)
+    r = cla.batchWordSplit(contentList=txts, pos=True)
     print()
     print(">>>>>>>>>" * 15)
     for l in list(r):
@@ -466,8 +467,8 @@ def main():
     queryResult = mysql.executeSql(sql=sql)
     queryResult = [(record[0], record[2], record[3].replace("\r\n", "").replace("\n", ""))
                    for record in queryResult[1:]]
-    ids = [r[0] for r in queryResult]
-    labels = [r[1] for r in queryResult]
+    # ids = [r[0] for r in queryResult]
+    # labels = [r[1] for r in queryResult]
     txts = [r[2] for r in queryResult]
 
     # 切分标注
