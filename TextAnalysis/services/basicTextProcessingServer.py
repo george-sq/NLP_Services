@@ -276,10 +276,10 @@ class BasicTextProcessing(object):
             yield r
 
     @classmethod
-    def buildWordFrequencyDict(cls, dataSets, stored=False):
+    def buildWordFrequencyDict(cls, dataSets, stored=(False, None)):
         """ 生成数据集中最小单元的频率字典
         :param dataSets: 输入数据集 --> [[column0,column1,],]
-        :param stored: 是否进行本地存储, True=存储
+        :param stored: (True=存储到本地磁盘, 存储路径)
         :return: wordFreqDict or wordFreqSeqs
         """
         wordFreqDict = defaultdict(int)
@@ -287,30 +287,36 @@ class BasicTextProcessing(object):
             for column in record:
                 wordFreqDict[column] += 1
         logger.info("Count word frequency data finished")
-        if stored:
+        if stored[0] and 2 == len(stored[1]):
             wordFreqSeqs = []
             wordFreq = sorted(wordFreqDict.items(), key=lambda twf: twf[1], reverse=True)
             for w, f in wordFreq:
                 wordFreqSeqs.append(str(w) + '\t' + str(f))
             fileHandler = FileServer()
-            fileHandler.saveText2UTF8(path="../../Out/Dicts/", fileName="stopWords.dict", lines=wordFreqSeqs)
-            logger.info("Store word frequency data finished")
+            fileHandler.saveText2UTF8(path=stored[1][0], fileName=stored[1][1], lines=wordFreqSeqs)
+            logger.info("Store word_frequency_data(%s) finished" % stored[1])
             return wordFreqSeqs
         return wordFreqDict
 
     @classmethod
-    def buildGensimDict(cls, dataSets, stored=False):
+    def buildGensimDict(cls, dataSets, stored=(False, None)):
         """ 生成数据集的字典
-            :param dataSets: 输入数据集 --> [[column0,column1,],]
-            :return: corpora.Dictionary
+        :param dataSets: 输入数据集 --> [[column0,column1,],]
+        :param stored: (True=存储到本地磁盘, 存储路径)
+        :return: corpora.Dictionary
         """
-        return corpora.Dictionary(dataSets)
+        dict_gensim = corpora.Dictionary(dataSets)
+        if stored[0] and stored[1] is not None:
+            dict_gensim.save(stored[1])
+            logger.info("Store GensimDict(%s) finished" % stored[1])
+        return dict_gensim
 
     @classmethod
-    def buildBow2Bunch(cls, wordSeqs=None, stored=False):
+    def buildBunch4Bow(cls, wordSeqs=None, stored=(False, None)):
         """ 生成BOW的Bunch对象
-            :param wordSeqs: 词序列集合 --> [[column,],]
-            :return: bow_bunch
+        :param wordSeqs: 词序列集合 --> [[column,],]
+        :param stored: (True=存储到本地磁盘, 存储路径)
+        :return: bow_bunch
         """
         bow_bunch = Bunch(txtIds=[], classNames=[], labels=[], contents=[])
         if wordSeqs is not None:
@@ -321,29 +327,28 @@ class BasicTextProcessing(object):
                     logger.warning("wordSeqs's type error! wordSeqs should like [[column,],]")
         else:
             logger.warning("wordSeqs is None! wordSeqs should like [[column,],]")
+        if stored[0] and 2 == len(stored[1]):
+            fileHandler = FileServer()
+            fileHandler.savePickledObjFile(path=stored[1][0], fileName=stored[1][1], writeContentObj=bow_bunch)
+            logger.info("Store Bunch4Bow(%s) finished" % stored[1])
         return bow_bunch
 
     @classmethod
-    def buildGensimCorpusByCorporaDicts(cls, dataSets=None, dictObj=None, stored=False):
+    def buildGensimCorpusByCorporaDicts(cls, dataSets=None, dictObj=None, stored=(False, None)):
         """  生成语料库文件
         :param dataSets: 输入数据集 --> [[column0,column1,],]
         :param dictObj: Gensim字典对象 --> corpora.Dictionary
-        :param stored: 是否存储到本地磁盘, True=存储
+        :param stored: (True=存储到本地磁盘, 存储路径)
         :return: corpus --> [[(wordIndex,wordFreq),],]
-        """
-        """ 生成语料库文件
-            :param dataSets: 输入数据集 --> [[column0,column1,],]
-            :param dictObj: Gensim字典对象 --> corpora.Dictionary
-            :return: corpus --> [[(wordIndex,wordFreq),],]
         """
         corpus = None
         if dataSets is not None and isinstance(dictObj, corpora.Dictionary):
             corpus = [dictObj.doc2bow(record) for record in dataSets]
         else:
             logger.warning("wordSeqs's type error! (%s) should be object of corpora.Dictionary" % dictObj)
-        if stored:
-            corpora.MmCorpus.serialize(fname="../../Corpus/corpus.mm", corpus=corpus)
-            logger.info("Store corpus.mm finished")
+        if stored[0] and stored[1] is not None:
+            corpora.MmCorpus.serialize(fname=stored[1], corpus=corpus)
+            logger.info("Store corpus(%s) finished" % stored[1])
         return corpus
 
 
