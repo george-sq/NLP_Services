@@ -9,6 +9,7 @@
 from sklearn.datasets.base import Bunch
 from sklearn.feature_extraction.text import TfidfVectorizer  # TF-IDF向量生成类
 from collections import defaultdict
+from fileServer import FileServer
 from bases.mysqlServer import MysqlServer
 import multiprocessing
 import re
@@ -132,7 +133,7 @@ def __cut(contents, regExpK=None, pos=False):
     return retVal
 
 
-def __match(content, pos=False):
+def match(content, pos=False):
     """ 匹配识别
     :param content: [txt]
     :param pos: 是否进行词性标注
@@ -196,7 +197,7 @@ def buildTaggedTxtCorpus():
     queryResult = [(record[0], record[2], record[3].replace(" ", "")) for record in queryResult[1:]]
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     params = [[tid, txt] for tid, l, txt in queryResult]
-    retVal = pool.map(__match, params)
+    retVal = pool.map(match, params)
     pool.close()
     pool.join()
     raw_root = "../../Out/文本分类语料库/"
@@ -217,12 +218,8 @@ def buildTaggedTxtCorpus():
 class BasicTextProcessing(object):
     """文本预处理类"""
 
-    def __init__(self, **kwargs,):
-        self.results = None
-        self.dict_gensim = None
-        self.bow_bunch = None
-        self.bow_gensim = None
-        self.freqDictObj = defaultdict(int)
+    def __init__(self, **kwargs):
+        self.retVal = []
         jieba.setLogLevel(logging.INFO)
         userDict = kwargs.get("dict", None)
         newWords = kwargs.get("words", None)
@@ -244,84 +241,109 @@ class BasicTextProcessing(object):
             logger.warning("Use custom dictionary failed, use default dictionary.")
 
     def doWordSplit(self, content="", contents=(), pos=False):
-        """
-        :param content: [txt]
-        :param contents: [txt,]
+        """ 文本切分
+        :param content: [txt] 单一文本
+        :param contents: [txt,] 少量文本
         :param pos: 是否进行词性标注 True=标注
-        :return: self.results = [[(item, label?),],]
+        :return: retVal = [[(item, label?),],]
         """
-        retVal = []
         if content:
-            retVal.append(__match(content, pos=pos))
+            self.retVal.append(match(content, pos=pos))
         elif contents:
             for li in contents:
-                retVal.append(__match(li, pos=pos))
+                self.retVal.append(match(li, pos=pos))
         else:
             logger.warning("None content for splitting word")
-        self.results = retVal
-        return self.results
+        logger.info("Split word finished")
+        return self.retVal
 
-    @staticmethod
-    def batchWordSplit(contentList, pos=False):
-        retVal = []
+    def batchWordSplit(self, contentList, pos=False):
+        """ 批量文本切分
+        :param contentList: 待切分的文本列表
+        :param pos: 是否进行词性标注, True=标注
+        :return:
+        """
         if contentList:
             pool = multiprocessing.Pool(multiprocessing.cpu_count())
             params = [(li, pos) for li in contentList]
-            retVal = pool.starmap(__match, params)
+            self.retVal = pool.starmap(match, params)
             pool.close()
             pool.join()
         else:
             logger.warning("None content for splitting word")
-        for r in retVal:
+        logger.info("Batch split word finished")
+        for r in self.retVal:
             yield r
 
-    def buildWordFrequencyDict(self, dataSets):
+    @classmethod
+    def buildWordFrequencyDict(cls, dataSets, stored=False):
         """ 生成数据集中最小单元的频率字典
-            :param dataSets: 输入数据集 --> [[column0,column1,],]
-            :return: self.freqDictObj
+        :param dataSets: 输入数据集 --> [[column0,column1,],]
+        :param stored: 是否进行本地存储, True=存储
+        :return: wordFreqDict or wordFreqSeqs
         """
+        wordFreqDict = defaultdict(int)
         for record in dataSets:
             for column in record:
-                self.freqDictObj[column] += 1
-        return self.freqDictObj
+                wordFreqDict[column] += 1
+        logger.info("Count word frequency data finished")
+        if stored:
+            wordFreqSeqs = []
+            wordFreq = sorted(wordFreqDict.items(), key=lambda twf: twf[1], reverse=True)
+            for w, f in wordFreq:
+                wordFreqSeqs.append(str(w) + '\t' + str(f))
+            fileHandler = FileServer()
+            fileHandler.saveText2UTF8(path="../../Out/Dicts/", fileName="stopWords.dict", lines=wordFreqSeqs)
+            logger.info("Store word frequency data finished")
+            return wordFreqSeqs
+        return wordFreqDict
 
-    def buildGensimDict(self, dataSets):
+    @classmethod
+    def buildGensimDict(cls, dataSets, stored=False):
         """ 生成数据集的字典
             :param dataSets: 输入数据集 --> [[column0,column1,],]
-            :return: self.dict_gensim
+            :return: corpora.Dictionary
         """
-        self.dict_gensim = corpora.Dictionary(dataSets)
-        return self.dict_gensim
+        return corpora.Dictionary(dataSets)
 
-    def buildBow2Bunch(self, wordSeqs=None):
+    @classmethod
+    def buildBow2Bunch(cls, wordSeqs=None, stored=False):
         """ 生成BOW的Bunch对象
             :param wordSeqs: 词序列集合 --> [[column,],]
-            :return: self.bow_bunch
+            :return: bow_bunch
         """
+        bow_bunch = Bunch(txtIds=[], classNames=[], labels=[], contents=[])
         if wordSeqs is not None:
-            self.bow_bunch = Bunch(txtIds=[], classNames=[], labels=[], contents=[])
             for record in wordSeqs:
                 if isinstance(record, list):
-                    self.bow_bunch.contents.append(" ".join(record))
+                    bow_bunch.contents.append(" ".join(record))
                 else:
-                    logger.warning("wordSeqs 的内容结构错误！wordSeqs --> [[column,],]")
+                    logger.warning("wordSeqs's type error! wordSeqs should like [[column,],]")
         else:
-            logger.warning("wordSeqs is None！请输入正确的参数 wordSeqs --> [[column,],]")
-        return self.bow_bunch
+            logger.warning("wordSeqs is None! wordSeqs should like [[column,],]")
+        return bow_bunch
 
-    def buildGensimCorpusByCorporaDicts(self, dataSets=None, dictObj=None):
+    @classmethod
+    def buildGensimCorpusByCorporaDicts(cls, dataSets=None, dictObj=None, stored=False):
+        """  生成语料库文件
+        :param dataSets: 输入数据集 --> [[column0,column1,],]
+        :param dictObj: Gensim字典对象 --> corpora.Dictionary
+        :param stored: 是否存储到本地磁盘, True=存储
+        :return: corpus --> [[(wordIndex,wordFreq),],]
+        """
         """ 生成语料库文件
             :param dataSets: 输入数据集 --> [[column0,column1,],]
             :param dictObj: Gensim字典对象 --> corpora.Dictionary
             :return: corpus --> [[(wordIndex,wordFreq),],]
         """
         corpus = None
-        if isinstance(dictObj, corpora.Dictionary):
+        if dataSets is not None and isinstance(dictObj, corpora.Dictionary):
             corpus = [dictObj.doc2bow(record) for record in dataSets]
-        elif isinstance(self.dict_gensim, corpora.Dictionary):
-            corpus = [self.dict_gensim.doc2bow(record) for record in dataSets]
         else:
-            logger.warning("非法的dictObj对象 (%s)，需要有效的 corpora.Dictionary对象！！！" % dictObj)
+            logger.warning("wordSeqs's type error! (%s) should be object of corpora.Dictionary" % dictObj)
+        if stored:
+            corpora.MmCorpus.serialize(fname="../../Corpus/corpus.mm", corpus=corpus)
+            logger.info("Store corpus.mm finished")
         return corpus
 
 
