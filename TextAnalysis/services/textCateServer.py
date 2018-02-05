@@ -17,7 +17,8 @@ def getStopWords():
     stopWords_CN = FileServer().loadTextByUTF8('../../StopWords/', 'stopWords_CN.txt')
     stopWords.extend(stopWords_EN)
     stopWords.extend(stopWords_CN)
-    stopWords.append(' ')
+    stopWords.append("")
+    stopWords.append(" ")
     return set(stopWords)
 
 
@@ -26,10 +27,15 @@ def baseProcess():
     mysqls = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
 
     # 获取原始语料库数据
-    result_query = mysqls.executeSql(sql="SELECT * FROM corpus_rawtxts ORDER BY txtId")
-    labels = [record[2] for record in result_query[1:]]
+    result_query = mysqls.executeSql(sql="SELECT * FROM corpus_rawtxts ORDER BY txtId LIMIT 10")
+    labelsIndex = [(str(record[0]), record[2]) for record in result_query[1:]]
     txts = [record[3] for record in result_query[1:]]
+
+    # 获取停用词库
     stopWords = getStopWords()
+    # fileHandler = FileServer()
+    # dicts4stopWords = textHandler.buildGensimDict([list(stopWords)])
+    # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
 
     # 生成文本预处理器
     userDict = "../../Dicts/dict_jieba_check.txt"
@@ -37,25 +43,15 @@ def baseProcess():
     textHandler = BasicTextProcessing(dict=userDict, words=newWords)
 
     # 对原始语料库样本进行分词处理
-    dataSets = textHandler.batchWordSplit(contentList=txts)
-
-    # 生成原始语料库的语料库词典
-    dicts4corpus = textHandler.buildGensimDict(dataSets)
-    fileHandler = FileServer()
-    dicts4stopWords = textHandler.buildGensimDict([list(stopWords)])
-    fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
-
-    # 生成原始语料库的词频字典
-    itermFreqs = textHandler.buildWordFrequencyDict(dataSets)
-    freqData = []
-    wordFreq = sorted(itermFreqs.items(), key=lambda twf: twf[1], reverse=True)
-    for w, f in wordFreq:
-        freqData.append(str(w) + '\t' + str(f) + '\n')
+    dataSets = list(textHandler.batchWordSplit(contentList=txts))
 
     # 对原始语料库进行去停用词处理
     for i in range(len(dataSets)):
         txt = dataSets[i]
         dataSets[i] = [txt[j] for j in range(len(txt)) if txt[j] not in stopWords]
+
+    # 生成原始语料库的语料库词典
+    dicts4corpus = textHandler.buildGensimDict(dataSets)
 
     # 将原始语料库的样本进行数字化处理，生成数字化语料库
     corpus = textHandler.buildGensimCorpusByCorporaDicts(dataSets, dicts4corpus)
@@ -65,10 +61,11 @@ def baseProcess():
     tfidf4corpus = statDataHandler.buildVecsByGensim(initCorpus=corpus, corpus=corpus)
     tfidfModel = statDataHandler.TFIDF_Vecs
 
-    return labels, corpus, dicts4corpus, tfidfModel, tfidf4corpus, freqData
+    return labelsIndex, corpus, dicts4corpus, tfidfModel, tfidf4corpus
 
 
 def main():
+    baseProcess()
     pass
 
 

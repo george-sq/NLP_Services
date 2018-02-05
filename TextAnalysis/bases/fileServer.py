@@ -7,14 +7,13 @@
 """
 
 import os
+import pickle
+from wordcloud import WordCloud
+import logging
 import warnings
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
-
-import pickle
-from wordcloud import WordCloud
 import gensim
-import logging
 
 logger = logging.getLogger(__name__)
 
