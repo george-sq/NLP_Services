@@ -59,7 +59,7 @@ def baseProcess():
     # 根据数字化语料库生成TFIDF向量空间
     statDataHandler = TfidfVecSpace()
     tfidf4corpus = statDataHandler.buildVecsByGensim(initCorpus=corpus, corpus=corpus)
-    tfidfModel = statDataHandler.TFIDF_Vecs
+    tfidfModel = statDataHandler.TFIDF_Model
 
     return labelsIndex, corpus, dicts4corpus, tfidfModel, tfidf4corpus
 
