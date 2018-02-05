@@ -24,9 +24,8 @@ from gensim import models
 
 logger = logging.getLogger(__name__)
 
-__url_regExp = re.compile(
-    r"(?:(?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-z0-9+&@#/%=~_|$?!:,.-]*[a-z0-9+&@#/%=~_|$])|"
-    r"(?:[a-z0-9+&@#/%=~_|$?!:,.-]+(?:\.[a-z]+))", re.IGNORECASE)
+__url_regExp = re.compile(r"(?:(?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-z0-9+&@#/%=~_|$?!:,.-]*[a-z0-9+&@#/%=~_|$])"
+                          r"|(?:[a-z0-9+&@#/%=~_|$?!:,.-]+(?:\.[a-z]+))", re.IGNORECASE)
 
 __money_regExp = re.compile(r"((?:(?:\d(?:\.[0-9]+多?)?|one|two|three|four|five|six|seven|eight|nine|ten|一|二|两|三|四|五|六|"
                             r"七|八|九|十|零|兆|亿|万|千|百|拾|玖|捌|柒|陆|伍|肆|叁|贰|壹)+)(?:[多余])?(?:\s*(?:hundred|thousand|Million|"
@@ -238,7 +237,7 @@ class BasicTextProcessing(object):
 
         except Exception as e:
             logger.error("Error:%s" % e)
-            logger.warning("Use custom dictionary failed, use default dictionary.")
+            logger.error("Use custom dictionary failed, use default dictionary.")
 
     def doWordSplit(self, content="", contents=(), pos=False):
         """ 文本切分
@@ -253,7 +252,7 @@ class BasicTextProcessing(object):
             for li in contents:
                 self.retVal.append(match(li, pos=pos))
         else:
-            logger.warning("None content for splitting word")
+            logger.error("Nothing for splitting word")
         logger.info("Split word finished")
         return self.retVal
 
@@ -270,7 +269,7 @@ class BasicTextProcessing(object):
             pool.close()
             pool.join()
         else:
-            logger.warning("None content for splitting word")
+            logger.error("Nothing for splitting word")
         logger.info("Batch split word finished")
         for r in self.retVal:
             yield r
@@ -286,7 +285,7 @@ class BasicTextProcessing(object):
         for record in dataSets:
             for column in record:
                 wordFreqDict[column] += 1
-        logger.info("Count word frequency data finished")
+        logger.info("Counted word frequency data finished")
         if stored[0] and 2 == len(stored[1]):
             wordFreqSeqs = []
             wordFreq = sorted(wordFreqDict.items(), key=lambda twf: twf[1], reverse=True)
@@ -324,9 +323,9 @@ class BasicTextProcessing(object):
                 if isinstance(record, list):
                     bow_bunch.contents.append(" ".join(record))
                 else:
-                    logger.warning("wordSeqs's type error! wordSeqs should like [[column,],]")
+                    logger.error("wordSeqs's type error! wordSeqs should like [[column,],]")
         else:
-            logger.warning("wordSeqs is None! wordSeqs should like [[column,],]")
+            logger.error("wordSeqs is None! wordSeqs should like [[column,],]")
         if stored[0] and 2 == len(stored[1]):
             fileHandler = FileServer()
             fileHandler.savePickledObjFile(path=stored[1][0], fileName=stored[1][1], writeContentObj=bow_bunch)
@@ -345,7 +344,7 @@ class BasicTextProcessing(object):
         if dataSets is not None and isinstance(dictObj, corpora.Dictionary):
             corpus = [dictObj.doc2bow(record) for record in dataSets]
         else:
-            logger.warning("wordSeqs's type error! (%s) should be object of corpora.Dictionary" % dictObj)
+            logger.error("wordSeqs's type error! (%s) should be object of corpora.Dictionary" % dictObj)
         if stored[0] and stored[1] is not None:
             corpora.MmCorpus.serialize(fname=stored[1], corpus=corpus)
             logger.info("Store corpus(%s) finished" % stored[1])
@@ -377,7 +376,7 @@ class TfidfVecSpace(object):
                                          vocabulary=self.TFIDF_Train_Vecs.vocabulary)  # 将测试集文本映射到训练集词典中
             self.TFIDF_Train_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
         else:
-            logger.warning("Params type error! params need Bunch and corpora.Dictionary")
+            logger.error("Params type error! Params need Bunch Object and corpora.Dictionary Object")
         return self.TFIDF_Train_Vecs
 
     def buildVecs4Test(self, bowObj=None, trainTfidfObj=None):
@@ -397,7 +396,7 @@ class TfidfVecSpace(object):
                                          vocabulary=trainTfidfObj.vocabulary)  # 将测试集文本映射到训练集词典中
             self.TFIDF_Test_Vecs.tdm = vectorizer.fit_transform(bowObj.contents)
         else:
-            logger.warning("Params type error! params need Bunch")
+            logger.error("Params type error! Params need a Bunch Object")
         return self.TFIDF_Test_Vecs
 
     def buildVecsByGensim(self, **kwargs):
@@ -417,9 +416,9 @@ class TfidfVecSpace(object):
             elif isinstance(corpus, list):
                 self.TFIDF_Vecs = self.TFIDF_Model[corpus]
             else:
-                logger.warning("Build TFIDF Vector Spaces Failed (record=%s, corpus=%s)" % (record, corpus))
+                logger.error("Build TFIDF Vector Spaces Failed (record=%s, corpus=%s)" % (record, corpus))
         else:
-            logger.warning("参数initCorpus 类型错误 (%s)！请输入正确的initCorpus参数。" % initCorpus)
+            logger.error("Params error! initCorpus(%s) couldn't be None" % initCorpus)
 
         return self
 
