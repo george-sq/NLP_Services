@@ -124,7 +124,7 @@ def storeData(path, fileName, **kwargs):
 
 
 def vecs2csrm(vecs, columns=None):
-    """
+    """ 转换成稀疏矩阵
         :param vecs: 需要转换的向量空间[[iterm,],]
         :param columns: 列的维度
         :return: csr_matrix
