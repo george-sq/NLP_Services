@@ -10,8 +10,8 @@ from bases.mysqlServer import MysqlServer
 from bases.fileServer import FileServer
 import numpy as np
 from scipy.sparse.csr import csr_matrix
-from basicTextProcessingServer import BasicTextProcessing, TfidfVecSpace
-from naiveBayesServer import MultinomialNB2TextCates
+from basicTextProcessing import BasicTextProcessing, TfidfVecSpace
+from naiveBayes import MultinomialNB2TextCates
 from sklearn.datasets.base import Bunch
 import random
 import logging
@@ -250,6 +250,18 @@ def main():
     lIndex, corpus, dicts, model, tfidfVecs = __baseProcess()
     tfidfVecs = list(tfidfVecs)
     labels = [l for i, l in lIndex]
+    # 社会综合：交通、政治、教育、环境、经济、艺术、体育
+    # 军事：
+    # 医药：
+    # 计算机：
+    # 电诈案件：
+    for i in range(len(labels)):
+        soc = ["交通", "政治", "教育", "环境", "经济", "艺术", "体育"]
+        if labels[i] in soc:
+            labels[i] = "社会综合"
+        elif "电信诈骗" == labels[i]:
+            labels[i] = "电诈案件"
+        pass
 
     # 模型构建
     ts = TextCateServer()
