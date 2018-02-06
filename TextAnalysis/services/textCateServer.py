@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-    @File   : textCate.py
+    @File   : textCateServer.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2018/2/6 16:02
     @Todo   : 
 """
 
 from bases.fileServer import FileServer
-from nlp.basicTextProcessingServer import BasicTextProcessing
-from nlp.textCateServer import MultinomialNB2TextCates, TextCateServer
+from nlp.basicTextProcessing import BasicTextProcessing
+from nlp.textCate import MultinomialNB2TextCates, TextCateServer
 import logging
 import warnings
 
@@ -25,7 +25,7 @@ def main():
     txt = "1月4日，东四路居民张某，在微信聊天上认识一位自称为香港做慈善行业的好友，对方称自己正在做慈善抽奖活动，因与张某关系好，" \
           "特给其预留了30万中奖名额，先后以交个人所得税、押金为名要求张某以无卡存款的形式向其指定的账户上汇款60100元"
     textHandler = BasicTextProcessing()
-    wordSeqs = textHandler.doWordSplit(txt)
+    wordSeqs = textHandler.doWordSplit(txt)[0]
 
     # 去停用词
     fileHandler = FileServer()

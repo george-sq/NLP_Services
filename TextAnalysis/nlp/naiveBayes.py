@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    @File   : naiveBayesServer.py
+    @File   : naiveBayes.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2018/2/6 10:21
     @Todo   : 

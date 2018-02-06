@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@File   : basicTextProcessingServer.py
+@File   : basicTextProcessing.py
 @Author : NLP_QiangShen (275171387@qq.com)
 @Time   : 2018/1/19 10:05
 @Todo   :
@@ -302,7 +302,7 @@ class BasicTextProcessing(object):
             logger.info("Stored word_frequency_data(%s) finished" % stored[1])
             return wordFreqSeqs
         else:
-            logger.warning("Stored word_frequency_data failed. please check param stored=%s" % stored)
+            logger.warning("Stored word_frequency_data failed. please check param stored=%s" % repr(stored))
         return wordFreqDict
 
     @classmethod
@@ -317,7 +317,7 @@ class BasicTextProcessing(object):
             dict_gensim.save(stored[1])
             logger.info("Stored GensimDict(%s) finished" % stored[1])
         else:
-            logger.warning("Stored GensimDict failed. please check param stored=%s" % stored)
+            logger.warning("Stored GensimDict failed. please check param stored=%s" % repr(stored))
         return dict_gensim
 
     @classmethod
@@ -341,7 +341,7 @@ class BasicTextProcessing(object):
             fileHandler.savePickledObjFile(path=stored[1][0], fileName=stored[1][1], writeContentObj=bow_bunch)
             logger.info("Stored Bunch4Bow(%s) finished" % stored[1])
         else:
-            logger.warning("Stored Bunch4Bow failed. please check param stored=%s" % stored)
+            logger.warning("Stored Bunch4Bow failed. please check param stored=%s" % repr(stored))
         return bow_bunch
 
     @classmethod
@@ -362,7 +362,7 @@ class BasicTextProcessing(object):
             corpora.MmCorpus.serialize(fname=stored[1], corpus=corpus)
             logger.info("Stored corpus(%s) finished" % stored[1])
         else:
-            logger.warning("Stored corpus failed. please check param stored=%s" % stored)
+            logger.warning("Stored corpus failed. please check param stored=%s" % repr(stored))
         return corpus
 
 
