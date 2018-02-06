@@ -78,6 +78,31 @@ __regExpSets = {"url": __url_regExp, "email": __email_regExp, "money": __money_r
                 "bkcard": __bankCard_regExp, "time": __time_regExp}
 
 
+def __initJieba():
+    jieba.setLogLevel(logging.INFO)
+    userDict = "../../Dicts/dict_jieba_check.txt"
+    newWords = "../../Dicts/newWords.txt"
+    try:
+        if userDict:
+            jieba.set_dictionary(userDict)
+            logger.info("Add custom dictionary successed.")
+        if newWords:
+            with open(newWords, "r", encoding="utf-8") as nw:
+                wordsSet = nw.readlines()
+                for line in wordsSet:
+                    w, t = line.split()
+                    jieba.add_word(word=w, tag=t.strip())
+                    logger.info("Add word=%s(%s) freq : %s" % (w, t.strip(), str(jieba.suggest_freq(w))))
+                logger.info("Add new custom words finished.")
+
+    except Exception as e:
+        logger.error("Error:%s" % e)
+        logger.error("Use custom dictionary failed, use default dictionary.")
+
+
+__initJieba()
+
+
 def __cut(contents, regExpK=None, pos=False):
     """ 切分识别结果
     :param contents: [[txt],]
@@ -116,9 +141,9 @@ def __cut(contents, regExpK=None, pos=False):
                 else:
                     # 分词处理
                     if pos:
-                        results.extend([[item, pos] for item, pos in posseg.lcut(content)])
+                        results.extend([[item, pos] for item, pos in posseg.lcut(content, HMM=False)])
                     else:
-                        results.extend([[item, "pos"] for item in jieba.lcut(content)])  # 不需要词性标注时，用“pos”占位
+                        results.extend([[item, "pos"] for item in jieba.lcut(content, HMM=False)])  # 不需要词性标注时，用“pos”占位
             else:
                 if pos:
                     results.append([sub[0], "x"])
@@ -201,8 +226,8 @@ def buildTaggedTxtCorpus():
     pool.join()
     raw_root = "../../Out/文本分类语料库/"
     print(raw_root)
-    csv_header = ["word", "pos", "ner"]
-    csv_data = []
+    # csv_header = ["word", "pos", "ner"]
+    # csv_data = []
     for i in retVal:
         for a in i:
             if isinstance(a, list):
@@ -217,27 +242,8 @@ def buildTaggedTxtCorpus():
 class BasicTextProcessing(object):
     """文本预处理类"""
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         self.retVal = []
-        jieba.setLogLevel(logging.INFO)
-        userDict = kwargs.get("dict", None)
-        newWords = kwargs.get("words", None)
-        try:
-            if userDict:
-                jieba.set_dictionary(userDict)
-                logger.info("Add custom dictionary successed.")
-            if newWords:
-                with open(newWords, "r", encoding="utf-8") as nw:
-                    wordsSet = nw.readlines()
-                    for line in wordsSet:
-                        w, t = line.split()
-                        jieba.add_word(word=w, tag=t.strip())
-                        logger.info("Add word=%s(%s) freq : %s" % (w, t.strip(), str(jieba.suggest_freq(w))))
-                    logger.info("Add new custom words finished.")
-
-        except Exception as e:
-            logger.error("Error:%s" % e)
-            logger.error("Use custom dictionary failed, use default dictionary.")
 
     def doWordSplit(self, content="", contents=(), pos=False):
         """ 文本切分
@@ -450,11 +456,11 @@ def tst(cla, txts):  # 功能测试
     print(">>>>>>>>>" * 15)
     for l in cla.retVal:
         print(l)
-    r = cla.batchWordSplit(contentList=txts, pos=True)
-    print()
-    print(">>>>>>>>>" * 15)
-    for l in list(r):
-        print(l)
+        # r = cla.batchWordSplit(contentList=txts, pos=True)
+        # print()
+        # print(">>>>>>>>>" * 15)
+        # for l in list(r):
+        #     print(l)
 
 
 def main():
@@ -463,7 +469,7 @@ def main():
 
     # 查询结果
     # sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 100"
-    sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId LIMIT 3"
+    sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId LIMIT 10"
     queryResult = mysql.executeSql(sql=sql)
     queryResult = [(record[0], record[2], record[3].replace("\r\n", "").replace("\n", ""))
                    for record in queryResult[1:]]
@@ -471,12 +477,11 @@ def main():
     # labels = [r[1] for r in queryResult]
     txts = [r[2] for r in queryResult]
 
-    # 切分标注
-    userDict = "../../Dicts/dict_jieba_check.txt"
-    newWords = "../../Dicts/newWords.txt"
-
     # 功能类测试
-    btp = BasicTextProcessing(dict=userDict, words=newWords)
+    # userDict = "../../Dicts/dict_jieba_check.txt"
+    # newWords = "../../Dicts/newWords.txt"
+    # btp = BasicTextProcessing(dict=userDict, words=newWords)
+    btp = BasicTextProcessing()
     tst(btp, txts)
 
 

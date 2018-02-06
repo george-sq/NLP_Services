@@ -41,7 +41,7 @@ def __baseProcess():
     mysqls = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
 
     # 获取原始语料库数据
-    result_query = mysqls.executeSql(sql="SELECT * FROM corpus_rawtxts ORDER BY txtId LIMIT 10")
+    result_query = mysqls.executeSql(sql="SELECT * FROM corpus_rawtxts ORDER BY txtId")
     labelsIndex = [(str(record[0]), record[2]) for record in result_query[1:]]
     txts = [record[3] for record in result_query[1:]]
 
@@ -52,9 +52,7 @@ def __baseProcess():
     # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
 
     # 生成文本预处理器
-    userDict = "../../Dicts/dict_jieba_check.txt"
-    newWords = "../../Dicts/newWords.txt"
-    textHandler = BasicTextProcessing(dict=userDict, words=newWords)
+    textHandler = BasicTextProcessing()
 
     # 对原始语料库样本进行分词处理
     dataSets = list(textHandler.batchWordSplit(contentList=txts))
@@ -128,18 +126,17 @@ class TextCateServer(object):
 
             # 构建本地模型
             bayesTool = MultinomialNB2TextCates()
-
             bayesTool.buildModel(labels=labels, tdm=corpusVecs)
             logger.info("Build naive bayes model for classifying text SUCCESSED!")
 
             if dicts is not None and tfidfModel is not None:
                 bayesTool.dicts = dicts
                 bayesTool.tfidfModel = tfidfModel
-                logger.info("Stored naive bayes model for classifying text")
+                logger.info("Stored naive bayes model")
                 textCate = Bunch(dicts=dicts, tfidf=tfidfModel, nbayes=bayesTool)
                 # 本地存储
                 fileHandler = FileServer()
-                fileHandler.savePickledObjFile(path="../../Out/Models/", fileName="nbTextCate.pickle",
+                fileHandler.savePickledObjFile(path="../../Out/Models/", fileName="nbTextCate-2018.pickle",
                                                writeContentObj=textCate)
                 logger.info("Stored naive bayes model SUCCESSED!")
                 return textCate
@@ -187,7 +184,7 @@ def calcPerformance(testLabels, cateResult):
     """
     total = len(cateResult)
     rate = 0
-    resultFile = './Out/cateResult.txt'
+    resultFile = '../../Out/Models/cateResult.txt'
     lines = ['文本ID\t\t实际类别\t\t预测类别\n']
     errLines = ['文本ID\t\t实际类别\t\t预测类别\n']
     for labelTuple, cateTuple in zip(testLabels, cateResult):
@@ -251,9 +248,14 @@ def algorithmTest(labels=None, dataSet=None, cols=0):
 
 def main():
     lIndex, corpus, dicts, model, tfidfVecs = __baseProcess()
+    tfidfVecs = list(tfidfVecs)
+    labels = [l for i, l in lIndex]
+
     ts = TextCateServer()
-    labels = [l for l, i in lIndex]
     ts.buildCateModel(labels=labels, dicts=dicts, tfidfModel=model, vecsSet=tfidfVecs)
+
+    cols = len(dicts)
+    algorithmTest(labels=labels, dataSet=tfidfVecs, cols=cols)
     pass
 
 
