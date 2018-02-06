@@ -12,8 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 class Test(object):
-    @staticmethod
-    def app(*args):
-        logger.warning("App方法获得的参数 : args=%s" % args)
+    def __call__(self, *args, **kwargs):
+        logger.info("App方法获得的参数 : args=%s" % args)
+        logger.info("App方法获得的参数 : kwargs=%s" % kwargs)
         return "test action"
-        pass
+
+
+app = Test()

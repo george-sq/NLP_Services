@@ -12,6 +12,7 @@ import time
 
 from services import actionTest as act
 from bases import mysqlServer as db
+from services import textCateServer as tc
 
 logger = logging.getLogger(__name__)
 
@@ -89,22 +90,27 @@ class Application(object):
             return None
 
 
-defaultRespone = ShowTime()
 action_dicts = {
-    "/": defaultRespone,
+    "/": ShowTime(),
     "/db": db,
-    "/test": act.Test()
+    "/test": act,
+    "/txtCate": tc
 }
 app = Application(action_dicts)
 
 
 def main():
-    request_data = {'url': '/test', 'body': '', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                    'Accept-Encoding': 'gzip, deflate', 'Accept-Language': 'zh-CN,zh;q=0.9',
-                    "body": "test"}
+    # request_data = {'url': '/test', 'body': '', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
+    #                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    #                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    #                 'Accept-Encoding': 'gzip, deflate', 'Accept-Language': 'zh-CN,zh;q=0.9',
+    #                 "body": "test"}
+    txt = "1月4日，东四路居民张某，在微信聊天上认识一位自称为香港做慈善行业的好友，对方称自己正在做慈善抽奖活动，因与张某关系好，" \
+          "特给其预留了30万中奖名额，先后以交个人所得税、押金为名要求张某以无卡存款的形式向其指定的账户上汇款60100元"
+    request_data = {'url': '/txtCate', 'body': '', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
+                    "body": "%s" % txt}
     rsp_body = app(request_data, buildResponseHeader)
+    print(rsp_body)
 
 
 if __name__ == '__main__':
