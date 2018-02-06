@@ -299,8 +299,10 @@ class BasicTextProcessing(object):
                 wordFreqSeqs.append(str(w) + '\t' + str(f))
             fileHandler = FileServer()
             fileHandler.saveText2UTF8(path=stored[1][0], fileName=stored[1][1], lines=wordFreqSeqs)
-            logger.info("Store word_frequency_data(%s) finished" % stored[1])
+            logger.info("Stored word_frequency_data(%s) finished" % stored[1])
             return wordFreqSeqs
+        else:
+            logger.warning("Stored word_frequency_data failed. please check param stored=%s" % stored)
         return wordFreqDict
 
     @classmethod
@@ -313,7 +315,9 @@ class BasicTextProcessing(object):
         dict_gensim = corpora.Dictionary(dataSets)
         if stored[0] and stored[1] is not None:
             dict_gensim.save(stored[1])
-            logger.info("Store GensimDict(%s) finished" % stored[1])
+            logger.info("Stored GensimDict(%s) finished" % stored[1])
+        else:
+            logger.warning("Stored GensimDict failed. please check param stored=%s" % stored)
         return dict_gensim
 
     @classmethod
@@ -335,7 +339,9 @@ class BasicTextProcessing(object):
         if stored[0] and 2 == len(stored[1]):
             fileHandler = FileServer()
             fileHandler.savePickledObjFile(path=stored[1][0], fileName=stored[1][1], writeContentObj=bow_bunch)
-            logger.info("Store Bunch4Bow(%s) finished" % stored[1])
+            logger.info("Stored Bunch4Bow(%s) finished" % stored[1])
+        else:
+            logger.warning("Stored Bunch4Bow failed. please check param stored=%s" % stored)
         return bow_bunch
 
     @classmethod
@@ -354,7 +360,9 @@ class BasicTextProcessing(object):
                          "(%s) should be object of corpora.Dictionary" % dictObj)
         if stored[0] and stored[1] is not None:
             corpora.MmCorpus.serialize(fname=stored[1], corpus=corpus)
-            logger.info("Store corpus(%s) finished" % stored[1])
+            logger.info("Stored corpus(%s) finished" % stored[1])
+        else:
+            logger.warning("Stored corpus failed. please check param stored=%s" % stored)
         return corpus
 
 

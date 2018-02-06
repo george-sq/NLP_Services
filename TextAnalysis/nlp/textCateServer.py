@@ -45,14 +45,13 @@ def __baseProcess():
     labelsIndex = [(str(record[0]), record[2]) for record in result_query[1:]]
     txts = [record[3] for record in result_query[1:]]
 
-    # 获取停用词库
-    stopWords = __getStopWords()
-    # fileHandler = FileServer()
-    # dicts4stopWords = textHandler.buildGensimDict([list(stopWords)])
-    # fileHandler.saveGensimDict(path="./Out/Dicts/", fileName="stopWords.dict", dicts=dicts4stopWords)
-
     # 生成文本预处理器
     textHandler = BasicTextProcessing()
+
+    # 获取停用词库
+    stopWords = __getStopWords()
+    # dicts4stopWords = textHandler.buildGensimDict([list(stopWords)], stored=(True, "../../Out/Dicts/stopWords.dict"))
+    textHandler.buildGensimDict([list(stopWords)], stored=(True, "../../Out/Dicts/stopWords.dict"))
 
     # 对原始语料库样本进行分词处理
     dataSets = list(textHandler.batchWordSplit(contentList=txts))
@@ -130,8 +129,8 @@ class TextCateServer(object):
             logger.info("Build naive bayes model for classifying text SUCCESSED!")
 
             if dicts is not None and tfidfModel is not None:
-                bayesTool.dicts = dicts
-                bayesTool.tfidfModel = tfidfModel
+                # bayesTool.dicts = dicts
+                # bayesTool.tfidfModel = tfidfModel
                 logger.info("Stored naive bayes model")
                 textCate = Bunch(dicts=dicts, tfidf=tfidfModel, nbayes=bayesTool)
                 # 本地存储
@@ -247,13 +246,16 @@ def algorithmTest(labels=None, dataSet=None, cols=0):
 
 
 def main():
+    # 预处理
     lIndex, corpus, dicts, model, tfidfVecs = __baseProcess()
     tfidfVecs = list(tfidfVecs)
     labels = [l for i, l in lIndex]
 
+    # 模型构建
     ts = TextCateServer()
     ts.buildCateModel(labels=labels, dicts=dicts, tfidfModel=model, vecsSet=tfidfVecs)
 
+    # 性能评估
     cols = len(dicts)
     algorithmTest(labels=labels, dataSet=tfidfVecs, cols=cols)
     pass
