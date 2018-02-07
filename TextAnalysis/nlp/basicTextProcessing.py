@@ -13,6 +13,7 @@ from fileServer import FileServer
 from bases.mysqlServer import MysqlServer
 import multiprocessing
 import re
+import os
 import jieba
 from jieba import posseg
 import logging
@@ -23,6 +24,10 @@ from gensim import corpora
 from gensim import models
 
 logger = logging.getLogger(__name__)
+logger.debug("获取当前工作目录:%s" % os.getcwd())
+logger.debug("获取当前工作目录:%s" % os.path.abspath('.'))
+logger.debug("获取当前工作目录:%s" % os.path.abspath(os.curdir))
+logger.debug("获取当前工作目录的父目录:%s" % os.path.abspath('..'))
 
 __url_regExp = re.compile(r"(?:(?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-z0-9+&@#/%=~_|$?!:,.-]*[a-z0-9+&@#/%=~_|$])"
                           r"|(?:[a-z0-9+&@#/%=~_|$?!:,.-]+(?:\.[a-z]+))", re.IGNORECASE)
@@ -80,8 +85,8 @@ __regExpSets = {"url": __url_regExp, "email": __email_regExp, "money": __money_r
 
 def __initJieba():
     jieba.setLogLevel(logging.INFO)
-    userDict = "../../Dicts/dict_jieba_check.txt"
-    newWords = "../../Dicts/newWords.txt"
+    userDict = "/home/pamo/Codes/NLP_PAMO/Dicts/dict_jieba_check.txt"
+    newWords = "/home/pamo/Codes/NLP_PAMO/Dicts/newWords.txt"
     try:
         if userDict:
             jieba.set_dictionary(userDict)
@@ -244,6 +249,10 @@ class BasicTextProcessing(object):
 
     def __init__(self):
         self.retVal = []
+        # print("获取当前工作目录:%s" % os.getcwd())
+        # print("获取当前工作目录:%s" % os.path.abspath('.'))
+        # print("获取当前工作目录:%s" % os.path.abspath(os.curdir))
+        # print("获取当前工作目录的父目录:%s" % os.path.abspath('..'))
 
     def doWordSplit(self, content="", contents=(), pos=False):
         """ 文本切分
@@ -495,6 +504,6 @@ def main():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,
-                        format="%(asctime)s | %(levelname)s | %(message)s",
+                        format="%(asctime)s | %(levelname)s | %(filename)s(line:%(lineno)s) | %(message)s",
                         datefmt="%Y-%m-%d(%A) %H:%M:%S")
     main()

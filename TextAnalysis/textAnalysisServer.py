@@ -50,6 +50,7 @@ def buildResponseHeader(status, headerInfos=("Content-Type", "application/json; 
     logger.info("生成HTTP响应报文的Header信息...")
     response_header = STATUS_Dicts[status]
     response_header += "%s: %s\r\n\r\n" % headerInfos
+    logger.info("完成HTTP响应报文的Header信息生成")
 
 
 class Application(object):
@@ -65,25 +66,27 @@ class Application(object):
             # url = request_data.get("url", "/")
             url = request_data.get("url", None)
             if url is None:  # 默认的容错响应
-                logger.error("缺少url参数, 返回默认响应")
+                logger.error("缺少url参数, 进行默认响应")
                 getResponseHeader(404)
-                return self.action_modules.get("/").app()
             else:
                 logger.info("解析URL信息...")
                 # 根据url选择响应功能模块
                 mdl = self.action_modules.get(url, None)
-                if mdl is not None:
-                    logger.info("获取请求功能的模块信息 : %s" % mdl)
-                    getResponseHeader(200)
-                else:
+                if not mdl:
                     logger.error("不存在请求功能模块(%s),进行默认响应" % url)
-                    mdl = self.action_modules.get("/")
                     getResponseHeader(404)
-                # 生成功能响应
-                logger.info("生成HTTP响应报文的Body信息...")
-                result = mdl.app(request_data.get("body", None))
-                logger.info("生成HTTP响应报文的Body信息 : %s" % result)
-                return result
+                else:
+                    # 生成功能响应
+                    logger.info("获取请求功能模块 : %s" % mdl)
+                    logger.info("生成HTTP响应报文的Body信息...")
+                    result = mdl.app(request_data.get("body", None))
+                    logger.info("完成HTTP响应报文的Body信息 : %s" % result)
+                    if result:
+                        getResponseHeader(200)
+                    else:
+                        getResponseHeader(500)
+                    return result
+            return self.action_modules.get("/").app()
 
         else:
             logger.error("调用应用服务框架的参数错误")
@@ -110,11 +113,11 @@ def main():
     request_data = {'url': '/txtCate', 'body': '', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
                     "body": "%s" % txt}
     rsp_body = app(request_data, buildResponseHeader)
-    print(rsp_body)
+    print(len(rsp_body))
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,
-                        format="%(asctime)s | %(levelname)s | %(message)s",
+                        format="%(asctime)s | %(levelname)s | %(filename)s(line:%(lineno)s) | %(message)s",
                         datefmt="%Y-%m-%d(%A) %H:%M:%S")
     main()

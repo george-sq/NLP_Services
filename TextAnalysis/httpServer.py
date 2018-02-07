@@ -25,7 +25,7 @@ stdoutLogger = logging.StreamHandler()
 stdoutLogger.setLevel(logging.DEBUG)  # 输出到console的log等级的开关
 
 logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s | %(levelname)s | %(message)s",
+                    format="%(asctime)s | %(levelname)s | %(filename)s(line:%(lineno)s) | %(message)s",
                     datefmt="%Y-%m-%d(%A) %H:%M:%S", handlers=[fileLogger, stdoutLogger])
 
 url_regexp = re.compile(r"(?:[/])(\S*)(?=\s)", re.IGNORECASE)
