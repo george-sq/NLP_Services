@@ -68,7 +68,9 @@ class TextCate(object):
             # 文本类型预测
             if isinstance(nbayes, MultinomialNB2TextCates):
                 logger.info("Classifying text")
-                return nbayes.modelPredict(tdm=csrm_testVecs)
+                cateResult = nbayes.modelPredict(tdm=csrm_testVecs)[0]
+                rsp_json = {"result": {"label": cateResult[0], "freq": "%.5f" % cateResult[1]}}
+                return rsp_json
         else:
             logger.error("Loaded text classification model failed")
 
