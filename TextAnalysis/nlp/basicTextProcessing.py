@@ -24,10 +24,6 @@ from gensim import corpora
 from gensim import models
 
 logger = logging.getLogger(__name__)
-logger.debug("获取当前工作目录:%s" % os.getcwd())
-logger.debug("获取当前工作目录:%s" % os.path.abspath('.'))
-logger.debug("获取当前工作目录:%s" % os.path.abspath(os.curdir))
-logger.debug("获取当前工作目录的父目录:%s" % os.path.abspath('..'))
 
 __url_regExp = re.compile(r"(?:(?:(?:https?|ftp|file)://(?:www\.)?|www\.)[a-z0-9+&@#/%=~_|$?!:,.-]*[a-z0-9+&@#/%=~_|$])"
                           r"|(?:[a-z0-9+&@#/%=~_|$?!:,.-]+(?:\.[a-z]+))", re.IGNORECASE)

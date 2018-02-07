@@ -24,10 +24,6 @@ class FileServer(object):
     def __init__(self):
         self.filecode = "utf-8"
         self.pick = pickle
-        # print("获取当前工作目录:%s" % os.getcwd())
-        # print("获取当前工作目录:%s" % os.path.abspath('.'))
-        # print("获取当前工作目录:%s" % os.path.abspath(os.curdir))
-        # print("获取当前工作目录的父目录:%s" % os.path.abspath('..'))
 
     @staticmethod
     def __checkPathArgType(path):
@@ -522,6 +518,11 @@ def main():
         print("Successed")
     else:
         print("Failed")
+
+        # print("当前工作目录:%s" % os.getcwd())
+        # print("当前工作目录:%s" % os.path.abspath('.'))
+        # print("当前工作目录:%s" % os.path.abspath(os.curdir))
+        # print("当前工作目录的父目录:%s" % os.path.abspath('..'))
 
 
 if __name__ == '__main__':
