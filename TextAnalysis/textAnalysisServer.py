@@ -10,9 +10,10 @@ import json
 import logging
 import time
 
-from services import actionTest as act
 from bases import mysqlServer as db
+from services import testServer as act
 from services import textCateServer as tc
+from services import textSegmentationServer as tseg
 
 logger = logging.getLogger(__name__)
 
@@ -81,10 +82,13 @@ class Application(object):
                     logger.info("生成HTTP响应报文的Body信息...")
                     result = mdl.app(request_data.get("body", None))
                     logger.info("完成HTTP响应报文的Body信息 : %s" % result)
-                    if result:
+                    # 根据响应结果生成HTTP响应报文的头部信息
+                    if result:  # 成功响应
                         getResponseHeader(200)
-                    else:
+                    elif result is False:  # 响应出错, 响应功能内部错误
                         getResponseHeader(500)
+                    else:  # 无法响应请求, 请求数据异常
+                        getResponseHeader(400)
                     return result
             return self.action_modules.get("/").app()
 
@@ -94,23 +98,24 @@ class Application(object):
 
 
 action_dicts = {
-    "/": ShowTime(),
-    "/db": db,
-    "/test": act,
-    "/txtCate": tc
+    "/": ShowTime(),  # {'url': '/', "body": ""}
+    "/db": db,  # {'url': '/db', "body": "test"}
+    "/test": act,  # {'url': '/test', "body": "test"}
+    "/txtCate": tc,  # {'url': '/txtCate', "body": "textContent"}
+    "/txtSeg": tseg  # {'url': 'txtSeg', "body": {"tag": False, "txt": "textContent"}}
 }
 app = Application(action_dicts)
 
 
 def main():
-    # request_data = {'url': '/test', 'body': '', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
+    # request_data = {'url': '/test', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
     #                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
     #                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     #                 'Accept-Encoding': 'gzip, deflate', 'Accept-Language': 'zh-CN,zh;q=0.9',
     #                 "body": "test"}
     txt = "1月4日，东四路居民张某，在微信聊天上认识一位自称为香港做慈善行业的好友，对方称自己正在做慈善抽奖活动，因与张某关系好，" \
           "特给其预留了30万中奖名额，先后以交个人所得税、押金为名要求张某以无卡存款的形式向其指定的账户上汇款60100元"
-    request_data = {'url': '/txtCate', 'body': '', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
+    request_data = {'url': '/txtCate', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
                     "body": "%s" % txt}
     rsp_body = app(request_data, buildResponseHeader)
     print(len(rsp_body))

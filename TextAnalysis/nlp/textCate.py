@@ -11,7 +11,7 @@ from bases.fileServer import FileServer
 import numpy as np
 from scipy.sparse.csr import csr_matrix
 from basicTextProcessing import BasicTextProcessing, TfidfVecSpace
-from naiveBayes import MultinomialNB2TextCates
+from naiveBayes4txtCate import MultinomialNB2TextCates
 from sklearn.datasets.base import Bunch
 import random
 import logging
@@ -158,7 +158,7 @@ def splitDataSet(labels, vectorSpace):
     labelsA = []  # 非电信诈骗类型的索引集合
     labelsB = []  # 电信诈骗类型的索引集合
     for i in range(len(labels)):
-        if "电信诈骗" != labels[i]:
+        if "电诈案件" != labels[i]:
             labelsA.append(i)
         else:
             labelsB.append(i)
