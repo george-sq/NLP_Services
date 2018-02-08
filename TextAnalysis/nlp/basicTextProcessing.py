@@ -79,25 +79,26 @@ __regExpSets = {"url": __url_regExp, "email": __email_regExp, "money": __money_r
 
 
 def __initJieba():
-    # jieba.setLogLevel(logging.INFO)
+    jieba.setLogLevel(logging.INFO)
     userDict = "/home/pamo/Codes/NLP_PAMO/Dicts/dict_jieba_check.txt"
     newWords = "/home/pamo/Codes/NLP_PAMO/Dicts/newWords.txt"
     try:
         if userDict:
             jieba.set_dictionary(userDict)
-            logger.info("Add custom dictionary successed.")
+            jieba.initialize()
+            logger.debug("Add custom dictionary successed")
         if newWords:
             with open(newWords, "r", encoding="utf-8") as nw:
                 wordsSet = nw.readlines()
                 for line in wordsSet:
                     w, t = line.split()
                     jieba.add_word(word=w, tag=t.strip())
-                    logger.info("Add word=%s(%s) freq : %s" % (w, t.strip(), str(jieba.suggest_freq(w))))
-                logger.info("Add new custom words finished.")
+                    logger.debug("Add word=%s(%s) freq : %s" % (w, t.strip(), str(jieba.suggest_freq(w))))
+                logger.debug("Add new words finished")
 
     except Exception as e:
         logger.error("Error:%s" % e)
-        logger.error("Use custom dictionary failed, use default dictionary.")
+        logger.error("Use custom dictionary failed, use default dictionary")
 
 
 # __initJieba()
@@ -142,9 +143,9 @@ def __cut(contents, regExpK=None, pos=False):
                 else:
                     # 分词处理
                     if pos:
-                        results.extend([[item, pos] for item, pos in posseg.lcut(content, HMM=False)])
+                        results.extend([[item, pos] for item, pos in posseg.lcut(content)])
                     else:
-                        results.extend([[item, "pos"] for item in jieba.lcut(content, HMM=False)])  # 不需要词性标注时，用“pos”占位
+                        results.extend([[item, "pos"] for item in jieba.lcut(content)])  # 不需要词性标注时，用“pos”占位
             else:
                 if pos:
                     results.append([sub[0], "x"])
