@@ -17,8 +17,6 @@ from services import textSegmentationServer as tseg
 
 logger = logging.getLogger(__name__)
 
-RESULT_CODES = {"f": 0, "s": 1}
-
 
 class ShowTime(object):
     """默认响应测试"""
@@ -31,9 +29,7 @@ class ShowTime(object):
     def app(*args):
         """测试0"""
         logger.warning("App方法获得的参数 : args=%s" % args)
-        result = {"Root Response": {"RESULT_CODES": 1, "RESULT": None}}
-        rsp = result.get("Root Response")
-        rsp["RESULT"] = str(time.ctime())
+        result = {"RESULT_CODES": 1, "RESULT": str(time.ctime())}
         result = json.dumps(result, ensure_ascii=False)
 
         return result
@@ -85,10 +81,14 @@ class Application(object):
                     # 根据响应结果生成HTTP响应报文的头部信息
                     if result:  # 成功响应
                         getResponseHeader(200)
+                        result = {"RESULT_CODES": 1, "RESULT": result}
+                        result = json.dumps(result)
                     elif result is False:  # 响应出错, 响应功能内部错误
                         getResponseHeader(500)
-                    else:  # 无法响应请求, 请求数据异常
+                        result = json.dumps({"RESULT_CODES": 0})
+                    else:  # 无法响应请求, 请求数据异常, 如返回值为None
                         getResponseHeader(400)
+                        result = json.dumps({"RESULT_CODES": 0})
                     return result
             return self.action_modules.get("/").app()
 
@@ -97,26 +97,59 @@ class Application(object):
             return None
 
 
+"""  模块功能映射字典说明 RESULT_CODES = {"Failed": 0, "Successed": 1}
+        HTTP服务框架测试功能
+        "/": ShowTime()
+            请求参数格式: {"url": '/', "body": ""}
+            响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
+            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": result}
+        "/db": db
+            请求参数格式: {"url": '/db', "body": "test"}
+            响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
+            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": result}
+        "/test": act
+            请求参数格式: {"url": '/test', "body": "test"}
+            响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
+            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": result}
+            
+        文本分析模块功能
+        "/txtCate": tc
+            请求参数格式: {"url": '/txtCate', "body": {"txt": "textContent"}}
+            响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
+            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": {"label": oneLabel, "prob": "%.5f" % probability}}
+        "/txtSeg": tseg
+            请求参数格式: {"url": 'txtSeg', "body": {"tag": False, "txt": "textContent"}}
+            响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
+            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": segmentation sequence}
+"""
 action_dicts = {
-    "/": ShowTime(),  # {'url': '/', "body": ""}
-    "/db": db,  # {'url': '/db', "body": "test"}
-    "/test": act,  # {'url': '/test', "body": "test"}
-    "/txtCate": tc,  # {'url': '/txtCate', "body": "textContent"}
-    "/txtSeg": tseg  # {'url': 'txtSeg', "body": {"tag": False, "txt": "textContent"}}
+    "/": ShowTime(),
+    "/db": db,
+    "/test": act,
+    "/txtCate": tc,
+    "/txtSeg": tseg
 }
 app = Application(action_dicts)
 
 
 def main():
-    # request_data = {'url': '/test', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
+    # request_data = {"url": '/test', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
     #                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
     #                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     #                 'Accept-Encoding': 'gzip, deflate', 'Accept-Language': 'zh-CN,zh;q=0.9',
     #                 "body": "test"}
+
+    # txt = "1月4日，东四路居民张某，在微信聊天上认识一位自称为香港做慈善行业的好友，对方称自己正在做慈善抽奖活动，因与张某关系好，" \
+    #       "特给其预留了30万中奖名额，先后以交个人所得税、押金为名要求张某以无卡存款的形式向其指定的账户上汇款60100元"
+    # body = json.dumps({"txt": txt})
+    # request_data = {"url": '/txtCate', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
+    #                 "body": body}
+
     txt = "1月4日，东四路居民张某，在微信聊天上认识一位自称为香港做慈善行业的好友，对方称自己正在做慈善抽奖活动，因与张某关系好，" \
           "特给其预留了30万中奖名额，先后以交个人所得税、押金为名要求张某以无卡存款的形式向其指定的账户上汇款60100元"
-    request_data = {'url': '/txtCate', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
-                    "body": "%s" % txt}
+    body = json.dumps({"tag": False, "txt": txt})
+    request_data = {"url": '/txtSeg', 'Host': '10.0.0.230:8899', 'Connection': 'keep-alive',
+                    "body": body}
     rsp_body = app(request_data, buildResponseHeader)
     print(len(rsp_body))
 
