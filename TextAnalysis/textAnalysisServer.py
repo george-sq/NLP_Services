@@ -77,7 +77,7 @@ class Application(object):
                     logger.info("获取请求功能模块 : %s" % mdl)
                     logger.info("生成HTTP响应报文的Body信息...")
                     result = mdl.app(request_data.get("body", None))
-                    logger.info("完成HTTP响应报文的Body信息 : %s" % result)
+                    logger.info("完成HTTP响应报文的Body信息生成 : %s" % result)
                     # 根据响应结果生成HTTP响应报文的头部信息
                     if result:  # 成功响应
                         getResponseHeader(200)
@@ -98,7 +98,8 @@ class Application(object):
 
 
 """  模块功能映射字典说明 RESULT_CODES = {"Failed": 0, "Successed": 1}
-        HTTP服务框架测试功能
+
+    0. HTTP服务框架测试功能
         "/": ShowTime()
             请求参数格式: {"url": '/', "body": ""}
             响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
@@ -112,15 +113,22 @@ class Application(object):
             响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
             响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": result}
             
-        文本分析模块功能
+    1. 文本分析模块功能
+        "/txtSeg": tseg
+            请求功能描述: 文本切分
+            请求参数格式: {"url": '/txtSeg', "body": {"tag": False, "txt": "textContent"}}
+            响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
+            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": segmentation sequence}
         "/txtCate": tc
+            请求功能描述: 文本分类
             请求参数格式: {"url": '/txtCate', "body": {"txt": "textContent"}}
             响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
             响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": {"label": oneLabel, "prob": "%.5f" % probability}}
-        "/txtSeg": tseg
-            请求参数格式: {"url": 'txtSeg', "body": {"tag": False, "txt": "textContent"}}
+        "/demo": demo
+            请求功能描述: 文本分析功能演示平台接口
+            请求参数格式: {"url": '/demo', "body": {"tid": False, "txt": "textContent"}}
             响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
-            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": segmentation sequence}
+            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": True or False}
 """
 action_dicts = {
     "/": ShowTime(),
