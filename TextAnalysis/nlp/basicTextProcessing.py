@@ -13,7 +13,6 @@ from fileServer import FileServer
 from bases.mysqlServer import MysqlServer
 import multiprocessing
 import re
-import os
 import jieba
 from jieba import posseg
 import logging
@@ -80,7 +79,7 @@ __regExpSets = {"url": __url_regExp, "email": __email_regExp, "money": __money_r
 
 
 def __initJieba():
-    jieba.setLogLevel(logging.INFO)
+    # jieba.setLogLevel(logging.INFO)
     userDict = "/home/pamo/Codes/NLP_PAMO/Dicts/dict_jieba_check.txt"
     newWords = "/home/pamo/Codes/NLP_PAMO/Dicts/newWords.txt"
     try:
@@ -101,7 +100,8 @@ def __initJieba():
         logger.error("Use custom dictionary failed, use default dictionary.")
 
 
-__initJieba()
+# __initJieba()
+initJieba = __initJieba
 
 
 def __cut(contents, regExpK=None, pos=False):
@@ -245,10 +245,7 @@ class BasicTextProcessing(object):
 
     def __init__(self):
         self.retVal = []
-        # print("获取当前工作目录:%s" % os.getcwd())
-        # print("获取当前工作目录:%s" % os.path.abspath('.'))
-        # print("获取当前工作目录:%s" % os.path.abspath(os.curdir))
-        # print("获取当前工作目录的父目录:%s" % os.path.abspath('..'))
+        initJieba()
 
     def doWordSplit(self, content="", contents=(), pos=False):
         """ 文本切分
@@ -264,7 +261,7 @@ class BasicTextProcessing(object):
                 self.retVal.append(match(li.upper(), pos=pos))
         else:
             logger.error("Nothing for splitting word")
-        logger.info("Split word finished")
+        logger.info("Segmentation finished")
         return self.retVal
 
     def batchWordSplit(self, contentList, pos=False):

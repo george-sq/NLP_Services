@@ -24,6 +24,7 @@ class TextCate(object):
         pass
 
     def __call__(self, *args, **kwargs):
+        rsp_json = False
         txt = args[0]
         textHandler = BasicTextProcessing()
         logger.info("Splitting word for requesting text")
@@ -39,7 +40,7 @@ class TextCate(object):
             wordSeqs = [word for word in wordSeqs if word not in stopWords.token2id.keys()]
             logger.info("Removed stopWords for requesting text finished")
         else:
-            logger.error("Loaded stopWords failed. Path of stopWords:%s")
+            logger.warning("Loaded stopWords failed. Path of stopWords:%s")
 
         # 加载文本分类模型
         logger.info("Loading text classification model")
@@ -69,10 +70,11 @@ class TextCate(object):
             if isinstance(nbayes, MultinomialNB2TextCates):
                 logger.info("Classifying text")
                 cateResult = nbayes.modelPredict(tdm=csrm_testVecs)[0]
-                rsp_json = {"result": {"label": cateResult[0], "freq": "%.5f" % cateResult[1]}}
-                return rsp_json
+                if cateResult:
+                    rsp_json = {"result": {"label": cateResult[0], "freq": "%.5f" % cateResult[1]}}
         else:
             logger.error("Loaded text classification model failed")
+        return rsp_json
 
 
 app = TextCate()
