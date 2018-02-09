@@ -21,7 +21,6 @@ class Demo(object):
         rsp_json = None  # 参数错误返回None, 过程出错返回False, 成功返回tid
         # 解析请求数据,获取新文本
         body = json.loads(args[0])
-        tid = body.get("tid", None)
         txt = body.get("txt", None)
         if txt:
             # 分词&词性标注
@@ -42,7 +41,6 @@ class Demo(object):
             if not wordSeqs or not posSeqs or not wordFreqs or not label:
                 rsp_json = False
             # 入库？
-            dnHandler = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
             #     文本入库
             txt_sql = ""
             #     分词序列入库
@@ -51,6 +49,14 @@ class Demo(object):
             pos_sql = ""
             #     分类结果入库
             tc_sql = ""
+            dbHandler = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+            tid = body.get("tid", None)
+            if tid:  # update
+                r = dbHandler.executeSql(sql="UPDATE tb_tinfo SET(content, tstatus) VALUES(%s, %s)")
+                pass
+            else:  # insert
+                pass
+
         # 返回响应
         print(rsp_json)
         return rsp_json
