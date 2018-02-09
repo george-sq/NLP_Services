@@ -5,8 +5,10 @@
     @Time   : 2018/2/8 9:58
     @Todo   : 
 """
+
 import json
 import logging
+
 from nlp.basicTextProcessing import BasicTextProcessing
 
 logger = logging.getLogger(__name__)

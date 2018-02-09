@@ -11,6 +11,7 @@ import logging
 import re
 import socket
 from multiprocessing import Process
+
 from textAnalysisServer import app
 
 logger = logging.getLogger(__name__)

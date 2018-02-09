@@ -6,21 +6,23 @@
 @Todo   :
 """
 
-from sklearn.datasets.base import Bunch
-from sklearn.feature_extraction.text import TfidfVectorizer  # TF-IDF向量生成类
-from collections import defaultdict
-from fileServer import FileServer
-from bases.mysqlServer import MysqlServer
-import multiprocessing
-import re
-import jieba
-from jieba import posseg
 import logging
+import multiprocessing
 import warnings
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
+
+import re
+import jieba
+from jieba import posseg
 from gensim import corpora
 from gensim import models
+from collections import defaultdict
+from sklearn.datasets.base import Bunch
+from sklearn.feature_extraction.text import TfidfVectorizer  # TF-IDF向量生成类
+
+from fileServer import FileServer
+from bases.mysqlServer import MysqlServer
 
 logger = logging.getLogger(__name__)
 
