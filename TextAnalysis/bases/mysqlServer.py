@@ -71,13 +71,13 @@ class MysqlServer(object):
             sql = kwargs.get("sql", None)
             params = kwargs.get("args", None)
             try:
-                if sql and params:
+                if sql and params:  # 批量操作
                     logger.info("Execute SQL : %s" % sql)
                     logger.info("SQL Params : %s ......" % repr(params)[:100])
                     results.append(cursor.executemany(sql, params))
                     results.append(cursor.fetchall())
                     logger.info("Rows affected: have %s records" % results[0])
-                elif sql and params is None:  # 批量操作
+                elif sql and params is None:
                     logger.info("Execute SQL : %s" % sql)
                     results.append(cursor.execute(sql))
                     results.extend(cursor.fetchall())
