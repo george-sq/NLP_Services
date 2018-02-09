@@ -83,6 +83,11 @@ class TextCate(object):
                 logger.error("Loaded text classification model failed")
         else:
             rsp_json = None
+
+        if rsp_json:
+            logger.info("Classifying text successed")
+        else:
+            logger.error("Classifying text failed")
         return rsp_json
 
 
