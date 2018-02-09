@@ -117,7 +117,7 @@ class Application(object):
     1. 文本分析模块功能
         "/txtSeg": tseg
             请求功能描述: 文本切分
-            请求参数格式: {"url": '/txtSeg', "body": {"tag": False, "txt": "textContent"}}
+            请求参数格式: {"url": '/txtSeg', "body": {"tag": True or False, "txt": "textContent"}}
             响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
             响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": segmentation sequence}
         "/txtCate": tc
@@ -127,9 +127,9 @@ class Application(object):
             响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": {"label": oneLabel, "prob": "%.5f" % probability}}
         "/demo": demo
             请求功能描述: 文本分析功能演示平台接口
-            请求参数格式: {"url": '/demo', "body": {"tid": False, "txt": "textContent"}}
+            请求参数格式: {"url": '/demo', "body": {"tid": tid or None, "txt": "textContent"}}
             响应结果内容: {None: 请求数据异常, False: 响应异常, True:成功响应}
-            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": True or False}
+            响应数据格式: {"RESULT_CODES": 0 or 1, "RESULT": None, False or tid}
 """
 action_dicts = {
     "/": ShowTime(),

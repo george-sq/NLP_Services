@@ -23,22 +23,34 @@ class Demo(object):
         body = json.loads(args[0])
         tid = body.get("tid", None)
         txt = body.get("txt", None)
-        # 分词&词性标注
-        txtHandler = BasicTextProcessing()
-        wordSeqs = txtHandler.doWordSplit(content=txt)
-        posSeqs = txtHandler.doWordSplit(content=txt, pos=True)
-        # 词频统计
-        wordFreqs = txtHandler.buildWordFrequencyDict(wordSeqs)
-        # 分类
-        label = tc.app(json.dumps({"txt": txt}))
-        # 入库？
-        dnHandler = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
-        #     分词序列入库
-        ws_sql = ""
-        #     词性标注序列入库
-        pos_sql = ""
-        #     分类结果入库
-        tc_sql = ""
+        if txt:
+            # 分词&词性标注
+            txtHandler = BasicTextProcessing()
+            wordSeqs = txtHandler.doWordSplit(content=txt)
+            posSeqs = txtHandler.doWordSplit(content=txt, pos=True)
+            if not wordSeqs and not posSeqs:
+                logger.error("Text segmentation failed")
+            # 词频统计
+            wordFreqs = txtHandler.buildWordFrequencyDict(wordSeqs)
+            wordFreqs = sorted(wordFreqs.items(), key=lambda x: x[1], reverse=True)
+            if not wordFreqs:
+                logger.error("Word frequency statistical failed")
+            # 分类
+            label = tc.app(json.dumps({"txt": txt}))
+            if not label:
+                logger.error("Classifying text failed")
+            if not wordSeqs or not posSeqs or not wordFreqs or not label:
+                rsp_json = False
+            # 入库？
+            dnHandler = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+            #     文本入库
+            txt_sql = ""
+            #     分词序列入库
+            ws_sql = ""
+            #     词性标注序列入库
+            pos_sql = ""
+            #     分类结果入库
+            tc_sql = ""
         # 返回响应
         print(rsp_json)
         return rsp_json
