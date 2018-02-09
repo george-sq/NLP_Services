@@ -14,7 +14,7 @@ from bases import mysqlServer as db
 from services import testServer as act
 from services import textCateServer as tc
 from services import textSegmentationServer as tseg
-from services import demoServer
+from services import demoServer as demo
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +137,7 @@ action_dicts = {
     "/test": act,
     "/txtCate": tc,
     "/txtSeg": tseg,
-    "/demo": demoServer
+    "/demo": demo
 }
 app = Application(action_dicts)
 
