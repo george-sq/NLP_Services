@@ -40,6 +40,11 @@ class TextSegmentation(object):
                 # print(rsp_json)
                 if not rsp_json:
                     rsp_json = False
+
+        if rsp_json:
+            logger.info("Text segmentation successed")
+        else:
+            logger.error("Text segmentation failed")
         return rsp_json
 
 

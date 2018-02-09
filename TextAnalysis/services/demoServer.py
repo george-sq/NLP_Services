@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    @File   : demo.py
+    @File   : demoServer.py
     @Author : NLP_QiangShen (275171387@qq.com)
     @Time   : 2018/2/9 9:37
     @Todo   : 
@@ -58,6 +58,10 @@ class Demo(object):
                 pass
 
         # 返回响应
+        if rsp_json:
+            logger.info("Demo successed")
+        else:
+            logger.error("Demo failed")
         print(rsp_json)
         return rsp_json
 
