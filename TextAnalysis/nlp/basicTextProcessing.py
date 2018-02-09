@@ -245,7 +245,7 @@ class BasicTextProcessing(object):
     """文本预处理类"""
 
     def __init__(self):
-        self.retVal = []
+        self.retVal = None
         initJieba()
 
     def doWordSplit(self, content="", contents=(), pos=False):
@@ -255,6 +255,7 @@ class BasicTextProcessing(object):
         :param pos: 是否进行词性标注 True=标注
         :return: retVal = [[(item, label?),],]
         """
+        self.retVal = []
         if content:
             self.retVal.append(match(content.upper(), pos=pos))
         elif contents:
