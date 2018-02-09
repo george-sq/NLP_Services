@@ -6,12 +6,13 @@
     @Todo   : 
 """
 
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils import check_array
-from sklearn.utils.extmath import safe_sparse_dot
-import numpy as np
 import logging
+
+import numpy as np
+from sklearn.utils import check_array
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.utils.validation import check_is_fitted
 
 logger = logging.getLogger(__name__)
 

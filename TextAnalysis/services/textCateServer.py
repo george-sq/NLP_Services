@@ -6,14 +6,15 @@
     @Todo   : 
 """
 
+import logging
+import json
+import warnings
+
+warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
+
 from bases.fileServer import FileServer
 from nlp.basicTextProcessing import BasicTextProcessing
 from nlp.textCate import MultinomialNB2TextCates, TextCateServer
-import logging
-import warnings
-import json
-
-warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 from gensim import corpora
 from gensim import models
 

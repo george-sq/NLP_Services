@@ -6,15 +6,17 @@
     @Todo   : 
 """
 
-from bases.mysqlServer import MysqlServer
-from bases.fileServer import FileServer
-import numpy as np
-from scipy.sparse.csr import csr_matrix
-from basicTextProcessing import BasicTextProcessing, TfidfVecSpace
-from naiveBayes4txtCate import MultinomialNB2TextCates
-from sklearn.datasets.base import Bunch
 import random
 import logging
+
+import numpy as np
+from sklearn.datasets.base import Bunch
+from scipy.sparse.csr import csr_matrix
+
+from bases.fileServer import FileServer
+from bases.mysqlServer import MysqlServer
+from naiveBayes4txtCate import MultinomialNB2TextCates
+from basicTextProcessing import BasicTextProcessing, TfidfVecSpace
 
 logger = logging.getLogger(__name__)
 
