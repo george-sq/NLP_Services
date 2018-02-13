@@ -7,6 +7,7 @@
 """
 
 import logging
+
 import pymysql
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class MysqlServer(object):
         self.port = 3306
         self.charset = kwargs.get("charset", "utf8mb4")
 
-    def getConnect(self):
+    def __getConnect(self):
         """连接Mysql数据库"""
         # 创建连接
         if self.host and self.user and self.passwd and self.db:
@@ -63,7 +64,7 @@ class MysqlServer(object):
         :return: results = [受影响的行数, [返回结果的行内容,]]
         """
         # 获取数据库连接
-        con = self.getConnect()
+        con = self.__getConnect()
         if con is not None:
             # 使用cursor()方法获取操作游标
             cursor = con.cursor()
@@ -97,8 +98,7 @@ class MysqlServer(object):
                 con.close()
             return results
         else:
-            logger.error("Can not connect mysql database [%s] : %s:%s User=%s" %
-                         (self.db, self.host, self.port, self.user))
+            logger.error("Connect mysql database failed")
 
 
 class Application(object):
@@ -108,7 +108,8 @@ class Application(object):
     def __call__(self, *args, **kwargs):
         if len(args) > 0:
             logger.warning("App方法获得的参数 : args=%s" % args)
-        mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+        # mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+        mysql = MysqlServer(host="192.168.0.113", db="TextCorpus", user="root", passwd="mysqldb")
         sql = "SELECT * FROM tb_ajinfo ORDER BY tid LIMIT 10"
         retVal = mysql.executeSql(sql=sql)
         return str(retVal[0])
@@ -118,6 +119,7 @@ app = Application()
 
 
 def main():
+    app()
     pass
 
 
