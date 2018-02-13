@@ -324,8 +324,8 @@ class BasicTextProcessing(object):
         """
         dict_gensim = corpora.Dictionary(dataSets)
         if stored[0] and stored[1] is not None:
-            dict_gensim.save(stored[1])
-            logger.info("Stored GensimDict(%s) finished" % stored[1])
+            FileServer().saveGensimDict(path=stored[1][0], fileName=stored[1][1], dicts=dict_gensim)
+            logger.info("Stored GensimDict(%s) finished" % "".join(stored[1]))
         else:
             logger.warning("Stored GensimDict failed. please check param stored=%s" % repr(stored))
         return dict_gensim

@@ -6,17 +6,17 @@
     @Todo   : 
 """
 
-import random
 import logging
+import random
 
 import numpy as np
-from sklearn.datasets.base import Bunch
 from scipy.sparse.csr import csr_matrix
+from sklearn.datasets.base import Bunch
 
 from bases.fileServer import FileServer
 from bases.mysqlServer import MysqlServer
-from .naiveBayes4txtCate import MultinomialNB2TextCates
-from .basicTextProcessing import BasicTextProcessing, TfidfVecSpace
+from basicTextProcessing import BasicTextProcessing, TfidfVecSpace
+from naiveBayes4txtCate import MultinomialNB2TextCates
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +40,11 @@ def __baseProcess():
     :return:
     """
     # 初始化Mysql数据库连接
-    mysqls = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+    # dbHandler = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+    dbHandler = MysqlServer(host="192.168.0.113", db="TextCorpus", user="root", passwd="mysqldb")
 
     # 获取原始语料库数据
-    result_query = mysqls.executeSql(sql="SELECT * FROM corpus_rawtxts ORDER BY txtId")
+    result_query = dbHandler.executeSql(sql="SELECT * FROM corpus_rawtxts ORDER BY txtId")
     labelsIndex = [(str(record[0]), record[2]) for record in result_query[1:]]
     txts = [record[3] for record in result_query[1:]]
 
@@ -53,7 +54,7 @@ def __baseProcess():
     # 获取停用词库
     stopWords = __getStopWords()
     # dicts4stopWords = textHandler.buildGensimDict([list(stopWords)], stored=(True, "../../Out/Dicts/stopWords.dict"))
-    textHandler.buildGensimDict([list(stopWords)], stored=(True, "../../Out/Dicts/stopWords.dict"))
+    textHandler.buildGensimDict([list(stopWords)], stored=(True, ("../../Out/Dicts/", "stopWords.dict")))
 
     # 对原始语料库样本进行分词处理
     dataSets = list(textHandler.batchWordSplit(contentList=txts))
