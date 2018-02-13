@@ -14,7 +14,8 @@ warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 
 from bases.fileServer import FileServer
 from nlp.basicTextProcessing import BasicTextProcessing
-from nlp.textCate import MultinomialNB2TextCates, TextCateServer
+from nlp.naiveBayes4txtCate import MultinomialNB2TextCates
+from nlp.textCate import TextCateServer
 from gensim import corpora
 from gensim import models
 

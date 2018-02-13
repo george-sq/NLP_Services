@@ -15,8 +15,8 @@ from scipy.sparse.csr import csr_matrix
 
 from bases.fileServer import FileServer
 from bases.mysqlServer import MysqlServer
-from naiveBayes4txtCate import MultinomialNB2TextCates
-from basicTextProcessing import BasicTextProcessing, TfidfVecSpace
+from .naiveBayes4txtCate import MultinomialNB2TextCates
+from .basicTextProcessing import BasicTextProcessing, TfidfVecSpace
 
 logger = logging.getLogger(__name__)
 

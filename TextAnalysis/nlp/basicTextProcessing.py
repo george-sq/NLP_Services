@@ -21,7 +21,7 @@ from collections import defaultdict
 from sklearn.datasets.base import Bunch
 from sklearn.feature_extraction.text import TfidfVectorizer  # TF-IDF向量生成类
 
-from fileServer import FileServer
+from bases.fileServer import FileServer
 from bases.mysqlServer import MysqlServer
 
 logger = logging.getLogger(__name__)
