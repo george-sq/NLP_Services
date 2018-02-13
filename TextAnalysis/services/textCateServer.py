@@ -6,8 +6,8 @@
     @Todo   : 
 """
 
-import logging
 import json
+import logging
 import warnings
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
@@ -42,8 +42,9 @@ class TextCate(object):
             # 去停用词
             fileHandler = FileServer()
             logger.info("Loading stopWords")
-            stopWords = fileHandler.loadLocalGensimDict(path="/home/pamo/Codes/NLP_PAMO/Out/Dicts/",
-                                                        fileName="stopWords.dict")
+            # stopWords = fileHandler.loadLocalGensimDict(path="/home/pamo/Codes/NLP_PAMO/Out/Dicts/",
+            #                                             fileName="stopWords.dict")
+            stopWords = fileHandler.loadLocalGensimDict(path="../../Out/Dicts/", fileName="stopWords.dict")
             if stopWords:
                 logger.info("Loaded stopWords finished")
                 wordSeqs = [word for word in wordSeqs if word not in stopWords.token2id.keys()]
@@ -53,8 +54,9 @@ class TextCate(object):
 
             # 加载文本分类模型
             logger.info("Loading text classification model")
-            nbModel = fileHandler.loadPickledObjFile(path="/home/pamo/Codes/NLP_PAMO/Out/Models/",
-                                                     fileName="nbTextCate-2018.pickle")
+            # nbModel = fileHandler.loadPickledObjFile(path="/home/pamo/Codes/NLP_PAMO/Out/Models/",
+            #                                          fileName="nbTextCate-2018.pickle")
+            nbModel = fileHandler.loadPickledObjFile(path="../../Out/Models/", fileName="nbTextCate-2018.pickle")
 
             # 解析模型数据
             if nbModel:

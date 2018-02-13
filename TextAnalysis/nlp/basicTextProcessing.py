@@ -82,8 +82,10 @@ __regExpSets = {"url": __url_regExp, "email": __email_regExp, "money": __money_r
 
 def __initJieba():
     jieba.setLogLevel(logging.INFO)
-    userDict = "/home/pamo/Codes/NLP_PAMO/Dicts/dict_jieba_check.txt"
-    newWords = "/home/pamo/Codes/NLP_PAMO/Dicts/newWords.txt"
+    # userDict = "/home/pamo/Codes/NLP_PAMO/Dicts/dict_jieba_check.txt"
+    # newWords = "/home/pamo/Codes/NLP_PAMO/Dicts/newWords.txt"
+    userDict = "../../Dicts/dict_jieba_check.txt"
+    newWords = "../../Dicts/newWords.txt"
     try:
         if userDict:
             jieba.set_dictionary(userDict)
@@ -103,8 +105,10 @@ def __initJieba():
         logger.error("Use custom dictionary failed, use default dictionary")
 
 
-# __initJieba()
-initJieba = __initJieba
+__initJieba()
+
+
+# initJieba = __initJieba
 
 
 def __cut(contents, regExpK=None, pos=False):
@@ -215,7 +219,8 @@ def match(content, pos=False):
 
 def buildTaggedTxtCorpus():
     # 数据库连接
-    mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+    # mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+    mysql = MysqlServer(host="192.168.0.113", db="TextCorpus", user="root", passwd="mysqldb")
     # 查询结果
     sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 100"
     # sql = "SELECT * FROM corpus_rawtxts ORDER BY txtId"
@@ -248,7 +253,6 @@ class BasicTextProcessing(object):
 
     def __init__(self):
         self.retVal = None
-        initJieba()
 
     def doWordSplit(self, content="", contents=(), pos=False):
         """ 文本切分
@@ -454,11 +458,6 @@ def tst(cla, txts):  # 功能测试
     print("*********" * 15)
     for l in cla.retVal:
         print(l)
-    r = cla.batchWordSplit(contentList=txts)
-    print()
-    print("*********" * 15)
-    for l in list(r):
-        print(l)
 
     cla.doWordSplit(content=txts[0], pos=True)
     print()
@@ -470,6 +469,12 @@ def tst(cla, txts):  # 功能测试
     print(">>>>>>>>>" * 15)
     for l in cla.retVal:
         print(l)
+
+    r = cla.batchWordSplit(contentList=txts)
+    print()
+    print("*********" * 15)
+    for l in list(r):
+        print(l)
         # r = cla.batchWordSplit(contentList=txts, pos=True)
         # print()
         # print(">>>>>>>>>" * 15)
@@ -479,7 +484,8 @@ def tst(cla, txts):  # 功能测试
 
 def main():
     # 数据库连接
-    mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+    # mysql = MysqlServer(host="10.0.0.247", db="db_pamodata", user="pamo", passwd="pamo")
+    mysql = MysqlServer(host="192.168.0.113", db="TextCorpus", user="root", passwd="mysqldb")
 
     # 查询结果
     # sql = "SELECT * FROM corpus_rawtxts WHERE txtLabel<>'电信诈骗' ORDER BY txtId LIMIT 100"
