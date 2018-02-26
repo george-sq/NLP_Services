@@ -5,7 +5,6 @@
     @Time   : 2018/2/26 10:12
     @Todo   : 
 """
-import os
 
 from sklearn.feature_extraction.text import HashingVectorizer
 
